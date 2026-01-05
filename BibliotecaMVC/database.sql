@@ -1,0 +1,18 @@
+CREATE DATABASE BibliotecaDB;
+GO
+
+USE BibliotecaDB;
+GO
+
+CREATE TABLE Autores (
+    AutorID INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Libros (
+    ID INT IDENTITY(1,1) PRIMARY KEY,
+    Titulo NVARCHAR(150) NOT NULL,
+    AutorID INT NOT NULL,
+    CONSTRAINT FK_Libros_Autores FOREIGN KEY (AutorID)
+        REFERENCES Autores(AutorID)
+);

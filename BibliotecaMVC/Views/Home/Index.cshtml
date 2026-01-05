@@ -1,0 +1,27 @@
+﻿@model IEnumerable<BibliotecaMVC.Models.Libro>
+
+<h2>Lista de Libros</h2>
+
+<a class="btn btn-success" href="/Libros/Create">Agregar Libro</a>
+<a class="btn btn-secondary" href="/Autores/Create">Agregar Autor</a>
+
+<br />
+<br />
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Autor</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var libro in Model)
+        {
+            <tr>
+                <td>@libro.Titulo</td>
+                <td>@libro.Autor.Nombre</td>
+            </tr>
+        }
+    </tbody>
+</table>
