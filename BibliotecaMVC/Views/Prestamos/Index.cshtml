@@ -1,0 +1,33 @@
+﻿@model IEnumerable<BibliotecaMVC.Prestamo>
+
+<h2>Préstamos Activos</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Libro</th>
+            <th>Solicitante</th>
+            <th>Fecha Préstamo</th>
+            <th>Fecha Devolución</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Libro.Titulo</td>
+                <td>@p.NombreSolicitante</td>
+                <td>@p.FechaPrestamo.ToShortDateString()</td>
+                <td>@p.FechaDevolucion?.ToShortDateString()</td>
+                <td>
+                    <a class="btn btn-success btn-sm"
+                       asp-action="Devolver"
+                       asp-route-id="@p.PrestamoID">
+                        Devolver
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

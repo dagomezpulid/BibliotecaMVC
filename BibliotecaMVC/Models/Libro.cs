@@ -16,6 +16,8 @@ namespace BibliotecaMVC.Models
 
         [ForeignKey("AutorID")]
         public Autor? Autor { get; set; }
+
+        public int Stock { get; set; }
     }
 }
 

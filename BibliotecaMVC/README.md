@@ -17,7 +17,39 @@ Esta relación se implementa mediante la clave foránea AutorID en la entidad Libr
 - SQL Server
 - Bootstrap
 
+## Funcionalidades
+
+### Gestión de Autores
+- Crear autores
+- Listar autores
+- Editar autores
+- Eliminar autores (validando que no tengan libros asociados)
+
+### Gestión de Libros
+- Crear libros
+- Asociar libros a autores
+- Editar libros
+- Eliminar libros
+- Control de stock (cantidad de copias disponibles)
+
+### Módulo de Préstamos
+- Registrar el préstamo de un libro
+- Ingresar nombre del solicitante
+- Ingresar fecha estimada de devolución
+- Validar que no se pueda prestar un libro sin stock disponible
+- Disminuir el stock automáticamente al prestar
+
+### Devolución de Libros
+- Listar préstamos activos
+- Registrar la devolución de un libro
+- Incrementar el stock automáticamente al devolver
+
 ---
+
+Entidades principales:
+- Autor
+- Libro
+- Préstamo
 
 ## Configuración del proyecto
 

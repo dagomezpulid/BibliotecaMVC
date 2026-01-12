@@ -1,0 +1,13 @@
+﻿@model BibliotecaMVC.Prestamo
+
+<h2>Devolver Libro</h2>
+
+<p><strong>Libro:</strong> @Model.Libro.Titulo</p>
+<p><strong>Solicitante:</strong> @Model.NombreSolicitante</p>
+
+<form asp-action="DevolverConfirmado" method="post">
+    <input type="hidden" name="id" value="@Model.PrestamoID" />
+
+    <button type="submit" class="btn btn-success">Confirmar Devolución</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
