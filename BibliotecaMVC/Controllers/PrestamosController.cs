@@ -12,6 +12,7 @@ public class PrestamosController : Controller
         _context = context;
     }
 
+    // GET: Prestamos
     public IActionResult Index()
     {
         var prestamos = _context.Prestamos
@@ -22,8 +23,9 @@ public class PrestamosController : Controller
         return View(prestamos);
     }
 
-    // GET: Prestamos/Devolver
+    // POST: Prestamos/Devolver
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Devolver(int id)
     {
         var prestamo = _context.Prestamos
@@ -31,39 +33,43 @@ public class PrestamosController : Controller
             .FirstOrDefault(p => p.PrestamoID == id);
 
         if (prestamo == null || prestamo.Devuelto)
-        {
             return NotFound();
-        }
 
         prestamo.Devuelto = true;
         prestamo.FechaDevolucionReal = DateTime.Now;
-        prestamo.Libro.Stock += 1;
 
+        if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucion)
+        {
+            var fechaLimite = prestamo.FechaDevolucion.Value.Date;
+            var fechaReal = prestamo.FechaDevolucionReal.Value.Date;
+
+            prestamo.DiasRetraso = (fechaReal - fechaLimite).Days;
+
+            const decimal valorPorDia = 2000;
+            prestamo.Multa = prestamo.DiasRetraso * valorPorDia;
+        }
+        else
+        {
+            prestamo.DiasRetraso = 0;
+            prestamo.Multa = 0;
+        }
+
+        prestamo.Libro.Stock += 1;
         _context.SaveChanges();
 
-        return RedirectToAction("Index");
+        return RedirectToAction(nameof(Index));
     }
 
-
-    // POST: Prestamos/Devolver
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult DevolverConfirmado(int id)
+    // GET: Prestamos/Historial
+    public IActionResult Historial()
     {
-        var prestamo = _context.Prestamos
+        var historial = _context.Prestamos
             .Include(p => p.Libro)
-            .FirstOrDefault(p => p.PrestamoID == id);
+            .Where(p => p.Devuelto)
+            .OrderByDescending(p => p.FechaDevolucionReal)
+            .ToList();
 
-        if (prestamo == null)
-            return NotFound();
-
-        prestamo.Libro.Stock += 1;
-
-        _context.Prestamos.Remove(prestamo);
-        _context.SaveChanges();
-
-        return RedirectToAction("Index");
+        return View(historial);
     }
-
 }
 

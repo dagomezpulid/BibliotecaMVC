@@ -1,0 +1,49 @@
+﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
+
+<h2>Historial de Préstamos</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Libro</th>
+            <th>Solicitante</th>
+            <th>Fecha Préstamo</th>
+            <th>Fecha Devolución</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Libro.Titulo</td>
+                <td>@p.NombreSolicitante</td>
+                <td>@p.FechaPrestamo.ToShortDateString()</td>
+                <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
+                <td>
+                    @if (p.FechaDevolucionReal > p.FechaDevolucion)
+                    {
+                        <span class="badge bg-danger">Fuera de fecha</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">A tiempo</span>
+                    }
+                </td>
+            </tr>
+        <th>Multa</th>
+        <td>
+            @if (p.Multa > 0)
+            {
+                <span class="text-danger fw-bold">
+                    $@p.Multa.Value.ToString("N0")
+                </span>
+            }
+            else
+            {
+                <span class="text-success">—</span>
+            }
+        </td>
+        }
+    </tbody>
+</table>

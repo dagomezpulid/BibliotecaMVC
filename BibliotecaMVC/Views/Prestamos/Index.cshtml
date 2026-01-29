@@ -19,14 +19,67 @@
                 <td>@p.NombreSolicitante</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>
-                    <form asp-action="Devolver" method="post">
-                        <input type="hidden" name="id" value="@p.PrestamoID" />
-                        <button class="btn btn-success btn-sm">
-                            Devolver
-                        </button>
-                    </form>
+                    <button class="btn btn-success btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalDevolver"
+                            data-id="@p.PrestamoID"
+                            data-libro="@p.Libro.Titulo">
+                        Devolver
+                    </button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+<div class="modal fade" id="modalDevolver" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <form action="@Url.Action("Devolver", "Prestamos")" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar devolución</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        ¿Está seguro que desea devolver el libro
+                        <strong id="tituloLibro"></strong>?
+                    </p>
+
+                    <input type="hidden" name="id" id="prestamoId" />
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        Confirmar devolución
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+<script>
+    var modal = document.getElementById('modalDevolver');
+
+    modal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+
+        document.getElementById('prestamoId').value =
+            button.getAttribute('data-id');
+
+        document.getElementById('tituloLibro').textContent =
+            button.getAttribute('data-libro');
+    });
+</script>
+
+
+    
+
