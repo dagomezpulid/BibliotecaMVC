@@ -16,23 +16,34 @@ public class PrestamosController : Controller
     {
         var prestamos = _context.Prestamos
             .Include(p => p.Libro)
+            .Where(p => !p.Devuelto)
             .ToList();
 
         return View(prestamos);
     }
 
     // GET: Prestamos/Devolver
+    [HttpPost]
     public IActionResult Devolver(int id)
     {
         var prestamo = _context.Prestamos
             .Include(p => p.Libro)
             .FirstOrDefault(p => p.PrestamoID == id);
 
-        if (prestamo == null)
+        if (prestamo == null || prestamo.Devuelto)
+        {
             return NotFound();
+        }
 
-        return View(prestamo);
+        prestamo.Devuelto = true;
+        prestamo.FechaDevolucionReal = DateTime.Now;
+        prestamo.Libro.Stock += 1;
+
+        _context.SaveChanges();
+
+        return RedirectToAction("Index");
     }
+
 
     // POST: Prestamos/Devolver
     [HttpPost]

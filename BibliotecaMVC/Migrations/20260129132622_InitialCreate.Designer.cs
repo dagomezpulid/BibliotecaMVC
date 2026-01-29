@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BibliotecaMVC.Migrations
 {
     [DbContext(typeof(BibliotecaContext))]
-    [Migration("20260109191337_AddPrestamo")]
-    partial class AddPrestamo
+    [Migration("20260129132622_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -67,7 +67,7 @@ namespace BibliotecaMVC.Migrations
                     b.ToTable("Libros");
                 });
 
-            modelBuilder.Entity("BibliotecaMVC.Models.Prestamo", b =>
+            modelBuilder.Entity("BibliotecaMVC.Prestamo", b =>
                 {
                     b.Property<int>("PrestamoID")
                         .ValueGeneratedOnAdd()
@@ -75,7 +75,7 @@ namespace BibliotecaMVC.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PrestamoID"));
 
-                    b.Property<DateTime>("FechaDevolucion")
+                    b.Property<DateTime?>("FechaDevolucion")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("FechaPrestamo")
@@ -106,7 +106,7 @@ namespace BibliotecaMVC.Migrations
                     b.Navigation("Autor");
                 });
 
-            modelBuilder.Entity("BibliotecaMVC.Models.Prestamo", b =>
+            modelBuilder.Entity("BibliotecaMVC.Prestamo", b =>
                 {
                     b.HasOne("BibliotecaMVC.Models.Libro", "Libro")
                         .WithMany()

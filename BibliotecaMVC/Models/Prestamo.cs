@@ -2,20 +2,25 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
-namespace BibliotecaMVC
+namespace BibliotecaMVC.Models
 {
     public class Prestamo
     {
         public int PrestamoID { get; set; }
 
-        [Display(Name = "Nombre del Solicitante")]
+        [Required]
+        [Display(Name = "Nombre del solicitante")]
         public string NombreSolicitante { get; set; }
 
-        [Display(Name = "Fecha de Préstamo")]
-        public DateTime FechaPrestamo { get; set; }
+        [Display(Name = "Fecha de prestamo")]
+        public DateTime FechaPrestamo { get; set; } = DateTime.Now;
 
-        [Display(Name = "Fecha de Devolución")]
+        [Display(Name = "Fecha de devolución")]
         public DateTime? FechaDevolucion { get; set; }
+
+        public DateTime? FechaDevolucionReal { get; set; }
+
+        public bool Devuelto { get; set; } = false;
 
         public int LibroID { get; set; }
         public Libro Libro { get; set; }

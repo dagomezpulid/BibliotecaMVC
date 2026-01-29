@@ -72,7 +72,10 @@ namespace BibliotecaMVC.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PrestamoID"));
 
-                    b.Property<DateTime?>("FechaDevolucion")
+                    b.Property<bool>("Devuelto")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("FechaDevolucion")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("FechaDevolucionReal")

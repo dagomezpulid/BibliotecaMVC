@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BibliotecaMVC.Prestamo>
+﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
 
 <h2>Préstamos Activos</h2>
 
@@ -8,7 +8,6 @@
             <th>Libro</th>
             <th>Solicitante</th>
             <th>Fecha Préstamo</th>
-            <th>Fecha Devolución</th>
             <th>Acción</th>
         </tr>
     </thead>
@@ -19,13 +18,13 @@
                 <td>@p.Libro.Titulo</td>
                 <td>@p.NombreSolicitante</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
-                <td>@p.FechaDevolucion?.ToShortDateString()</td>
                 <td>
-                    <a class="btn btn-success btn-sm"
-                       asp-action="Devolver"
-                       asp-route-id="@p.PrestamoID">
-                        Devolver
-                    </a>
+                    <form asp-action="Devolver" method="post">
+                        <input type="hidden" name="id" value="@p.PrestamoID" />
+                        <button class="btn btn-success btn-sm">
+                            Devolver
+                        </button>
+                    </form>
                 </td>
             </tr>
         }
