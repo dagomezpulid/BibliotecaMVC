@@ -2,14 +2,19 @@
 using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 public class PrestamosController : Controller
 {
     private readonly BibliotecaContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public PrestamosController(BibliotecaContext context)
+    public PrestamosController(
+    BibliotecaContext context,
+    UserManager<IdentityUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     // GET: Prestamos

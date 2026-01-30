@@ -1,6 +1,7 @@
 ﻿using System;
 using BibliotecaMVC.Models;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 namespace BibliotecaMVC.Models
 {
     public class Prestamo
@@ -8,6 +9,7 @@ namespace BibliotecaMVC.Models
         public int PrestamoID { get; set; }
 
         public int LibroID { get; set; }
+
         public Libro Libro { get; set; }
 
         [Required]
@@ -27,5 +29,9 @@ namespace BibliotecaMVC.Models
         public int DiasRetraso { get; set; }
 
         public decimal? Multa { get; set; }
+
+        public string? UsuarioId { get; set; }
+
+        public IdentityUser? Usuario { get; set; }
     }
 }
