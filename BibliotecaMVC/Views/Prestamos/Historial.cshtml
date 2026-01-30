@@ -2,14 +2,16 @@
 
 <h2>Historial de Préstamos</h2>
 
-<table class="table table-striped">
-    <thead>
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
         <tr>
             <th>Libro</th>
             <th>Solicitante</th>
             <th>Fecha Préstamo</th>
             <th>Fecha Devolución</th>
-            <th>Estado</th>
+            <th>Devuelto</th>
+            <th>Días Retraso</th>
+            <th>Multa</th>
         </tr>
     </thead>
     <tbody>
@@ -20,30 +22,37 @@
                 <td>@p.NombreSolicitante</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
+
                 <td>
-                    @if (p.FechaDevolucionReal > p.FechaDevolucion)
+                    <span class="badge bg-success">Sí</span>
+                </td>
+
+                <td>
+                    @if (p.DiasRetraso > 0)
                     {
-                        <span class="badge bg-danger">Fuera de fecha</span>
+                        <span class="text-danger">@p.DiasRetraso</span>
                     }
                     else
                     {
-                        <span class="badge bg-success">A tiempo</span>
+                        <span>0</span>
+                    }
+                </td>
+
+                <td>
+                    @if (p.Multa.HasValue && p.Multa > 0)
+                    {
+                        <span class="text-danger">
+                            $@p.Multa.Value
+                        </span>
+                    }
+                    else
+                    {
+                        <span>$0</span>
                     }
                 </td>
             </tr>
-        <th>Multa</th>
-        <td>
-            @if (p.Multa > 0)
-            {
-                <span class="text-danger fw-bold">
-                    $@p.Multa.Value.ToString("N0")
-                </span>
-            }
-            else
-            {
-                <span class="text-success">—</span>
-            }
-        </td>
         }
     </tbody>
 </table>
+
+<a class="btn btn-secondary" asp-action="Index">Volver a Préstamos Activos</a>

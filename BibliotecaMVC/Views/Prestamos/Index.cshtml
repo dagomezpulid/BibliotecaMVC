@@ -1,7 +1,16 @@
-﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
+﻿    @model IEnumerable<BibliotecaMVC.Models.Prestamo>
 
 <h2>Préstamos Activos</h2>
 
+<div class="mb-3">
+    <a class="btn btn-secondary" asp-controller="Home" asp-action="Index">
+        Volver al Home
+    </a>
+
+    <a class="btn btn-info" asp-action="Historial">
+        Ver Historial de Préstamos
+    </a>
+</div>
 <table class="table table-bordered">
     <thead>
         <tr>

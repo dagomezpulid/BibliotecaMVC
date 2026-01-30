@@ -17,7 +17,16 @@
 
     <br />
 
-    <button type="submit" class="btn btn-primary">Guardar</button>
+    <div class="mt-3">
+        <button 
+            type="submit" class="btn btn-primary">Guardar
+        </button>
+        <a class="btn btn-secondary"
+           asp-controller="Home"
+           asp-action="Index">
+            Volver al Home
+        </a>
+    </div>    
 </form>
 
 @section Scripts {
