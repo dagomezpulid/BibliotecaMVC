@@ -20,6 +20,9 @@ namespace BibliotecaMVC.Models
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Prestamo>()
+                .ToTable("Prestamos");
+
+            modelBuilder.Entity<Prestamo>()
                 .Property(p => p.Multa)
                 .HasPrecision(10, 2);
         }

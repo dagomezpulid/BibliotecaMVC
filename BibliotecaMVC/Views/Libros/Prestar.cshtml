@@ -1,25 +1,25 @@
-﻿@model BibliotecaMVC.Models.Prestamo
+﻿    @model BibliotecaMVC.Models.Prestamo
 
-<h2>Prestar Libro</h2>
+    <h2>Prestar Libro</h2>
 
-<p><strong>Libro:</strong> @ViewBag.LibroTitulo</p>
+    <p><strong>Libro:</strong> @ViewBag.LibroTitulo</p>
 
-<form asp-controller="Prestamos" asp-action="Prestar" method="post">
-    <input type="hidden" asp-for="LibroID" />
+    <form asp-controller="Prestamos" asp-action="Prestar" method="post">
+        <input type="hidden" asp-for="LibroID" />
 
-    <div class="form-group">
-        <label asp-for="NombreSolicitante"></label>
-        <input asp-for="NombreSolicitante" class="form-control" />
-    </div>
+        <div class="form-group">
+            <label asp-for="NombreSolicitante"></label>
+            <input asp-for="NombreSolicitante" class="form-control" />
+        </div>
 
-    <div class="form-group">
-        <label asp-for="FechaDevolucion"></label>
-        <input asp-for="FechaDevolucion" type="date" class="form-control" />
-        <span asp-validation-for="FechaDevolucion" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="FechaDevolucion"></label>
+            <input asp-for="FechaDevolucion" type="date" class="form-control" />
+            <span asp-validation-for="FechaDevolucion" class="text-danger"></span>
+        </div>
 
-    <br />
+        <br />
 
-    <button type="submit" class="btn btn-primary">Confirmar Préstamo</button>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+        <button type="submit" class="btn btn-primary">Confirmar Préstamo</button>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>

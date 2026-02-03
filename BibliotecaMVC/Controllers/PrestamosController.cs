@@ -88,37 +88,28 @@ public class PrestamosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Prestar(Prestamo prestamo)
     {
-        return Content("ENTRÓ A PRESTAR");
-
         if (!User.Identity.IsAuthenticated)
-            return Unauthorized();
-
-        if (!ModelState.IsValid)
-            return Content("ModelState inválido");
+            return Unauthorized("Usuario no autenticado");
 
         var usuarioId = _userManager.GetUserId(User);
 
         if (string.IsNullOrEmpty(usuarioId))
-            return Content("UsuarioId NULL");
+            return BadRequest("UsuarioId no encontrado");
+
+        prestamo.UsuarioId = usuarioId;
+        prestamo.FechaPrestamo = DateTime.Now;
+        prestamo.Devuelto = false;
+        prestamo.DiasRetraso = 0;
+        prestamo.Multa = 0;
 
         var libro = await _context.Libros.FindAsync(prestamo.LibroID);
 
-        if (libro == null)
-            return Content("Libro no encontrado");
-
-        var nuevoPrestamo = new Prestamo
-        {
-            LibroID = prestamo.LibroID,
-            NombreSolicitante = prestamo.NombreSolicitante,
-            FechaPrestamo = DateTime.Now,
-            FechaDevolucion = prestamo.FechaDevolucion,
-            UsuarioId = usuarioId,
-            Devuelto = false
-        };
+        if (libro == null || libro.Stock <= 0)
+            return BadRequest("Libro no disponible");
 
         libro.Stock--;
 
-        _context.Prestamos.Add(nuevoPrestamo);
+        _context.Prestamos.Add(prestamo);
         await _context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
