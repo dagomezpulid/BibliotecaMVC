@@ -3,7 +3,9 @@ using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize]
 public class PrestamosController : Controller
 {
     private readonly BibliotecaContext _context;
@@ -20,9 +22,11 @@ public class PrestamosController : Controller
     // GET: Prestamos
     public IActionResult Index()
     {
+        var usuarioId = _userManager.GetUserId(User);
+
         var prestamos = _context.Prestamos
             .Include(p => p.Libro)
-            .Where(p => !p.Devuelto)
+            .Where(p => !p.Devuelto && p.UsuarioId == usuarioId)
             .ToList();
 
         return View(prestamos);
@@ -68,13 +72,73 @@ public class PrestamosController : Controller
     // GET: Prestamos/Historial
     public IActionResult Historial()
     {
+        var usuarioId = _userManager.GetUserId(User);
+
         var historial = _context.Prestamos
             .Include(p => p.Libro)
-            .Where(p => p.Devuelto)
-            .OrderByDescending(p => p.FechaDevolucionReal)
+            .Where(p => p.UsuarioId == usuarioId)
+            .OrderByDescending(p => p.FechaPrestamo)
             .ToList();
 
         return View(historial);
     }
+
+    // POST: Prestamos/Prestar
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Prestar(Prestamo prestamo)
+    {
+        return Content("ENTRÓ A PRESTAR");
+
+        if (!User.Identity.IsAuthenticated)
+            return Unauthorized();
+
+        if (!ModelState.IsValid)
+            return Content("ModelState inválido");
+
+        var usuarioId = _userManager.GetUserId(User);
+
+        if (string.IsNullOrEmpty(usuarioId))
+            return Content("UsuarioId NULL");
+
+        var libro = await _context.Libros.FindAsync(prestamo.LibroID);
+
+        if (libro == null)
+            return Content("Libro no encontrado");
+
+        var nuevoPrestamo = new Prestamo
+        {
+            LibroID = prestamo.LibroID,
+            NombreSolicitante = prestamo.NombreSolicitante,
+            FechaPrestamo = DateTime.Now,
+            FechaDevolucion = prestamo.FechaDevolucion,
+            UsuarioId = usuarioId,
+            Devuelto = false
+        };
+
+        libro.Stock--;
+
+        _context.Prestamos.Add(nuevoPrestamo);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    // GET MisPrestamos
+    [Authorize]
+    public IActionResult MisPrestamos()
+    {
+        var usuarioId = _userManager.GetUserId(User);
+
+        var prestamos = _context.Prestamos
+            .Include(p => p.Libro)
+            .Where(p => p.UsuarioId == usuarioId)
+            .OrderByDescending(p => p.FechaPrestamo)
+            .ToList();
+
+        return View(prestamos);
+    }
+
+
 }
 

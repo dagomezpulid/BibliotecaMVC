@@ -1,0 +1,38 @@
+﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
+
+<h2>Mis Préstamos</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Libro</th>
+            <th>Fecha préstamo</th>
+            <th>Fecha devolución</th>
+            <th>Estado</th>
+            <th>Multa</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Libro.Titulo</td>
+                <td>@p.FechaPrestamo.ToShortDateString()</td>
+                <td>@p.FechaDevolucion?.ToShortDateString()</td>
+                <td>
+                    @(p.Devuelto ? "Devuelto" : "Activo")
+                </td>
+                <td>
+                    @(p.Multa.HasValue ? $"${p.Multa.Value:N0}" : "-")
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<li class="nav-item">
+    <a class="nav-link text-dark"
+       asp-controller="Prestamos"
+       asp-action="MisPrestamos">
+        Mis Préstamos
+    </a>
+</li>

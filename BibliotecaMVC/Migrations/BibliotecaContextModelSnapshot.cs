@@ -36,7 +36,7 @@ namespace BibliotecaMVC.Migrations
 
                     b.HasKey("AutorID");
 
-                    b.ToTable("Autores", (string)null);
+                    b.ToTable("Autores");
                 });
 
             modelBuilder.Entity("BibliotecaMVC.Models.Libro", b =>
@@ -61,7 +61,7 @@ namespace BibliotecaMVC.Migrations
 
                     b.HasIndex("AutorID");
 
-                    b.ToTable("Libros", (string)null);
+                    b.ToTable("Libros");
                 });
 
             modelBuilder.Entity("BibliotecaMVC.Models.Prestamo", b =>
@@ -91,17 +91,23 @@ namespace BibliotecaMVC.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("Multa")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("NombreSolicitante")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UsuarioId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("PrestamoID");
 
                     b.HasIndex("LibroID");
 
-                    b.ToTable("Prestamos", (string)null);
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Prestamos");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -325,7 +331,13 @@ namespace BibliotecaMVC.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId");
+
                     b.Navigation("Libro");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

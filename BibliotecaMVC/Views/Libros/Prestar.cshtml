@@ -4,7 +4,7 @@
 
 <p><strong>Libro:</strong> @ViewBag.LibroTitulo</p>
 
-<form asp-action="Prestar" method="post">
+<form asp-controller="Prestamos" asp-action="Prestar" method="post">
     <input type="hidden" asp-for="LibroID" />
 
     <div class="form-group">
