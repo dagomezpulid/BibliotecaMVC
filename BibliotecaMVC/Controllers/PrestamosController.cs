@@ -35,6 +35,7 @@ public class PrestamosController : Controller
     // POST: Prestamos/Devolver
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Usuario")]
     public IActionResult Devolver(int id)
     {
         var prestamo = _context.Prestamos
@@ -70,6 +71,7 @@ public class PrestamosController : Controller
     }
 
     // GET: Prestamos/Historial
+    [Authorize(Roles = "Usuario")]
     public IActionResult Historial()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -86,6 +88,7 @@ public class PrestamosController : Controller
     // POST: Prestamos/Prestar
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Prestar(Prestamo prestamo)
     {
         if (!User.Identity.IsAuthenticated)
@@ -116,7 +119,7 @@ public class PrestamosController : Controller
     }
 
     // GET MisPrestamos
-    [Authorize]
+    [Authorize(Roles = "Usuario")]
     public IActionResult MisPrestamos()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -130,6 +133,15 @@ public class PrestamosController : Controller
         return View(prestamos);
     }
 
+    [Authorize(Roles = "Admin")]
+    public IActionResult Todos()
+    {
+        var prestamos = _context.Prestamos
+            .Include(p => p.Libro)
+            .OrderByDescending(p => p.FechaPrestamo)
+            .ToList();
 
+        return View(prestamos);
+    }
 }
 

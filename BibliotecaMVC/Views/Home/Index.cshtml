@@ -2,11 +2,17 @@
 
 <h2>Lista de Libros</h2>
 
-<a class="btn btn-success" href="/Libros/Create">Agregar Libro</a>
-<a class="btn btn-secondary" href="/Autores/Create">Agregar Autor</a>
-<a class="btn btn-warning" asp-controller="Prestamos" asp-action="Index">
-    Préstamos Activos
-</a>
+@if (User.IsInRole("Admin"))
+{
+    <a class="btn btn-success" href="/Libros/Create">Agregar Libro</a>
+    <a class="btn btn-secondary" href="/Autores/Create">Agregar Autor</a>
+}
+@if (User.Identity?.IsAuthenticated ?? false)
+{
+    <a class="btn btn-warning" asp-controller="Prestamos" asp-action="Index">
+        Préstamos Activos
+    </a>
+}
 
 <br />
 <br />
@@ -26,18 +32,21 @@
                 <td>@libro.Titulo</td>
                 <td>@libro.Autor.Nombre</td>
                 <td>@libro.Stock
-                @if (libro.Stock > 0)
+                @if (User.Identity?.IsAuthenticated ?? false)
                 {
-                    <a class="btn btn-info btn-sm"
-                       asp-controller="Libros"
-                       asp-action="Prestar"
-                       asp-route-id="@libro.ID">
-                        Prestar
-                    </a>
-                }
-                else
-                {
-                    <span class="text-danger">Sin stock</span>
+                    @if (libro.Stock > 0)
+                    {
+                        <a class="btn btn-info btn-sm"
+                           asp-controller="Libros"
+                           asp-action="Prestar"
+                           asp-route-id="@libro.ID">
+                            Prestar
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="text-danger">Sin stock</span>
+                    }
                 }
                 </td>
             </tr>

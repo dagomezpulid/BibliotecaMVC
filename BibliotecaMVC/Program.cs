@@ -11,6 +11,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<BibliotecaContext>();
 
 builder.Services.AddControllersWithViews();
@@ -18,6 +19,23 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    string[] roles = { "Admin", "Usuario" };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

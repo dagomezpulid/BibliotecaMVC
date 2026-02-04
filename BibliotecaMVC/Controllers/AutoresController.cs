@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BibliotecaMVC.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class AutoresController : Controller
     {
         private readonly BibliotecaContext _context;

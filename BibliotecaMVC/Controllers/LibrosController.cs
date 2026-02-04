@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Controllers
 {
-    [Authorize]
     public class LibrosController : Controller
     {
         private readonly BibliotecaContext _context;
@@ -16,7 +15,7 @@ namespace BibliotecaMVC.Controllers
         {
             _context = context;
         }
-
+        [Authorize]
         // GET: Libros
         public IActionResult Index()
         {
@@ -26,7 +25,7 @@ namespace BibliotecaMVC.Controllers
 
             return View(libros);
         }
-
+        [Authorize(Roles = "Admin")]
         // GET: Libros/Create
         public IActionResult Create()
         {
@@ -35,6 +34,7 @@ namespace BibliotecaMVC.Controllers
         }
 
         // POST: Libros/Create
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Libro libro)
@@ -59,6 +59,7 @@ namespace BibliotecaMVC.Controllers
         }
 
         // GET Libros/Prestamo
+        [Authorize(Roles = "Usuario")]
         public IActionResult Prestar(int id)
         {
             var libro = _context.Libros.Find(id);
@@ -79,6 +80,7 @@ namespace BibliotecaMVC.Controllers
         // POST Libros/Prestamo
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Usuario")]
         public IActionResult Prestar(Prestamo prestamo)
         {
             var libro = _context.Libros.Find(prestamo.LibroID);

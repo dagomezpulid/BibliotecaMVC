@@ -27,31 +27,40 @@
                                 Home
                             </a>
                         </li>
+                        @if (User.IsInRole("Usuario"))
+                        {
+                            <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Prestamos" asp-action="Index">
+                                        Préstamos
+                                    </a>
+                            </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Prestamos" asp-action="Index">
-                                Préstamos
-                            </a>
-                        </li>
+                            <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Prestamos" asp-action="Historial">
+                                        Historial
+                                    </a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Libros" asp-action="Create">
+                                        Agregar Libro
+                                </a>
+                            </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Prestamos" asp-action="Historial">
-                                Historial
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Libros" asp-action="Create">
-                                Agregar Libro
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Autores" asp-action="Create">
-                                Agregar Autor
-                            </a>
-                        </li>
-                    </ul>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Autores" asp-action="Create">
+                                        Agregar Autor
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Prestamos" asp-action="Todos">
+                                    Todos los Préstamos
+                                </a>
+                            </li>
+                        }
+                        </ul>
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
@@ -63,7 +72,7 @@
                             <li class="nav-item">
                                 <form class="d-inline" asp-area="Identity" asp-page="/Account/Logout" method="post">
                                     <button type="submit" class="btn btn-link nav-link text-dark">
-                                        Logout
+                                        Cerrar sesión
                                     </button>
                                 </form>
                             </li>
@@ -74,14 +83,14 @@
                                 <a class="nav-link text-dark"
                                    asp-area="Identity"
                                    asp-page="/Account/Login">
-                                    Login
+                                    Iniciar sesión
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link text-dark"
                                    asp-area="Identity"
                                    asp-page="/Account/Register">
-                                    Register
+                                    Registrate
                                 </a>
                             </li>
                         }

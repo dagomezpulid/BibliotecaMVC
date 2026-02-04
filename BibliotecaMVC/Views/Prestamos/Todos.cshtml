@@ -1,0 +1,47 @@
+﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
+
+<h2>Todos los Préstamos (Administrador)</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Libro</th>
+            <th>Usuario</th>
+            <th>Fecha Préstamo</th>
+            <th>Fecha Devolución</th>
+            <th>Devuelto</th>
+            <th>Multa</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Libro.Titulo</td>
+                <td>@p.UsuarioId</td>
+                <td>@p.FechaPrestamo.ToShortDateString()</td>
+                <td>@p.FechaDevolucion?.ToShortDateString()</td>
+                <td>
+                    @if (p.Devuelto)
+                    {
+                        <span class="badge bg-success">Sí</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">No</span>
+                    }
+                </td>
+                <td>
+                    @if (p.Multa > 0)
+                    {
+                        <span class="text-danger">$@p.Multa</span>
+                    }
+                    else
+                    {
+                        <span>$0</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
