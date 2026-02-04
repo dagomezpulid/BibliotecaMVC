@@ -25,6 +25,12 @@ namespace BibliotecaMVC.Models
             modelBuilder.Entity<Prestamo>()
                 .Property(p => p.Multa)
                 .HasPrecision(10, 2);
+
+            modelBuilder.Entity<Prestamo>()
+                .HasOne(p => p.Usuario)
+                .WithMany()
+                .HasForeignKey(p => p.UsuarioId);
+
         }
     }
 }

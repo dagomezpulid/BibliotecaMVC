@@ -59,10 +59,11 @@ namespace BibliotecaMVC.Controllers
         }
 
         // GET Libros/Prestamo
-        [Authorize(Roles = "Usuario")]
+        [Authorize]
         public IActionResult Prestar(int id)
         {
             var libro = _context.Libros.Find(id);
+
 
             if (libro == null)
                 return NotFound();

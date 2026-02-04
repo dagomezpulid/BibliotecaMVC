@@ -18,7 +18,16 @@
         {
             <tr>
                 <td>@p.Libro.Titulo</td>
-                <td>@p.UsuarioId</td>
+                <td>
+                    @if (p.Usuario != null)
+                    {
+                        @p.Usuario.Email
+                    }
+                    else
+                    {
+                        <span class="text-muted">Sin usuario</span>
+                    }
+                </td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>@p.FechaDevolucion?.ToShortDateString()</td>
                 <td>

@@ -71,7 +71,7 @@ public class PrestamosController : Controller
     }
 
     // GET: Prestamos/Historial
-    [Authorize(Roles = "Usuario")]
+    [Authorize]
     public IActionResult Historial()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -112,9 +112,22 @@ public class PrestamosController : Controller
 
         libro.Stock--;
 
+        var tieneMulta = _context.Prestamos.Any(p =>
+            p.UsuarioId == usuarioId &&
+            !p.Devuelto &&
+            p.Multa > 0
+        );
+
+        if (tieneMulta)
+        {
+            TempData["Error"] = "No puedes realizar préstamos mientras tengas multas pendientes.";
+            return RedirectToAction("Index", "Libros");
+        }
+
         _context.Prestamos.Add(prestamo);
         await _context.SaveChangesAsync();
 
+        TempData["Success"] = "Préstamo realizado correctamente.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -138,6 +151,7 @@ public class PrestamosController : Controller
     {
         var prestamos = _context.Prestamos
             .Include(p => p.Libro)
+            .Include(p => p.Usuario)
             .OrderByDescending(p => p.FechaPrestamo)
             .ToList();
 
