@@ -17,6 +17,7 @@
             <th>Libro</th>
             <th>Solicitante</th>
             <th>Fecha Préstamo</th>
+            <th>Estado</th>
             <th>Acción</th>
         </tr>
     </thead>
@@ -27,6 +28,20 @@
                 <td>@p.Libro.Titulo</td>
                 <td>@p.NombreSolicitante</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
+                <td>
+                    @if (p.Multa > 0)
+                    {
+                        <span class="badge bg-danger">Multa</span>
+                    }
+                    else if (p.Devuelto)
+                    {
+                        <span class="badge bg-success">Devuelto</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Activo</span>
+                    }
+                </td>
                 <td>
                     <button class="btn btn-success btn-sm"
                             data-bs-toggle="modal"

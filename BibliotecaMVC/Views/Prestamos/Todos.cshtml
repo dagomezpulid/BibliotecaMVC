@@ -11,6 +11,7 @@
             <th>Fecha Devolución</th>
             <th>Devuelto</th>
             <th>Multa</th>
+            <th>Estado</th>
         </tr>
     </thead>
     <tbody>
@@ -48,6 +49,20 @@
                     else
                     {
                         <span>$0</span>
+                    }
+                </td>
+                <td>
+                    @if (p.Multa > 0)
+                    {
+                        <span class="badge bg-danger">Multa</span>
+                    }
+                    else if (p.Devuelto)
+                    {
+                        <span class="badge bg-success">Devuelto</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Activo</span>
                     }
                 </td>
             </tr>

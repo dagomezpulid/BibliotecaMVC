@@ -77,34 +77,6 @@ namespace BibliotecaMVC.Controllers
             ViewBag.LibroTitulo = libro.Titulo;
             return View(new Prestamo { LibroID = id });
         }
-
-        // POST Libros/Prestamo
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Usuario")]
-        public IActionResult Prestar(Prestamo prestamo)
-        {
-            var libro = _context.Libros.Find(prestamo.LibroID);
-
-            if (libro == null)
-                return NotFound();
-
-            if (libro.Stock <= 0)
-            {
-                ModelState.AddModelError("", "No hay stock disponible.");
-                ViewBag.LibroTitulo = libro.Titulo;
-                return View(prestamo);
-            }
-
-            libro.Stock -= 1;
-            prestamo.FechaPrestamo = DateTime.Now;
-
-            _context.Prestamos.Add(prestamo);
-            _context.Libros.Update(libro);
-            _context.SaveChanges();
-
-            return RedirectToAction("Index", "Home");
-        }
     }
 }
 

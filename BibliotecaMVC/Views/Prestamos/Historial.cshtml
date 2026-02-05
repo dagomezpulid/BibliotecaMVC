@@ -12,6 +12,7 @@
             <th>Devuelto</th>
             <th>Días Retraso</th>
             <th>Multa</th>
+            <th>Estado</th>
         </tr>
     </thead>
     <tbody>
@@ -22,12 +23,11 @@
                 <td>@p.NombreSolicitante</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
-
                 <td>
                     <span class="badge bg-success">Sí</span>
                 </td>
-
                 <td>
+                    
                     @if (p.DiasRetraso > 0)
                     {
                         <span class="text-danger">@p.DiasRetraso</span>
@@ -37,7 +37,6 @@
                         <span>0</span>
                     }
                 </td>
-
                 <td>
                     @if (p.Multa.HasValue && p.Multa > 0)
                     {
@@ -48,6 +47,20 @@
                     else
                     {
                         <span>$0</span>
+                    }
+                </td>
+                <td>
+                    @if (p.Multa > 0)
+                    {
+                        <span class="badge bg-danger">Multa</span>
+                    }
+                    else if (p.Devuelto)
+                    {
+                        <span class="badge bg-success">Devuelto</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Activo</span>
                     }
                 </td>
             </tr>
