@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Authorization;
 public class PrestamosController : Controller
 {
     private readonly BibliotecaContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public PrestamosController(
         BibliotecaContext context,
-        UserManager<IdentityUser> userManager)
+        UserManager<ApplicationUser> userManager)
     {
         _context = context;
         _userManager = userManager;
@@ -140,10 +140,9 @@ public class PrestamosController : Controller
 
         var prestamos = _context.Prestamos
             .Include(p => p.Libro)
-            .Where(p => p.UsuarioId == usuarioId)
+            .Include(p => p.Usuario)
             .OrderByDescending(p => p.FechaPrestamo)
             .ToList();
-
         return View(prestamos);
     }
 

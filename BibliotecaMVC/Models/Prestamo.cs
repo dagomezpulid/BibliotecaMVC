@@ -14,11 +14,6 @@ namespace BibliotecaMVC.Models
 
         public Libro? Libro { get; set; }
 
-        [Required]
-        [Display(Name = "Nombre del solicitante")]
-        [StringLength(150)]
-        public string NombreSolicitante { get; set; } = string.Empty;
-
         [Display(Name = "Fecha de préstamo")]
         public DateTime FechaPrestamo { get; set; } = DateTime.Now;
 
@@ -35,7 +30,7 @@ namespace BibliotecaMVC.Models
 
         public string? UsuarioId { get; set; }
 
-        public IdentityUser? Usuario { get; set; }
+        public ApplicationUser? Usuario { get; set; }
 
         public bool TieneMulta => Multa.HasValue && Multa > 0;
 
