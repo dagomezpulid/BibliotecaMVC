@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BibliotecaMVC.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialWithIdentity : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,6 +30,8 @@ namespace BibliotecaMVC.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Apellido = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -54,13 +56,13 @@ namespace BibliotecaMVC.Migrations
                 name: "Autores",
                 columns: table => new
                 {
-                    AutorID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombre = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Nombre = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Autores", x => x.AutorID);
+                    table.PrimaryKey("PK_Autores", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -173,20 +175,20 @@ namespace BibliotecaMVC.Migrations
                 name: "Libros",
                 columns: table => new
                 {
-                    ID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Titulo = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AutorID = table.Column<int>(type: "int", nullable: false),
+                    Titulo = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    AutorId = table.Column<int>(type: "int", nullable: false),
                     Stock = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Libros", x => x.ID);
+                    table.PrimaryKey("PK_Libros", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Libros_Autores_AutorID",
-                        column: x => x.AutorID,
+                        name: "FK_Libros_Autores_AutorId",
+                        column: x => x.AutorId,
                         principalTable: "Autores",
-                        principalColumn: "AutorID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -194,10 +196,9 @@ namespace BibliotecaMVC.Migrations
                 name: "Prestamos",
                 columns: table => new
                 {
-                    PrestamoID = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    LibroID = table.Column<int>(type: "int", nullable: false),
-                    NombreSolicitante = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LibroId = table.Column<int>(type: "int", nullable: false),
                     FechaPrestamo = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaDevolucion = table.Column<DateTime>(type: "datetime2", nullable: true),
                     FechaDevolucionReal = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -208,17 +209,17 @@ namespace BibliotecaMVC.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Prestamos", x => x.PrestamoID);
+                    table.PrimaryKey("PK_Prestamos", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Prestamos_AspNetUsers_UsuarioId",
                         column: x => x.UsuarioId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Prestamos_Libros_LibroID",
-                        column: x => x.LibroID,
+                        name: "FK_Prestamos_Libros_LibroId",
+                        column: x => x.LibroId,
                         principalTable: "Libros",
-                        principalColumn: "ID",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -262,14 +263,14 @@ namespace BibliotecaMVC.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Libros_AutorID",
+                name: "IX_Libros_AutorId",
                 table: "Libros",
-                column: "AutorID");
+                column: "AutorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Prestamos_LibroID",
+                name: "IX_Prestamos_LibroId",
                 table: "Prestamos",
-                column: "LibroID");
+                column: "LibroId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Prestamos_UsuarioId",

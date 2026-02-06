@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Models
 {
-    public class BibliotecaContext : IdentityDbContext
+    public class BibliotecaContext : IdentityDbContext<ApplicationUser>
     {
         public BibliotecaContext(DbContextOptions<BibliotecaContext> options)
             : base(options)
