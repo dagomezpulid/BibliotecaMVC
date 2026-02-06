@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace BibliotecaMVC.Controllers
 {
     [Authorize(Roles = "Admin")]
@@ -15,25 +14,23 @@ namespace BibliotecaMVC.Controllers
             _context = context;
         }
 
-        // GET: Autores/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Autores/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Autor autor)
+        public async Task<IActionResult> Create(Autor autor)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Autores.Add(autor);
-                _context.SaveChanges();
-                return RedirectToAction("Index", "Home");
-            }
+            if (!ModelState.IsValid)
+                return View(autor);
 
-            return View(autor);
+            _context.Autores.Add(autor);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }
+

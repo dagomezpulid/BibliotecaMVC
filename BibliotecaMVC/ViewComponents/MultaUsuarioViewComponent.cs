@@ -27,9 +27,8 @@ namespace BibliotecaMVC.ViewComponents
             bool tieneMulta = _context.Prestamos.Any(p =>
                 p.UsuarioId == userId &&
                 !p.Devuelto &&
-                p.Multa > 0
+                (p.Multa ?? 0) > 0
             );
-
             return View(tieneMulta);
         }
     }

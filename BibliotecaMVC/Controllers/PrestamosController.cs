@@ -12,14 +12,14 @@ public class PrestamosController : Controller
     private readonly UserManager<IdentityUser> _userManager;
 
     public PrestamosController(
-    BibliotecaContext context,
-    UserManager<IdentityUser> userManager)
+        BibliotecaContext context,
+        UserManager<IdentityUser> userManager)
     {
         _context = context;
         _userManager = userManager;
     }
 
-    // GET: Prestamos
+    // 📚 Préstamos activos
     public IActionResult Index()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -32,46 +32,7 @@ public class PrestamosController : Controller
         return View(prestamos);
     }
 
-    // POST: Prestamos/Devolver
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Usuario")]
-    public IActionResult Devolver(int id)
-    {
-        var prestamo = _context.Prestamos
-            .Include(p => p.Libro)
-            .FirstOrDefault(p => p.PrestamoID == id);
-
-        if (prestamo == null || prestamo.Devuelto)
-            return NotFound();
-
-        prestamo.Devuelto = true;
-        prestamo.FechaDevolucionReal = DateTime.Now;
-
-        if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucion)
-        {
-            var fechaLimite = prestamo.FechaDevolucion.Value.Date;
-            var fechaReal = prestamo.FechaDevolucionReal.Value.Date;
-
-            prestamo.DiasRetraso = (fechaReal - fechaLimite).Days;
-
-            const decimal valorPorDia = 2000;
-            prestamo.Multa = prestamo.DiasRetraso * valorPorDia;
-        }
-        else
-        {
-            prestamo.DiasRetraso = 0;
-            prestamo.Multa = 0;
-        }
-
-        prestamo.Libro.Stock += 1;
-        _context.SaveChanges();
-
-        return RedirectToAction(nameof(Index));
-    }
-
-    // GET: Prestamos/Historial
-    [Authorize]
+    // 📚 Historial
     public IActionResult Historial()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -85,38 +46,69 @@ public class PrestamosController : Controller
         return View(historial);
     }
 
-    // POST: Prestamos/Prestar
+    // 📚 Devolver libro
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Usuario")]
+    public IActionResult Devolver(int id)
+    {
+        var prestamo = _context.Prestamos
+            .Include(p => p.Libro)
+            .FirstOrDefault(p => p.Id == id);
+
+        if (prestamo == null || prestamo.Devuelto)
+            return NotFound();
+
+        prestamo.Devuelto = true;
+        prestamo.FechaDevolucionReal = DateTime.Now;
+
+        if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucion)
+        {
+            var fechaLimite = prestamo.FechaDevolucion!.Value.Date;
+            var fechaReal = prestamo.FechaDevolucionReal.Value.Date;
+
+            prestamo.DiasRetraso = (fechaReal - fechaLimite).Days;
+
+            const decimal valorPorDia = 2000;
+            prestamo.Multa = prestamo.DiasRetraso * valorPorDia;
+        }
+        else
+        {
+            prestamo.DiasRetraso = 0;
+            prestamo.Multa = 0;
+        }
+
+        prestamo.Libro.Stock++;
+
+        _context.SaveChanges();
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    // 📚 Crear préstamo
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Prestar(Prestamo prestamo)
     {
-        if (!User.Identity.IsAuthenticated)
-            return Unauthorized("Usuario no autenticado");
+        if (!User.Identity!.IsAuthenticated)
+            return Unauthorized();
 
         var usuarioId = _userManager.GetUserId(User);
 
         if (string.IsNullOrEmpty(usuarioId))
             return BadRequest("UsuarioId no encontrado");
 
-        prestamo.UsuarioId = usuarioId;
-        prestamo.FechaPrestamo = DateTime.Now;
-        prestamo.Devuelto = false;
-        prestamo.DiasRetraso = 0;
-        prestamo.Multa = 0;
-
-        var libro = await _context.Libros.FindAsync(prestamo.LibroID);
+        var libro = await _context.Libros.FindAsync(prestamo.LibroId);
 
         if (libro == null || libro.Stock <= 0)
             return BadRequest("Libro no disponible");
 
-        libro.Stock--;
-
+        // 🔒 Validar multa antes
         var tieneMulta = _context.Prestamos.Any(p =>
             p.UsuarioId == usuarioId &&
             !p.Devuelto &&
-            p.Multa > 0
-        );
+            p.Multa > 0);
 
         if (tieneMulta)
         {
@@ -124,14 +116,23 @@ public class PrestamosController : Controller
             return RedirectToAction("Index", "Libros");
         }
 
+        prestamo.UsuarioId = usuarioId;
+        prestamo.FechaPrestamo = DateTime.Now;
+        prestamo.Devuelto = false;
+        prestamo.DiasRetraso = 0;
+        prestamo.Multa = 0;
+
+        libro.Stock--;
+
         _context.Prestamos.Add(prestamo);
         await _context.SaveChangesAsync();
 
         TempData["Success"] = "Préstamo realizado correctamente.";
+
         return RedirectToAction(nameof(Index));
     }
 
-    // GET MisPrestamos
+    // 📚 Mis préstamos (redundante pero útil)
     [Authorize(Roles = "Usuario")]
     public IActionResult MisPrestamos()
     {
@@ -146,6 +147,7 @@ public class PrestamosController : Controller
         return View(prestamos);
     }
 
+    // 📚 Vista admin
     [Authorize(Roles = "Admin")]
     public IActionResult Todos()
     {
@@ -158,4 +160,5 @@ public class PrestamosController : Controller
         return View(prestamos);
     }
 }
+
 

@@ -1,4 +1,4 @@
-﻿    @model IEnumerable<BibliotecaMVC.Models.Prestamo>
+﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
 
 <h2>Préstamos Activos</h2>
 
@@ -29,7 +29,7 @@
                 <td>@p.NombreSolicitante</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>
-                    @if (p.Multa > 0)
+                    @if ((p.Multa ?? 0) > 0)
                     {
                         <span class="badge bg-danger">Multa</span>
                     }
@@ -46,7 +46,7 @@
                     <button class="btn btn-success btn-sm"
                             data-bs-toggle="modal"
                             data-bs-target="#modalDevolver"
-                            data-id="@p.PrestamoID"
+                            data-id="@p.Id"
                             data-libro="@p.Libro.Titulo">
                         Devolver
                     </button>

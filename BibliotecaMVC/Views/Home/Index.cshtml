@@ -30,8 +30,9 @@
         {
             <tr>
                 <td>@libro.Titulo</td>
-                <td>@libro.Autor.Nombre</td>
-                <td>@libro.Stock
+                <td>@libro.Autor?.Nombre</td>
+                <td>@libro.Stock</td>
+                <td>
                 @if (User.Identity?.IsAuthenticated ?? false)
                 {
                     @if (libro.Stock > 0)
@@ -39,7 +40,7 @@
                         <a class="btn btn-info btn-sm"
                            asp-controller="Libros"
                            asp-action="Prestar"
-                           asp-route-id="@libro.ID">
+                           asp-route-id="@libro.Id">
                             Prestar
                         </a>
                     }

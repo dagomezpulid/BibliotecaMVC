@@ -1,11 +1,12 @@
-﻿    @model BibliotecaMVC.Models.Prestamo
+﻿@model BibliotecaMVC.Models.Prestamo
 
     <h2>Prestar Libro</h2>
 
     <p><strong>Libro:</strong> @ViewBag.LibroTitulo</p>
 
     <form asp-controller="Prestamos" asp-action="Prestar" method="post">
-        <input type="hidden" asp-for="LibroID" />
+    @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="LibroId" />
 
         <div class="form-group">
             <label asp-for="NombreSolicitante"></label>

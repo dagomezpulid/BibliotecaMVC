@@ -52,7 +52,7 @@
                     }
                 </td>
                 <td>
-                    @if (p.Multa > 0)
+                    @if ((p.Multa ?? 0) > 0)
                     {
                         <span class="badge bg-danger">Multa</span>
                     }

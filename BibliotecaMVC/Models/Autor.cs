@@ -4,14 +4,13 @@ namespace BibliotecaMVC.Models
 {
     public class Autor
     {
-        [Key]
-        public int AutorID { get; set; }
+        public int Id { get; set; }
 
-        [Required]
-        public string Nombre { get; set; }
+        [Required(ErrorMessage = "El nombre del autor es obligatorio")]
+        [StringLength(150)]
+        public string Nombre { get; set; } = string.Empty;
 
-        public ICollection<Libro>? Libros { get; set; }
+        public ICollection<Libro> Libros { get; set; } = new List<Libro>();
     }
-
 }
 

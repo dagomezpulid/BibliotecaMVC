@@ -24,10 +24,16 @@
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
                 <td>
-                    <span class="badge bg-success">Sí</span>
+                    @if (p.Devuelto)
+                    {
+                        <span class="badge bg-success">Sí</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">No</span>
+                    }
                 </td>
                 <td>
-                    
                     @if (p.DiasRetraso > 0)
                     {
                         <span class="text-danger">@p.DiasRetraso</span>
@@ -50,7 +56,7 @@
                     }
                 </td>
                 <td>
-                    @if (p.Multa > 0)
+                    @if ((p.Multa ?? 0) > 0)
                     {
                         <span class="badge bg-danger">Multa</span>
                     }

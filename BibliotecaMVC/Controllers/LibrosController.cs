@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace BibliotecaMVC.Controllers
 {
     public class LibrosController : Controller
@@ -15,8 +14,8 @@ namespace BibliotecaMVC.Controllers
         {
             _context = context;
         }
+
         [Authorize]
-        // GET: Libros
         public IActionResult Index()
         {
             var libros = _context.Libros
@@ -25,30 +24,27 @@ namespace BibliotecaMVC.Controllers
 
             return View(libros);
         }
+
         [Authorize(Roles = "Admin")]
-        // GET: Libros/Create
         public IActionResult Create()
         {
-            ViewBag.Autores = new SelectList(_context.Autores, "AutorID", "Nombre");
+            ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre");
             return View();
         }
 
-        // POST: Libros/Create
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create(Libro libro)
         {
-
             if (!ModelState.IsValid)
             {
+                ViewBag.Autores = new SelectList(
+                    _context.Autores,
+                    "AutorID",
+                    "Nombre",
+                    libro.AutorId);
 
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine(error.ErrorMessage);
-                }
-
-                ViewBag.Autores = new SelectList(_context.Autores, "AutorID", "Nombre", libro.AutorID);
                 return View(libro);
             }
 
@@ -58,12 +54,10 @@ namespace BibliotecaMVC.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // GET Libros/Prestamo
         [Authorize]
         public IActionResult Prestar(int id)
         {
             var libro = _context.Libros.Find(id);
-
 
             if (libro == null)
                 return NotFound();
@@ -75,8 +69,11 @@ namespace BibliotecaMVC.Controllers
             }
 
             ViewBag.LibroTitulo = libro.Titulo;
-            return View(new Prestamo { LibroID = id });
+
+            return View(new Prestamo
+            {
+                LibroId = id
+            });
         }
     }
 }
-
