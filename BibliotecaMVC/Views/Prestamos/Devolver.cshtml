@@ -3,7 +3,8 @@
 <h2>Devolver Libro</h2>
 
 <p><strong>Libro:</strong> @Model.Libro.Titulo</p>
-<p><strong>Solicitante:</strong> @Model.NombreSolicitante</p>
+<p>
+    <strong>Solicitante:</strong> @Model.Usuario?.NombreCompleto</p>
 
 <form asp-action="Devolver" method="post">
     <input type="hidden" name="id" value="@Model.Id" />

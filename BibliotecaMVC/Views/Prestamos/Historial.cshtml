@@ -20,7 +20,7 @@
         {
             <tr>
                 <td>@p.Libro.Titulo</td>
-                <td>@p.NombreSolicitante</td>
+                <td>@p.Usuario?.NombreCompleto</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
                 <td>
