@@ -7,11 +7,11 @@ namespace BibliotecaMVC.ViewComponents
     public class MultaUsuarioViewComponent : ViewComponent
     {
         private readonly BibliotecaContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public MultaUsuarioViewComponent(
             BibliotecaContext context,
-            UserManager<IdentityUser> userManager)
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;

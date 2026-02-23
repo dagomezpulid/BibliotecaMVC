@@ -45,10 +45,12 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
             public string Email { get; set; } = string.Empty;
 
             [Required]
+            [Display(Name = "Contraseña")]
             [StringLength(100, MinimumLength = 6)]
             [DataType(DataType.Password)]
             public string Password { get; set; } = string.Empty;
 
+            [Display(Name = "Confirmar contraseña")]
             [DataType(DataType.Password)]
             [Compare("Password")]
             public string ConfirmPassword { get; set; } = string.Empty;
