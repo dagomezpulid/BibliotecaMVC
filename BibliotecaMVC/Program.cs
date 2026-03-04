@@ -10,6 +10,11 @@ builder.Services.AddDbContext<BibliotecaContext>(options =>
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<BibliotecaContext>();
@@ -34,6 +39,33 @@ using (var scope = app.Services.CreateScope())
         {
             await roleManager.CreateAsync(new IdentityRole(role));
         }
+    }
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+    string[] roles = { "Admin", "Usuario" };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // Crear Admin por defecto
+    var adminEmail = "gomafly24@hotmail.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
+    {
+        await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }
 

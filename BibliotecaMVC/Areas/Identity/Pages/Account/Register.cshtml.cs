@@ -75,26 +75,19 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
 
             var result = await _userManager.CreateAsync(user, Input.Password);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                if (!await _roleManager.RoleExistsAsync("Usuario"))
+                foreach (var error in result.Errors)
                 {
-                    await _roleManager.CreateAsync(new IdentityRole("Usuario"));
+                    ModelState.AddModelError(string.Empty, error.Description);
+                    Console.WriteLine(error.Description);
                 }
-
-                await _userManager.AddToRoleAsync(user, "Usuario");
-
-                _logger.LogInformation("Usuario creado correctamente.");
-
-                await _signInManager.SignInAsync(user, false);
-
-                return RedirectToPage("/Index");
             }
 
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
-            return Page();
+            return RedirectToAction("Index", "Home");
         }
     }
 }

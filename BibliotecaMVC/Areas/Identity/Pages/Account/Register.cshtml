@@ -1,44 +1,45 @@
 ﻿@page
 @model BibliotecaMVC.Areas.Identity.Pages.Account.RegisterModel
 
-<h1>Registro</h1>
+<div class="container mt-5" style="max-width: 500px;">
+    <h2 class="text-center mb-4">Crear Cuenta</h2>
 
-<form method="post">
+    <form method="post">
 
-    <div class="form-group">
-        <label asp-for="Input.Nombre"></label>
-        <input asp-for="Input.Nombre" class="form-control" />
-        <span asp-validation-for="Input.Nombre" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Input.Nombre"></label>
+            <input asp-for="Input.Nombre" class="form-control" placeholder="Nombre" />
+            <span asp-validation-for="Input.Nombre" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="Input.Apellido"></label>
-        <input asp-for="Input.Apellido" class="form-control" />
-        <span asp-validation-for="Input.Apellido" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Input.Apellido"></label>
+            <input asp-for="Input.Apellido" class="form-control" placeholder="Apellido" />
+            <span asp-validation-for="Input.Apellido" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="Input.Email"></label>
-        <input asp-for="Input.Email" class="form-control" />
-        <span asp-validation-for="Input.Email" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Input.Email"></label>
+            <input asp-for="Input.Email" class="form-control" placeholder="correo@ejemplo.com" />
+            <span asp-validation-for="Input.Email" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="Input.Password"></label>
-        <input asp-for="Input.Password" class="form-control" />
-        <span asp-validation-for="Input.Password" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Input.Password"></label>
+            <input asp-for="Input.Password" class="form-control" placeholder="Contraseña" />
+            <span asp-validation-for="Input.Password" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="Input.ConfirmPassword"></label>
-        <input asp-for="Input.ConfirmPassword" class="form-control" />
-        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-    </div>
+        <div class="mb-4">
+            <label asp-for="Input.ConfirmPassword"></label>
+            <input asp-for="Input.ConfirmPassword" class="form-control" placeholder="Confirmar contraseña" />
+            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+        </div>
 
-    <br />
+        <button type="submit" class="btn btn-primary w-100">Registrarse</button>
 
-    <button type="submit" class="btn btn-primary">Registrarse</button>
-</form>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

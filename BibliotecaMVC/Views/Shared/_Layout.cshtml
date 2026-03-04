@@ -73,11 +73,18 @@
                         }
                     </ul>
                     <ul class="navbar-nav">
+
+                        @{
+                            var usuarioActual = await UserManager.GetUserAsync(User);
+                        }
+
                         @if (User.Identity?.IsAuthenticated == true)
                         {
+                            
+
                             <li class="nav-item">
-                                <span class="nav-link text-dark">
-                                    Hola, @User.Identity.Name
+                                <span class="nav-link text-primary fw-semibold">
+                                    👤 @usuarioActual?.NombreCompleto
                                 </span>
                             </li>
 
