@@ -14,6 +14,7 @@ namespace BibliotecaMVC.Models
         public DbSet<Autor> Autores { get; set; }
         public DbSet<Libro> Libros { get; set; }
         public DbSet<Prestamo> Prestamos { get; set; }
+        public DbSet<Multa> Multas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,7 +31,10 @@ namespace BibliotecaMVC.Models
                 .HasOne(p => p.Usuario)
                 .WithMany()
                 .HasForeignKey(p => p.UsuarioId);
-
+            modelBuilder.Entity<Multa>()
+                .HasOne(m => m.Prestamo)
+                .WithOne(p => p.Multas)
+                .HasForeignKey<Multa>(m => m.PrestamoId);
         }
     }
 }

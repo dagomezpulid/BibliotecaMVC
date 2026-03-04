@@ -35,5 +35,10 @@ namespace BibliotecaMVC.Models
         public bool TieneMulta => Multa.HasValue && Multa > 0;
 
         public bool EstaActivo => !Devuelto;
+
+        public Multa? Multas { get; set; }
+
+        public DateTime FechaDevolucionProgramada { get; set; }
+        public string Estado { get; set; } = "Activo";
     }
 }

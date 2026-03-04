@@ -56,26 +56,31 @@ public class PrestamosController : Controller
             .Include(p => p.Libro)
             .FirstOrDefault(p => p.Id == id);
 
-        if (prestamo == null || prestamo.Devuelto)
+        if (prestamo == null)
             return NotFound();
 
         prestamo.Devuelto = true;
         prestamo.FechaDevolucionReal = DateTime.Now;
+        prestamo.Estado = "Devuelto";
 
-        if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucion)
+        if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucionProgramada)
         {
-            var fechaLimite = prestamo.FechaDevolucion!.Value.Date;
-            var fechaReal = prestamo.FechaDevolucionReal.Value.Date;
+            var diasMora =
+                (prestamo.FechaDevolucionReal.Value -
+                 prestamo.FechaDevolucionProgramada).Days;
 
-            prestamo.DiasRetraso = (fechaReal - fechaLimite).Days;
+            decimal valorPorDia = 1000; // luego lo hacemos configurable
+            decimal totalMulta = diasMora * valorPorDia;
 
-            const decimal valorPorDia = 2000;
-            prestamo.Multa = prestamo.DiasRetraso * valorPorDia;
-        }
-        else
-        {
-            prestamo.DiasRetraso = 0;
-            prestamo.Multa = 0;
+            var multa = new Multa
+            {
+                PrestamoId = prestamo.Id,
+                Monto = totalMulta,
+                Pagada = false,
+                FechaGenerada = DateTime.Now
+            };
+
+            _context.Multas.Add(multa);
         }
 
         prestamo.Libro.Stock++;

@@ -37,24 +37,30 @@ public class AdminController : Controller
 
     public async Task<IActionResult> Usuarios()
     {
-        var usuarios = await _userManager.Users.ToListAsync();
+        var users = _userManager.Users.ToList();
 
-        var model = new List<UserViewModel>();
+        foreach (var user in users)
+        {
+            await ActualizarEstadoBloqueo(user);
+        }
 
-        foreach (var user in usuarios)
+        var viewModel = new List<UserViewModel>();
+
+        foreach (var user in users)
         {
             var roles = await _userManager.GetRolesAsync(user);
 
-            model.Add(new UserViewModel
+            viewModel.Add(new UserViewModel
             {
                 Id = user.Id,
-                NombreCompleto = user.Nombre + " " + user.Apellido,
-                Email = user.Email!,
-                Roles = roles.ToList()
+                NombreCompleto = user.NombreCompleto,
+                Email = user.Email,
+                Roles = roles.ToList(),
+                EstaBloqueado = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now
             });
         }
 
-        return View(model);
+        return View(viewModel);
     }
 
     [HttpPost]
@@ -114,14 +120,73 @@ public class AdminController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Eliminar(string id)
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EliminarUsuario(string id)
     {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null)
+        var usuario = await _userManager.FindByIdAsync(id);
+
+        if (usuario == null)
             return NotFound();
 
-        await _userManager.DeleteAsync(user);
+        if (usuario.Id == _userManager.GetUserId(User))
+        {
+            TempData["Error"] = "No puedes eliminar tu propio usuario.";
+            return RedirectToAction("Usuarios");
+        }
 
-        return RedirectToAction(nameof(Usuarios));
+        if (usuario.Email == "admin@biblioteca.com")
+        {
+            TempData["Error"] = "No se puede eliminar el administrador principal.";
+            return RedirectToAction("Usuarios");
+        }
+
+        var tienePrestamos = _context.Prestamos.Any(p => p.UsuarioId == usuario.Id && !p.Devuelto);
+
+        if (tienePrestamos)
+        {
+            TempData["Error"] = "No se puede eliminar un usuario con préstamos activos.";
+            return RedirectToAction("Usuarios");
+        }
+
+        await _userManager.DeleteAsync(usuario);
+
+        TempData["Success"] = "Usuario eliminado correctamente.";
+        return RedirectToAction("Usuarios");
+    }
+
+    private async Task<bool> DebeEstarBloqueado(ApplicationUser user)
+    {
+        var prestamos = await _context.Prestamos
+            .Where(p => p.UsuarioId == user.Id && !p.Devuelto)
+            .ToListAsync();
+
+        foreach (var prestamo in prestamos)
+        {
+            if (DateTime.Now > prestamo.FechaDevolucion)
+            {
+                var diasMora = (DateTime.Now - prestamo.FechaDevolucion!.Value).Days;
+
+                if (diasMora >= 8)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task ActualizarEstadoBloqueo(ApplicationUser user)
+    {
+        bool bloquear = await DebeEstarBloqueado(user);
+
+        if (bloquear)
+        {
+            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+        }
+        else
+        {
+            user.LockoutEnd = null;
+        }
+
+        await _userManager.UpdateAsync(user);
     }
 }

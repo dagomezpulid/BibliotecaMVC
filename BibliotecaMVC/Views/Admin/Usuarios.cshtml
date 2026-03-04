@@ -7,6 +7,20 @@
     ViewData["Title"] = "Gestión de Usuarios";
 }
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}
+
 <h2 class="mb-4">👥 Gestión de Usuarios</h2>
 
 <table class="table table-striped table-bordered shadow-sm">
@@ -16,6 +30,7 @@
             <th>Email</th>
             <th>Rol</th>
             <th>Acciones</th>
+            <th>Estado</th>
         </tr>
     </thead>
     <tbody>
@@ -53,6 +68,23 @@
                         <button class="btn btn-warning btn-sm" disabled>
                             Quitar Admin
                         </button>
+                    }
+                    <form asp-action="EliminarUsuario" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@user.Id" />
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('¿Seguro que deseas eliminar este usuario?')">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    @if (user.EstaBloqueado)
+                    {
+                        <span class="badge bg-danger">Bloqueado</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Activo</span>
                     }
                 </td>
             </tr>
