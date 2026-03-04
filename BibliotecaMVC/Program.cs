@@ -59,13 +59,42 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // Crear Admin por defecto
-    var adminEmail = "gomafly24@hotmail.com";
+    // 🔹 Crear Admin fijo si no existe
+    string adminEmail = "dgomezpulid@outlook.com";
+    string adminPassword = "Admin_123";
+
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-    if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
+    if (adminUser == null)
     {
-        await userManager.AddToRoleAsync(adminUser, "Admin");
+        var newAdmin = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            Nombre = "Administrador",
+            Apellido = "General"
+        };
+
+        var result = await userManager.CreateAsync(newAdmin, adminPassword);
+
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newAdmin, "Admin");
+        }
+        else
+        {
+            foreach (var error in result.Errors)
+            {
+                Console.WriteLine(error.Description);
+            }
+        }
+    }
+    else
+    {
+        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
     }
 }
 
