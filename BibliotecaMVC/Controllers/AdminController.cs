@@ -34,4 +34,94 @@ public class AdminController : Controller
 
         return View(model);
     }
+
+    public async Task<IActionResult> Usuarios()
+    {
+        var usuarios = await _userManager.Users.ToListAsync();
+
+        var model = new List<UserViewModel>();
+
+        foreach (var user in usuarios)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+
+            model.Add(new UserViewModel
+            {
+                Id = user.Id,
+                NombreCompleto = user.Nombre + " " + user.Apellido,
+                Email = user.Email!,
+                Roles = roles.ToList()
+            });
+        }
+
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> HacerAdmin(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound();
+
+        if (!await _userManager.IsInRoleAsync(user, "Admin"))
+        {
+            await _userManager.AddToRoleAsync(user, "Admin");
+        }
+
+        return RedirectToAction(nameof(Usuarios));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> QuitarAdmin(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound();
+
+        if (await _userManager.IsInRoleAsync(user, "Admin"))
+        {
+            await _userManager.RemoveFromRoleAsync(user, "Admin");
+        }
+
+        return RedirectToAction(nameof(Usuarios));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Bloquear(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound();
+
+        user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+        await _userManager.UpdateAsync(user);
+
+        return RedirectToAction(nameof(Usuarios));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Desbloquear(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound();
+
+        user.LockoutEnd = null;
+        await _userManager.UpdateAsync(user);
+
+        return RedirectToAction(nameof(Usuarios));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Eliminar(string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+            return NotFound();
+
+        await _userManager.DeleteAsync(user);
+
+        return RedirectToAction(nameof(Usuarios));
+    }
 }
