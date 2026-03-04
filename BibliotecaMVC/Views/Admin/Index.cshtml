@@ -1,42 +1,46 @@
-﻿@model List<BibliotecaMVC.Models.ViewModels.UserViewModel>
+﻿@model BibliotecaMVC.Models.ViewModels.AdminDashboardViewModel
 
-<h2>Gestión de Usuarios</h2>
+@{
+    ViewData["Title"] = "Dashboard Administrativo";
+}
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Rol Admin</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-            var isAdmin = User.IsInRole("Admin");
+<h2 class="mb-4">📊 Panel Administrativo</h2>
 
-            <tr>
-                <td>@user.NombreCompleto</td>
-                <td>@user.Email</td>
-                <td>
-                    @if (user.EsAdmin)
-                    {
-                        <span class="badge bg-success">Admin</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Usuario</span>
-                    }
-                </td>
-                <td>
-                    <a asp-action="ToggleAdmin"
-                       asp-route-userId="@user.Id"
-                       class="btn btn-sm btn-warning">
-                        Cambiar Rol
-                    </a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="row g-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <h5>👥 Usuarios</h5>
+            <h2>@Model.TotalUsuarios</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <h5>📚 Libros</h5>
+            <h2>@Model.TotalLibros</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <h5>✍ Autores</h5>
+            <h2>@Model.TotalAutores</h2>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <h5>🔄 Préstamos Activos</h5>
+            <h2>@Model.PrestamosActivos</h2>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 text-center p-3">
+            <h5>💰 Multas Pendientes</h5>
+            <h2>$ @Model.TotalMultasPendientes</h2>
+        </div>
+    </div>
+
+</div>
