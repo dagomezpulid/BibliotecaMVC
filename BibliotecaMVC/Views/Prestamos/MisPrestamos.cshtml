@@ -7,6 +7,7 @@
         <tr>
             <th>Libro</th>
             <th>Fecha préstamo</th>
+            <th>Fecha límite</th>
             <th>Fecha devolución</th>
             <th>Estado</th>
             <th>Multa</th>
@@ -15,15 +16,46 @@
     <tbody>
         @foreach (var p in Model)
         {
+            var devuelto = p.FechaDevolucionReal != null;
+
             <tr>
-                <td>@p.Libro.Titulo</td>
+                <td>@p.Libro?.Titulo</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
-                <td>@p.FechaDevolucion?.ToShortDateString()</td>
+                <td>@p.FechaDevolucionProgramada.ToShortDateString()</td>
+                <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
+
                 <td>
-                    @(p.Devuelto ? "Devuelto" : "Activo")
+                    @if (p.Multa != null && !p.Multa.Pagada)
+                    {
+                        <span class="badge bg-danger">
+                            Multa pendiente
+                        </span>
+                    }
+                    else if (devuelto)
+                    {
+                        <span class="badge bg-success">
+                            Devuelto
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">
+                            Activo
+                        </span>
+                    }
                 </td>
+
                 <td>
-                    @(p.Multa.HasValue ? $"${p.Multa.Value:N0}" : "-")
+                    @if (p.Multa != null)
+                    {
+                        <span class="text-danger">
+                            $@p.Multa.Monto.ToString("N0")
+                        </span>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
                 </td>
             </tr>
         }

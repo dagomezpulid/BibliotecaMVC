@@ -1,6 +1,7 @@
 ﻿using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.ViewComponents
 {
@@ -19,16 +20,17 @@ namespace BibliotecaMVC.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            if (!HttpContext.User.Identity.IsAuthenticated)
+            if (!HttpContext.User.Identity!.IsAuthenticated)
                 return View(false);
 
             var userId = _userManager.GetUserId(HttpContext.User);
 
-            bool tieneMulta = _context.Prestamos.Any(p =>
-                p.UsuarioId == userId &&
-                !p.Devuelto &&
-                (p.Multa ?? 0) > 0
-            );
+            bool tieneMulta = await _context.Multas
+                .Include(m => m.Prestamo)
+                .AnyAsync(m =>
+                    m.Prestamo.UsuarioId == userId &&
+                    !m.Pagada);
+
             return View(tieneMulta);
         }
     }

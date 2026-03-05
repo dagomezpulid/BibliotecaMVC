@@ -1,5 +1,4 @@
-﻿using BibliotecaMVC;
-using BibliotecaMVC.Models;
+﻿using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -26,7 +25,10 @@ public class PrestamosController : Controller
 
         var prestamos = _context.Prestamos
             .Include(p => p.Libro)
-            .Where(p => !p.Devuelto && p.UsuarioId == usuarioId)
+            .Include(p => p.Usuario)
+            .Include(p => p.Multa)
+            .Where(p => p.UsuarioId == usuarioId &&
+                p.FechaDevolucionReal == null)
             .ToList();
 
         return View(prestamos);
@@ -50,26 +52,26 @@ public class PrestamosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
-    public IActionResult Devolver(int id)
+    public async Task<IActionResult> Devolver(int id)
     {
-        var prestamo = _context.Prestamos
+        var prestamo = await _context.Prestamos
             .Include(p => p.Libro)
-            .FirstOrDefault(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (prestamo == null)
             return NotFound();
 
-        prestamo.Devuelto = true;
         prestamo.FechaDevolucionReal = DateTime.Now;
         prestamo.Estado = "Devuelto";
 
+        // 🔥 Generar multa si aplica
         if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucionProgramada)
         {
             var diasMora =
                 (prestamo.FechaDevolucionReal.Value -
                  prestamo.FechaDevolucionProgramada).Days;
 
-            decimal valorPorDia = 1000; // luego lo hacemos configurable
+            decimal valorPorDia = 1000;
             decimal totalMulta = diasMora * valorPorDia;
 
             var multa = new Multa
@@ -85,7 +87,7 @@ public class PrestamosController : Controller
 
         prestamo.Libro.Stock++;
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
     }
@@ -94,38 +96,37 @@ public class PrestamosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
-    public async Task<IActionResult> Prestar(Prestamo prestamo)
+    public async Task<IActionResult> Prestar(int libroId)
     {
-        if (!User.Identity!.IsAuthenticated)
-            return Unauthorized();
-
         var usuarioId = _userManager.GetUserId(User);
 
-        if (string.IsNullOrEmpty(usuarioId))
-            return BadRequest("UsuarioId no encontrado");
-
-        var libro = await _context.Libros.FindAsync(prestamo.LibroId);
+        var libro = await _context.Libros.FindAsync(libroId);
 
         if (libro == null || libro.Stock <= 0)
             return BadRequest("Libro no disponible");
 
-        // 🔒 Validar multa antes
-        var tieneMulta = _context.Prestamos.Any(p =>
-            p.UsuarioId == usuarioId &&
-            !p.Devuelto &&
-            p.Multa > 0);
+        // 🔒 Validar multas pendientes
+        var tieneMultaPendiente = await _context.Multas
+            .Include(m => m.Prestamo)
+            .AnyAsync(m =>
+                m.Prestamo.UsuarioId == usuarioId &&
+                !m.Pagada);
 
-        if (tieneMulta)
+        if (tieneMultaPendiente)
         {
-            TempData["Error"] = "No puedes realizar préstamos mientras tengas multas pendientes.";
+            TempData["Error"] =
+                "No puedes realizar préstamos mientras tengas multas pendientes.";
             return RedirectToAction("Index", "Libros");
         }
 
-        prestamo.UsuarioId = usuarioId;
-        prestamo.FechaPrestamo = DateTime.Now;
-        prestamo.Devuelto = false;
-        prestamo.DiasRetraso = 0;
-        prestamo.Multa = 0;
+        var prestamo = new Prestamo
+        {
+            LibroId = libroId,
+            UsuarioId = usuarioId,
+            FechaPrestamo = DateTime.Now,
+            FechaDevolucionProgramada = DateTime.Now.AddDays(7),
+            Estado = "Activo"
+        };
 
         libro.Stock--;
 
@@ -137,20 +138,6 @@ public class PrestamosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // 📚 Mis préstamos (redundante pero útil)
-    [Authorize(Roles = "Usuario")]
-    public IActionResult MisPrestamos()
-    {
-        var usuarioId = _userManager.GetUserId(User);
-
-        var prestamos = _context.Prestamos
-            .Include(p => p.Libro)
-            .Include(p => p.Usuario)
-            .OrderByDescending(p => p.FechaPrestamo)
-            .ToList();
-        return View(prestamos);
-    }
-
     // 📚 Vista admin
     [Authorize(Roles = "Admin")]
     public IActionResult Todos()
@@ -158,6 +145,7 @@ public class PrestamosController : Controller
         var prestamos = _context.Prestamos
             .Include(p => p.Libro)
             .Include(p => p.Usuario)
+            .Include(p => p.Multa)
             .OrderByDescending(p => p.FechaPrestamo)
             .ToList();
 

@@ -8,8 +8,8 @@
             <th>Libro</th>
             <th>Solicitante</th>
             <th>Fecha Préstamo</th>
+            <th>Fecha Límite</th>
             <th>Fecha Devolución</th>
-            <th>Devuelto</th>
             <th>Días Retraso</th>
             <th>Multa</th>
             <th>Estado</th>
@@ -18,36 +18,39 @@
     <tbody>
         @foreach (var p in Model)
         {
+            var devuelto = p.FechaDevolucionReal != null;
+
+            var diasRetraso = 0;
+
+            if (devuelto && p.FechaDevolucionReal > p.FechaDevolucionProgramada)
+            {
+                diasRetraso =
+                (p.FechaDevolucionReal.Value - p.FechaDevolucionProgramada).Days;
+            }
+
             <tr>
-                <td>@p.Libro.Titulo</td>
+                <td>@p.Libro?.Titulo</td>
                 <td>@p.Usuario?.NombreCompleto</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
+                <td>@p.FechaDevolucionProgramada.ToShortDateString()</td>
                 <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
+
                 <td>
-                    @if (p.Devuelto)
+                    @if (diasRetraso > 0)
                     {
-                        <span class="badge bg-success">Sí</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark">No</span>
-                    }
-                </td>
-                <td>
-                    @if (p.DiasRetraso > 0)
-                    {
-                        <span class="text-danger">@p.DiasRetraso</span>
+                        <span class="text-danger">@diasRetraso</span>
                     }
                     else
                     {
                         <span>0</span>
                     }
                 </td>
+
                 <td>
-                    @if (p.Multa.HasValue && p.Multa > 0)
+                    @if (p.Multa != null)
                     {
                         <span class="text-danger">
-                            $@p.Multa.Value
+                            $@p.Multa.Monto
                         </span>
                     }
                     else
@@ -55,12 +58,13 @@
                         <span>$0</span>
                     }
                 </td>
+
                 <td>
-                    @if ((p.Multa ?? 0) > 0)
+                    @if (p.Multa != null && !p.Multa.Pagada)
                     {
-                        <span class="badge bg-danger">Multa</span>
+                        <span class="badge bg-danger">Multa pendiente</span>
                     }
-                    else if (p.Devuelto)
+                    else if (devuelto)
                     {
                         <span class="badge bg-success">Devuelto</span>
                     }
@@ -74,4 +78,6 @@
     </tbody>
 </table>
 
-<a class="btn btn-secondary" asp-action="Index">Volver a Préstamos Activos</a>
+<a class="btn btn-secondary" asp-action="Index">
+    Volver a Préstamos Activos
+</a>

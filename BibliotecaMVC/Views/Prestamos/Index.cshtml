@@ -29,11 +29,15 @@
                 <td>@p.Usuario?.NombreCompleto</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
                 <td>
-                    @if ((p.Multa ?? 0) > 0)
-                    {
-                        <span class="badge bg-danger">Multa</span>
+                    @{
+                        var devuelto = p.FechaDevolucionReal != null;
                     }
-                    else if (p.Devuelto)
+
+                    @if (p.Multa != null && !p.Multa.Pagada)
+                    {
+                        <span class="badge bg-danger">Multa pendiente</span>
+                    }
+                    else if (devuelto)
                     {
                         <span class="badge bg-success">Devuelto</span>
                     }

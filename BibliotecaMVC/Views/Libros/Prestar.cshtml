@@ -1,4 +1,4 @@
-﻿@model BibliotecaMVC.Models.Prestamo
+﻿@model int
 
 <h2>Prestar Libro</h2>
 
@@ -7,16 +7,21 @@
 <form asp-controller="Prestamos" asp-action="Prestar" method="post">
     @Html.AntiForgeryToken()
 
-    <input type="hidden" asp-for="LibroId" />
+    <input type="hidden" name="libroId" value="@Model" />
 
-    <div class="form-group">
-        <label asp-for="FechaDevolucion"></label>
-        <input asp-for="FechaDevolucion" type="date" class="form-control" />
-        <span asp-validation-for="FechaDevolucion" class="text-danger"></span>
-    </div>
+    <p>
+        La fecha límite de devolución será automática (7 días desde hoy).
+    </p>
 
     <br />
 
-    <button type="submit" class="btn btn-primary">Confirmar Préstamo</button>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-primary">
+        Confirmar Préstamo
+    </button>
+
+    <a asp-controller="Home"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
 </form>

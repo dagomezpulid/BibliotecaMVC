@@ -25,11 +25,11 @@ public class AdminController : Controller
             TotalLibros = await _context.Libros.CountAsync(),
             TotalAutores = await _context.Autores.CountAsync(),
             PrestamosActivos = await _context.Prestamos
-                        .Where(p => p.FechaDevolucion == null)
+                        .Where(p => p.FechaDevolucionReal == null)
                         .CountAsync(),
-            TotalMultasPendientes = await _context.Prestamos
-                        .Where(p => p.Multa > 0)
-                        .SumAsync(p => (decimal?)p.Multa) ?? 0
+            TotalMultasPendientes = await _context.Multas
+                        .Where(m => !m.Pagada)
+                        .SumAsync(m => (decimal?)m.Monto) ?? 0
         };
 
         return View(model);
@@ -94,32 +94,6 @@ public class AdminController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Bloquear(string id)
-    {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null)
-            return NotFound();
-
-        user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
-        await _userManager.UpdateAsync(user);
-
-        return RedirectToAction(nameof(Usuarios));
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Desbloquear(string id)
-    {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null)
-            return NotFound();
-
-        user.LockoutEnd = null;
-        await _userManager.UpdateAsync(user);
-
-        return RedirectToAction(nameof(Usuarios));
-    }
-
-    [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarUsuario(string id)
     {
@@ -140,7 +114,7 @@ public class AdminController : Controller
             return RedirectToAction("Usuarios");
         }
 
-        var tienePrestamos = _context.Prestamos.Any(p => p.UsuarioId == usuario.Id && !p.Devuelto);
+        var tienePrestamos = _context.Prestamos.Any(p => p.UsuarioId == usuario.Id && p.FechaDevolucionReal == null);
 
         if (tienePrestamos)
         {
@@ -157,14 +131,15 @@ public class AdminController : Controller
     private async Task<bool> DebeEstarBloqueado(ApplicationUser user)
     {
         var prestamos = await _context.Prestamos
-            .Where(p => p.UsuarioId == user.Id && !p.Devuelto)
+            .Where(p => p.UsuarioId == user.Id && p.FechaDevolucionReal == null)
             .ToListAsync();
 
         foreach (var prestamo in prestamos)
         {
-            if (DateTime.Now > prestamo.FechaDevolucion)
+            if (DateTime.Now > prestamo.FechaDevolucionProgramada)
             {
-                var diasMora = (DateTime.Now - prestamo.FechaDevolucion!.Value).Days;
+                var diasMora =
+                    (DateTime.Now - prestamo.FechaDevolucionProgramada).Days;
 
                 if (diasMora >= 8)
                     return true;
@@ -173,6 +148,8 @@ public class AdminController : Controller
 
         return false;
     }
+
+
 
     private async Task ActualizarEstadoBloqueo(ApplicationUser user)
     {

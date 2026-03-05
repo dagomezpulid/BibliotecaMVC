@@ -1,68 +1,60 @@
 ﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
 
-<h2>Todos los Préstamos (Administrador)</h2>
+<h2>Mis Préstamos</h2>
 
 <table class="table table-striped">
     <thead>
         <tr>
             <th>Libro</th>
-            <th>Usuario</th>
-            <th>Fecha Préstamo</th>
-            <th>Fecha Devolución</th>
-            <th>Devuelto</th>
-            <th>Multa</th>
+            <th>Fecha préstamo</th>
+            <th>Fecha límite</th>
+            <th>Fecha devolución</th>
             <th>Estado</th>
+            <th>Multa</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var p in Model)
         {
+            var devuelto = p.FechaDevolucionReal != null;
+
             <tr>
-                <td>@p.Libro.Titulo</td>
-                <td>
-                    @if (p.Usuario != null)
-                    {
-                        @p.Usuario.Email
-                    }
-                    else
-                    {
-                        <span class="text-muted">Sin usuario</span>
-                    }
-                </td>
+                <td>@p.Libro?.Titulo</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
-                <td>@p.FechaDevolucion?.ToShortDateString()</td>
+                <td>@p.FechaDevolucionProgramada.ToShortDateString()</td>
+                <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
+
                 <td>
-                    @if (p.Devuelto)
+                    @if (p.Multa != null && !p.Multa.Pagada)
                     {
-                        <span class="badge bg-success">Sí</span>
+                        <span class="badge bg-danger">
+                            Multa pendiente
+                        </span>
+                    }
+                    else if (devuelto)
+                    {
+                        <span class="badge bg-success">
+                            Devuelto
+                        </span>
                     }
                     else
                     {
-                        <span class="badge bg-warning text-dark">No</span>
+                        <span class="badge bg-warning text-dark">
+                            Activo
+                        </span>
                     }
                 </td>
+
                 <td>
-                    @if (p.Multa > 0)
+                    @if (p.Multa != null)
                     {
-                        <span class="text-danger">$@p.Multa</span>
+                        <span class="text-danger">
+                            $@p.Multa.Monto.ToString("N0")
+                        </span>
                     }
                     else
                     {
-                        <span>$0</span>
-                    }
-                </td>
-                <td>
-                    @if ((p.Multa ?? 0) > 0)
-                    {
-                        <span class="badge bg-danger">Multa</span>
-                    }
-                    else if (p.Devuelto)
-                    {
-                        <span class="badge bg-success">Devuelto</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark">Activo</span>
+                        <span>-</span>
                     }
                 </td>
             </tr>

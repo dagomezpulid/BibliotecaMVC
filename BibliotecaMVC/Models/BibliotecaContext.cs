@@ -24,16 +24,13 @@ namespace BibliotecaMVC.Models
                 .ToTable("Prestamos");
 
             modelBuilder.Entity<Prestamo>()
-                .Property(p => p.Multa)
-                .HasPrecision(10, 2);
-
-            modelBuilder.Entity<Prestamo>()
                 .HasOne(p => p.Usuario)
                 .WithMany()
                 .HasForeignKey(p => p.UsuarioId);
+
             modelBuilder.Entity<Multa>()
                 .HasOne(m => m.Prestamo)
-                .WithOne(p => p.Multas)
+                .WithOne(p => p.Multa)
                 .HasForeignKey<Multa>(m => m.PrestamoId);
         }
     }
