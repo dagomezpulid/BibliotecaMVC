@@ -1,0 +1,51 @@
+﻿@model IEnumerable<BibliotecaMVC.Models.Multa>
+
+<h2>Multas del Sistema</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Libro</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>@m.Prestamo.Usuario.NombreCompleto</td>
+                <td>@m.Prestamo.Libro.Titulo</td>
+                <td>$@m.Monto</td>
+                <td>@m.FechaGenerada.ToShortDateString()</td>
+
+                <td>
+                    @if (m.Pagada)
+                    {
+                        <span class="badge bg-success">Pagada</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Pendiente</span>
+                    }
+                </td>
+
+                <td>
+                    @if (!m.Pagada)
+                    {
+                        <form asp-action="MarcarPagada" method="post">
+                            <input type="hidden" name="id" value="@m.Id" />
+                            <button class="btn btn-success btn-sm">
+                                Registrar pago
+                            </button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
