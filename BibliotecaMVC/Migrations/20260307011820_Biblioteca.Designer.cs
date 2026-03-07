@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BibliotecaMVC.Migrations
 {
     [DbContext(typeof(BibliotecaContext))]
-    [Migration("20260305214424_UpdatePrestamoModel")]
-    partial class UpdatePrestamoModel
+    [Migration("20260307011820_Biblioteca")]
+    partial class Biblioteca
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
