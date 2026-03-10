@@ -37,12 +37,18 @@
                 {
                     @if (libro.Stock > 0)
                     {
-                        <a class="btn btn-info btn-sm"
-                           asp-controller="Libros"
-                           asp-action="Prestar"
-                           asp-route-id="@libro.Id">
-                            Prestar
-                        </a>
+                        <form asp-controller="Prestamos"
+                              asp-action="Prestar"
+                              method="post"
+                              style="display:inline">
+
+                             <input type="hidden" name="libroId" value="@libro.Id" />
+
+                             <button class="btn btn-info btn-sm">
+                                 Prestar
+                             </button>
+
+                         </form>
                     }
                     else
                     {

@@ -18,7 +18,7 @@ public class PrestamosController : Controller
         _userManager = userManager;
     }
 
-    // 📚 Préstamos activos
+    // Préstamos activos
     public IActionResult Index()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -34,7 +34,7 @@ public class PrestamosController : Controller
         return View(prestamos);
     }
 
-    // 📚 Historial
+    // Historial
     public IActionResult Historial()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -48,7 +48,7 @@ public class PrestamosController : Controller
         return View(historial);
     }
 
-    // 📚 Devolver libro
+    // Devolver libro
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
@@ -64,7 +64,7 @@ public class PrestamosController : Controller
         prestamo.FechaDevolucionReal = DateTime.Now;
         prestamo.Estado = "Devuelto";
 
-        // 🔥 Generar multa si aplica
+        // Generar multa si aplica
         if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucionProgramada)
         {
             var diasMora =
@@ -92,7 +92,7 @@ public class PrestamosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // 📚 Crear préstamo
+    // Crear préstamo
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
@@ -105,7 +105,7 @@ public class PrestamosController : Controller
         if (libro == null || libro.Stock <= 0)
             return BadRequest("Libro no disponible");
 
-        // 🔒 Validar multas pendientes
+        // Validar multas pendientes
         var tieneMultaPendiente = await _context.Multas
             .Include(m => m.Prestamo)
             .AnyAsync(m =>
@@ -138,7 +138,7 @@ public class PrestamosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // 📚 Vista admin
+    // Vista admin
     [Authorize(Roles = "Admin")]
     public IActionResult Todos()
     {
