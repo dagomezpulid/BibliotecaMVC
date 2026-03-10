@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BibliotecaMVC.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Biblioteca : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -199,13 +199,11 @@ namespace BibliotecaMVC.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     LibroId = table.Column<int>(type: "int", nullable: false),
+                    UsuarioId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     FechaPrestamo = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FechaDevolucion = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    FechaDevolucionProgramada = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaDevolucionReal = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Devuelto = table.Column<bool>(type: "bit", nullable: false),
-                    DiasRetraso = table.Column<int>(type: "int", nullable: false),
-                    Multa = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: true),
-                    UsuarioId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    Estado = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -219,6 +217,29 @@ namespace BibliotecaMVC.Migrations
                         name: "FK_Prestamos_Libros_LibroId",
                         column: x => x.LibroId,
                         principalTable: "Libros",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Multas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PrestamoId = table.Column<int>(type: "int", nullable: false),
+                    Monto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Pagada = table.Column<bool>(type: "bit", nullable: false),
+                    FechaGenerada = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FechaPago = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Multas", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Multas_Prestamos_PrestamoId",
+                        column: x => x.PrestamoId,
+                        principalTable: "Prestamos",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -268,6 +289,12 @@ namespace BibliotecaMVC.Migrations
                 column: "AutorId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Multas_PrestamoId",
+                table: "Multas",
+                column: "PrestamoId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Prestamos_LibroId",
                 table: "Prestamos",
                 column: "LibroId");
@@ -297,10 +324,13 @@ namespace BibliotecaMVC.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Prestamos");
+                name: "Multas");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Prestamos");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
