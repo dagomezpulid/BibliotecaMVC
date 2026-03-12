@@ -148,9 +148,6 @@ public class AdminController : Controller
 
         return false;
     }
-
-
-
     private async Task ActualizarEstadoBloqueo(ApplicationUser user)
     {
         bool bloquear = await DebeEstarBloqueado(user);
