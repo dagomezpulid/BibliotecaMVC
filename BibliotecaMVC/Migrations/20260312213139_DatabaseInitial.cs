@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BibliotecaMVC.Migrations
 {
     /// <inheritdoc />
-    public partial class Biblioteca : Migration
+    public partial class DatabaseInitial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
