@@ -92,6 +92,19 @@ public class PrestamosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Usuario")]
+    public async Task<IActionResult> ConfirmarPrestamo(int id)
+    {
+        var libro = await _context.Libros.FindAsync(id);
+
+        if (libro == null)
+            return NotFound();
+
+        ViewBag.LibroTitulo = libro.Titulo;
+
+        return View("Prestar", libro.Id);
+    }
+
     // Crear préstamo
     [HttpPost]
     [ValidateAntiForgeryToken]
