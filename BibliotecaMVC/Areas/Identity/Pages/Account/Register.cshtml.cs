@@ -75,13 +75,16 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
 
             var result = await _userManager.CreateAsync(user, Input.Password);
 
-            if (!result.Succeeded)
+            if (result.Succeeded)
             {
-                foreach (var error in result.Errors)
+                if (!await _roleManager.RoleExistsAsync("Usuario"))
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                    Console.WriteLine(error.Description);
+                    await _roleManager.CreateAsync(new IdentityRole("Usuario"));
                 }
+
+                await _userManager.AddToRoleAsync(user, "Usuario");
+
+                await _signInManager.SignInAsync(user, isPersistent: false);
             }
 
             foreach (var error in result.Errors)
