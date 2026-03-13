@@ -141,6 +141,27 @@ public class PrestamosController : Controller
             Estado = "Activo"
         };
 
+        var prestamosActivos = await _context.Prestamos
+            .CountAsync(p => p.UsuarioId == usuarioId && p.FechaDevolucionReal == null);
+
+        if (prestamosActivos >= 3)
+        {
+            TempData["Error"] = "Solo puedes tener máximo 3 préstamos activos.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        var yaTieneLibro = await _context.Prestamos
+            .AnyAsync(p =>
+                p.UsuarioId == usuarioId &&
+                p.LibroId == libroId &&
+                p.FechaDevolucionReal == null);
+
+        if (yaTieneLibro)
+        {
+            TempData["Error"] = "Ya tienes este libro prestado.";
+            return RedirectToAction("Index", "Home");
+        }
+
         libro.Stock--;
 
         _context.Prestamos.Add(prestamo);
