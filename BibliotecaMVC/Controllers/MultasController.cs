@@ -1,5 +1,6 @@
 ﻿using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,18 +8,22 @@ using Microsoft.EntityFrameworkCore;
 public class MultasController : Controller
 {
     private readonly BibliotecaContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public MultasController(BibliotecaContext context)
+    public MultasController(BibliotecaContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> MisMultas()
     {
+        var usuarioId = _userManager.GetUserId(User);
+
         var multas = await _context.Multas
             .Include(m => m.Prestamo)
-            .ThenInclude(p => p.Usuario)
-            .Include(m => m.Prestamo.Libro)
+            .ThenInclude(p => p.Libro)
+            .Where(m => m.Prestamo.UsuarioId == usuarioId)
             .OrderByDescending(m => m.FechaGenerada)
             .ToListAsync();
 
@@ -41,4 +46,7 @@ public class MultasController : Controller
 
         return RedirectToAction(nameof(Index));
     }
+
+
+
 }

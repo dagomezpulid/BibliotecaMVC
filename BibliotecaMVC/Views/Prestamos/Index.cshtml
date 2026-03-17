@@ -15,8 +15,9 @@
     <thead>
         <tr>
             <th>Libro</th>
-            <th>Solicitante</th>
             <th>Fecha Préstamo</th>
+            <th>Fecha Límite</th>
+            <th>Días Restantes</th>
             <th>Estado</th>
             <th>Acción</th>
         </tr>
@@ -24,26 +25,35 @@
     <tbody>
         @foreach (var p in Model)
         {
+            
+            var diasRestantes = (p.FechaDevolucionProgramada - DateTime.Now).Days;
+
             <tr>
                 <td>@p.Libro.Titulo</td>
-                <td>@p.Usuario?.NombreCompleto</td>
                 <td>@p.FechaPrestamo.ToShortDateString()</td>
+                <td>@p.FechaDevolucionProgramada.ToShortDateString()</td>
                 <td>
-                    @{
-                        var devuelto = p.FechaDevolucionReal != null;
-                    }
-
-                    @if (p.Multa != null && !p.Multa.Pagada)
+                    @if (diasRestantes >= 0)
                     {
-                        <span class="badge bg-danger">Multa pendiente</span>
-                    }
-                    else if (devuelto)
-                    {
-                        <span class="badge bg-success">Devuelto</span>
+                        <span class="text-success">@diasRestantes días</span>
                     }
                     else
                     {
-                        <span class="badge bg-warning text-dark">Activo</span>
+                        <span class="text-danger">@Math.Abs(diasRestantes) días de atraso</span>
+                    }
+                </td>
+                <td>
+                    @if (diasRestantes < 0)
+                    {
+                        <span class="badge bg-danger">Atrasado</span>
+                    }
+                    else if (diasRestantes <= 2)
+                    {
+                        <span class="badge bg-warning text-dark">Por vencer</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Activo</span>
                     }
                 </td>
                 <td>

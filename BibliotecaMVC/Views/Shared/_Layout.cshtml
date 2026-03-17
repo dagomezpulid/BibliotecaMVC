@@ -168,6 +168,13 @@
         </div>
     </footer>
 
+    <script>
+            setTimeout(function () {
+                let alerts = document.querySelectorAll('.alert');
+                alerts.forEach(a => a.classList.remove('show'));
+            }, 4000);
+    </script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
