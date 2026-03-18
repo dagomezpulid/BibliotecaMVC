@@ -1,0 +1,46 @@
+﻿@model IEnumerable<BibliotecaMVC.Models.Multa>
+
+<h2>Mis Multas</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Libro</th>
+            <th>Monto</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var m in Model)
+        {
+            <tr>
+                <td>@m.Prestamo.Libro.Titulo</td>
+
+                <td>
+                    $@m.Monto.ToString("N0")
+                </td>
+
+                <td>
+                    @m.FechaGenerada.ToShortDateString()
+                </td>
+
+                <td>
+                    @if (m.Pagada)
+                    {
+                        <span class="badge bg-success">
+                            Pagada
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            Pendiente
+                        </span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

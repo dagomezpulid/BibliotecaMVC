@@ -1,4 +1,4 @@
-﻿using BibliotecaMVC.Models;
+using BibliotecaMVC.Models;
 using BibliotecaMVC.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -114,17 +114,34 @@ public class AdminController : Controller
             return RedirectToAction("Usuarios");
         }
 
-        var tienePrestamos = _context.Prestamos.Any(p => p.UsuarioId == usuario.Id && p.FechaDevolucionReal == null);
+        var tienePrestamosActivos = _context.Prestamos.Any(p => p.UsuarioId == usuario.Id && p.FechaDevolucionReal == null);
 
-        if (tienePrestamos)
+        if (tienePrestamosActivos)
         {
             TempData["Error"] = "No se puede eliminar un usuario con préstamos activos.";
             return RedirectToAction("Usuarios");
         }
 
+        // Eliminar dependencias primero (Historial de préstamos inactivos y sus multas)
+        var historialPrestamos = await _context.Prestamos
+                                    .Where(p => p.UsuarioId == usuario.Id)
+                                    .ToListAsync();
+
+        if (historialPrestamos.Any())
+        {
+            var prestamosIds = historialPrestamos.Select(p => p.Id).ToList();
+            var multas = await _context.Multas
+                            .Where(m => prestamosIds.Contains(m.PrestamoId))
+                            .ToListAsync();
+
+            _context.Multas.RemoveRange(multas);
+            _context.Prestamos.RemoveRange(historialPrestamos);
+            await _context.SaveChangesAsync(); // Guardamos los cambios de eliminación en cascada
+        }
+
         await _userManager.DeleteAsync(usuario);
 
-        TempData["Success"] = "Usuario eliminado correctamente.";
+        TempData["Success"] = "Usuario y su historial han sido eliminados correctamente.";
         return RedirectToAction("Usuarios");
     }
 
