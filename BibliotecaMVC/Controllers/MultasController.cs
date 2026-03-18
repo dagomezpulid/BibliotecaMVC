@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Usuario")]
 public class MultasController : Controller
 {
     private readonly BibliotecaContext _context;
