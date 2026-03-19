@@ -1,11 +1,24 @@
-﻿@page
+@page
 @model AccessDeniedModel
 @{
     ViewData["Title"] = "Acceso denegado";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">No tienes permisos para acceder a esta sección.</p>
-    <a asp-controller="Home" asp-action="Index">Volver al inicio</a>
-</header>
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-md-6 mt-4">
+        <div class="card shadow rounded-4 border-0 text-center">
+            <div class="card-header bg-danger text-white rounded-top-4 py-3">
+                <h4 class="mb-0 fw-bold">🚫 @ViewData["Title"]</h4>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <span style="font-size: 5rem;">🛑</span>
+                <h3 class="fw-bold mt-3 text-dark">Privilegios Insuficientes</h3>
+                <p class="text-muted fs-5 mb-4 mt-3">Lo sentimos, tu cuenta no cuenta con el nivel de acceso (Rol) requerido para visualizar o interactuar con esta sección del sistema.</p>
+                
+                <a asp-controller="Home" asp-action="Index" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-sm px-5 mt-2">
+                    🏠 Volver al Inicio Seguro
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

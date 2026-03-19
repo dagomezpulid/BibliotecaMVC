@@ -8,13 +8,22 @@
         <p class="lead text-muted mb-4">Descubre miles de libros, administra tus préstamos y disfruta de la lectura de manera sencilla y rápida bajo una plataforma totalmente revitalizada.</p>
         
         <div class="d-flex gap-3">
-            <a asp-controller="Libros" asp-action="Index" class="btn btn-primary btn-lg shadow-sm px-4 rounded-pill fw-semibold">
-                📚 Ver Catálogo Completo
-            </a>
-            @if (User.Identity?.IsAuthenticated ?? false)
+            @if (!User.IsInRole("Admin"))
             {
-                <a asp-controller="Prestamos" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm bg-white px-4 rounded-pill fw-semibold">
-                    📖 Mis Préstamos
+                <a asp-controller="Libros" asp-action="Index" class="btn btn-primary btn-lg shadow-sm px-4 rounded-pill fw-semibold">
+                    📚 Ver Catálogo Completo
+                </a>
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <a asp-controller="Prestamos" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm bg-white px-4 rounded-pill fw-semibold">
+                        📖 Mis Préstamos
+                    </a>
+                }
+            }
+            else
+            {
+                <a asp-controller="Admin" asp-action="Index" class="btn btn-dark btn-lg shadow-sm px-4 rounded-pill fw-semibold">
+                    📊 Ir al Panel de Control
                 </a>
             }
         </div>

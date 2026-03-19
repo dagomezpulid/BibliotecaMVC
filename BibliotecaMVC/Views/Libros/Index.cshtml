@@ -43,9 +43,18 @@
                             }
                         </td>
                         <td class="text-center">
-                            <a asp-controller="Prestamos" asp-action="ConfirmarPrestamo" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary fw-semibold shadow-sm @(item.Stock <= 0 ? "disabled" : "")">
-                                📖 Solicitar Préstamo
-                            </a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <button class="btn btn-sm btn-outline-secondary fw-semibold shadow-sm disabled" title="Los administradores no tramitan préstamos" style="cursor: not-allowed;">
+                                    🔒 Restringido
+                                </button>
+                            }
+                            else
+                            {
+                                <a asp-controller="Prestamos" asp-action="ConfirmarPrestamo" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary fw-semibold shadow-sm @(item.Stock <= 0 ? "disabled" : "")">
+                                    📖 Solicitar Préstamo
+                                </a>
+                            }
                         </td>
                     </tr>
                 }
