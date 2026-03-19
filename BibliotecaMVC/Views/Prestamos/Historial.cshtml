@@ -1,83 +1,74 @@
-﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
+@model IEnumerable<BibliotecaMVC.Models.Prestamo>
 
-<h2>Historial de Préstamos</h2>
+@{
+    ViewData["Title"] = "Historial de Préstamos";
+}
 
-<table class="table table-bordered table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Libro</th>
-            <th>Solicitante</th>
-            <th>Fecha Préstamo</th>
-            <th>Fecha Límite</th>
-            <th>Fecha Devolución</th>
-            <th>Días Retraso</th>
-            <th>Multa</th>
-            <th>Estado</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            var devuelto = p.FechaDevolucionReal != null;
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="fw-bold text-dark">📜 Historial de Préstamos</h2>
+    <div>
+        <a class="btn btn-outline-secondary shadow-sm" asp-action="Index">
+            🏠 Mis Préstamos Activos
+        </a>
+    </div>
+</div>
 
-            var diasRetraso = 0;
-
-            if (devuelto && p.FechaDevolucionReal > p.FechaDevolucionProgramada)
-            {
-                diasRetraso =
-                (p.FechaDevolucionReal.Value - p.FechaDevolucionProgramada).Days;
-            }
-
+<div class="table-responsive bg-white p-3 rounded-4 shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
             <tr>
-                <td>@p.Libro?.Titulo</td>
-                <td>@p.Usuario?.NombreCompleto</td>
-                <td>@p.FechaPrestamo.ToShortDateString()</td>
-                <td>@p.FechaDevolucionProgramada.ToShortDateString()</td>
-                <td>@p.FechaDevolucionReal?.ToShortDateString()</td>
-
-                <td>
-                    @if (diasRetraso > 0)
-                    {
-                        <span class="text-danger">@diasRetraso</span>
-                    }
-                    else
-                    {
-                        <span>0</span>
-                    }
-                </td>
-
-                <td>
-                    @if (p.Multa != null)
-                    {
-                        <span class="text-danger">
-                            $@p.Multa.Monto
-                        </span>
-                    }
-                    else
-                    {
-                        <span>$0</span>
-                    }
-                </td>
-
-                <td>
-                    @if (p.Multa != null && !p.Multa.Pagada)
-                    {
-                        <span class="badge bg-danger">Multa pendiente</span>
-                    }
-                    else if (devuelto)
-                    {
-                        <span class="badge bg-success">Devuelto</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark">Activo</span>
-                    }
-                </td>
+                <th class="border-0">Libro</th>
+                <th class="border-0">Solicitante</th>
+                <th class="border-0">Fecha Préstamo</th>
+                <th class="border-0">Vencimiento</th>
+                <th class="border-0">Devolución Real</th>
+                <th class="border-0 text-center">Estado</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @if(Model != null && Model.Any()) {
+                @foreach (var p in Model)
+                {
+                    var devuelto = p.FechaDevolucionReal != null;
+                    var diasRetraso = 0;
 
-<a class="btn btn-secondary" asp-action="Index">
-    Volver a Préstamos Activos
-</a>
+                    if (devuelto && p.FechaDevolucionReal > p.FechaDevolucionProgramada)
+                    {
+                        diasRetraso = (p.FechaDevolucionReal.Value - p.FechaDevolucionProgramada).Days;
+                    }
+
+                    <tr>
+                        <td class="fw-semibold text-dark">@p.Libro?.Titulo</td>
+                        <td class="text-muted">@p.Usuario?.NombreCompleto</td>
+                        <td class="text-muted">@p.FechaPrestamo.ToShortDateString()</td>
+                        <td class="text-muted">@p.FechaDevolucionProgramada.ToShortDateString()</td>
+                        <td class="text-muted fw-bold">@(devuelto ? p.FechaDevolucionReal?.ToShortDateString() : "-")</td>
+
+                        <td class="text-center">
+                            @if (p.Multa != null && !p.Multa.Pagada)
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Multa Pendiente</span>
+                            }
+                            else if (devuelto && diasRetraso > 0)
+                            {
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning">Tardío (@diasRetraso días)</span>
+                            }
+                            else if (devuelto)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">Devuelto a tiempo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info bg-opacity-10 text-info border border-info">Activo</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            } else {
+                 <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No hay historial de préstamos.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

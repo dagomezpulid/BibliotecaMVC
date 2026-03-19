@@ -1,4 +1,4 @@
-﻿using BibliotecaMVC.Models;
+using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +12,12 @@ namespace BibliotecaMVC.Controllers
         public AutoresController(BibliotecaContext context)
         {
             _context = context;
+        }
+
+        public IActionResult Index()
+        {
+            var autores = _context.Autores.ToList();
+            return View(autores);
         }
 
         public IActionResult Create()

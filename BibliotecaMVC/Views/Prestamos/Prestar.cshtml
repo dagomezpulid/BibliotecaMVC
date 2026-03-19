@@ -1,27 +1,39 @@
-﻿@model int
+@model int
 
-<h2>Prestar Libro</h2>
+@{
+    ViewData["Title"] = "Confirmar Préstamo";
+}
 
-<p><strong>Libro:</strong> @ViewBag.LibroTitulo</p>
-
-<form asp-controller="Prestamos" asp-action="Prestar" method="post">
-    @Html.AntiForgeryToken()
-
-    <input type="hidden" name="libroId" value="@Model" />
-
-    <p>
-        La fecha límite de devolución será automática (7 días desde hoy).
-    </p>
-
-    <br />
-
-    <button type="submit" class="btn btn-primary">
-        Confirmar Préstamo
-    </button>
-
-    <a asp-controller="Home"
-       asp-action="Index"
-       class="btn btn-secondary">
-        Cancelar
-    </a>
-</form>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 mt-4">
+        <div class="card shadow rounded-4 border-0">
+            <div class="card-header bg-warning text-dark rounded-top-4 py-3">
+                <h4 class="mb-0 fw-bold text-center">📖 Confirmar Préstamo</h4>
+            </div>
+            <div class="card-body p-4 text-center">
+                
+                <h5 class="text-muted mb-4">¿Deseas solicitar en préstamo el siguiente libro?</h5>
+                
+                <h3 class="fw-bold mb-4 text-dark">@ViewBag.LibroTitulo</h3>
+                
+                <div class="alert alert-warning bg-opacity-10 py-2 shadow-sm rounded-3 d-inline-block px-4 border-warning">
+                    <small>⏰ Deberás devolverlo a más tardar en <strong>7 días</strong> a partir de hoy.</small>
+                </div>
+                
+                <form asp-controller="Prestamos" asp-action="Prestar" method="post" class="mt-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="libroId" value="@Model" />
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-warning btn-lg fw-bold px-5 shadow-sm">
+                            Realizar Préstamo
+                        </button>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-light border btn-lg fw-bold px-4">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

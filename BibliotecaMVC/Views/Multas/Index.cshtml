@@ -1,51 +1,73 @@
-﻿@model IEnumerable<BibliotecaMVC.Models.Multa>
+@model IEnumerable<BibliotecaMVC.Models.Multa>
 
-<h2>Multas del Sistema</h2>
+@{
+    ViewData["Title"] = "Multas del Sistema";
+}
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Usuario</th>
-            <th>Libro</th>
-            <th>Monto</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="fw-bold text-dark">💰 Multas del Sistema</h2>
+    <div>
+        <a class="btn btn-outline-secondary shadow-sm" asp-controller="Admin" asp-action="Index">
+            📊 Volver al Dashboard
+        </a>
+    </div>
+</div>
 
-    <tbody>
-        @foreach (var m in Model)
-        {
+<div class="table-responsive bg-white p-3 rounded-4 shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
             <tr>
-                <td>@m.Prestamo.Usuario.NombreCompleto</td>
-                <td>@m.Prestamo.Libro.Titulo</td>
-                <td>$@m.Monto</td>
-                <td>@m.FechaGenerada.ToShortDateString()</td>
-
-                <td>
-                    @if (m.Pagada)
-                    {
-                        <span class="badge bg-success">Pagada</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Pendiente</span>
-                    }
-                </td>
-
-                <td>
-                    @if (!m.Pagada)
-                    {
-                        <form asp-action="MarcarPagada" method="post">
-                            <input type="hidden" name="id" value="@m.Id" />
-                            <button class="btn btn-success btn-sm">
-                                Registrar pago
-                            </button>
-                        </form>
-                    }
-                </td>
+                <th class="border-0">Usuario Solicitante</th>
+                <th class="border-0">Libro Asociado</th>
+                <th class="border-0 text-center">Monto</th>
+                <th class="border-0 text-center">Fecha Emisión</th>
+                <th class="border-0 text-center">Estado</th>
+                <th class="border-0 text-center">Acción</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @if(Model != null && Model.Any()) {
+                @foreach (var m in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold text-dark">@m.Prestamo.Usuario.NombreCompleto</td>
+                        <td class="text-muted">@m.Prestamo.Libro.Titulo</td>
+                        <td class="text-danger fw-bold text-center">$@m.Monto.ToString("N0")</td>
+                        <td class="text-muted text-center">@m.FechaGenerada.ToShortDateString()</td>
+
+                        <td class="text-center">
+                            @if (m.Pagada)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">Saldada</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Pendiente de Pago</span>
+                            }
+                        </td>
+
+                        <td class="text-center">
+                            @if (!m.Pagada)
+                            {
+                                <form asp-action="MarcarPagada" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@m.Id" />
+                                    <button class="btn btn-success btn-sm shadow-sm">
+                                        💸 Registrar Pago
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted small fw-semibold">✅ Completado</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            } else {
+                 <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No hay multas registradas en el sistema.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

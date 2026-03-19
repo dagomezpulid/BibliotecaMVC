@@ -16,41 +16,23 @@ public class AdminController : Controller
         _context = context;
         _userManager = userManager;
     }
-    //ToggleAdmin
     public async Task<IActionResult> Index()
     {
-        var model = new AdminDashboardViewModel
-        {
-            TotalUsuarios = _userManager.Users.Count(),
-            TotalLibros = await _context.Libros.CountAsync(),
-            TotalAutores = await _context.Autores.CountAsync(),
-            PrestamosActivos = await _context.Prestamos
-                        .Where(p => p.FechaDevolucionReal == null)
-                        .CountAsync(),
-            TotalMultasPendientes = await _context.Multas
-                        .Where(m => !m.Pagada)
-                        .SumAsync(m => (decimal?)m.Monto) ?? 0
-        };
-
-        return View(model);
-    }
-
-    public async Task<IActionResult> Usuarios()
-    {
+        // 1. Cargar y actualizar estado de bloqueos de los usuarios
         var users = _userManager.Users.ToList();
-
+        
         foreach (var user in users)
         {
             await ActualizarEstadoBloqueo(user);
         }
 
-        var viewModel = new List<UserViewModel>();
-
+        // 2. Preparar el listado visual de usuarios
+        var userViewModels = new List<UserViewModel>();
         foreach (var user in users)
         {
             var roles = await _userManager.GetRolesAsync(user);
 
-            viewModel.Add(new UserViewModel
+            userViewModels.Add(new UserViewModel
             {
                 Id = user.Id,
                 NombreCompleto = user.NombreCompleto,
@@ -60,7 +42,22 @@ public class AdminController : Controller
             });
         }
 
-        return View(viewModel);
+        // 3. Preparar el modelo general del Dashboard
+        var model = new AdminDashboardViewModel
+        {
+            TotalUsuarios = users.Count,
+            TotalLibros = await _context.Libros.CountAsync(),
+            TotalAutores = await _context.Autores.CountAsync(),
+            PrestamosActivos = await _context.Prestamos
+                        .Where(p => p.FechaDevolucionReal == null)
+                        .CountAsync(),
+            TotalMultasPendientes = await _context.Multas
+                        .Where(m => !m.Pagada)
+                        .SumAsync(m => (decimal?)m.Monto) ?? 0,
+            Usuarios = userViewModels
+        };
+
+        return View(model);
     }
 
     [HttpPost]
@@ -75,7 +72,7 @@ public class AdminController : Controller
             await _userManager.AddToRoleAsync(user, "Admin");
         }
 
-        return RedirectToAction(nameof(Usuarios));
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
@@ -90,7 +87,7 @@ public class AdminController : Controller
             await _userManager.RemoveFromRoleAsync(user, "Admin");
         }
 
-        return RedirectToAction(nameof(Usuarios));
+        return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]
@@ -105,13 +102,13 @@ public class AdminController : Controller
         if (usuario.Id == _userManager.GetUserId(User))
         {
             TempData["Error"] = "No puedes eliminar tu propio usuario.";
-            return RedirectToAction("Usuarios");
+            return RedirectToAction(nameof(Index));
         }
 
         if (usuario.Email == "admin@biblioteca.com")
         {
             TempData["Error"] = "No se puede eliminar el administrador principal.";
-            return RedirectToAction("Usuarios");
+            return RedirectToAction(nameof(Index));
         }
 
         var tienePrestamosActivos = _context.Prestamos.Any(p => p.UsuarioId == usuario.Id && p.FechaDevolucionReal == null);
@@ -119,7 +116,7 @@ public class AdminController : Controller
         if (tienePrestamosActivos)
         {
             TempData["Error"] = "No se puede eliminar un usuario con préstamos activos.";
-            return RedirectToAction("Usuarios");
+            return RedirectToAction(nameof(Index));
         }
 
         // Eliminar dependencias primero (Historial de préstamos inactivos y sus multas)
@@ -142,7 +139,7 @@ public class AdminController : Controller
         await _userManager.DeleteAsync(usuario);
 
         TempData["Success"] = "Usuario y su historial han sido eliminados correctamente.";
-        return RedirectToAction("Usuarios");
+        return RedirectToAction(nameof(Index));
     }
 
     private async Task<bool> DebeEstarBloqueado(ApplicationUser user)
@@ -169,15 +166,18 @@ public class AdminController : Controller
     {
         bool bloquear = await DebeEstarBloqueado(user);
 
+        // Asegurar que el bloqueo esté habilitado para el usuario en la base de datos
+        await _userManager.SetLockoutEnabledAsync(user, true);
+
         if (bloquear)
         {
-            user.LockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+            // Bloqueamos la cuenta por 100 años si tiene mora
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
         }
         else
         {
-            user.LockoutEnd = null;
+            // Quitamos el bloqueo si ya no tiene mora
+            await _userManager.SetLockoutEndDateAsync(user, null);
         }
-
-        await _userManager.UpdateAsync(user);
     }
 }

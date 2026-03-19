@@ -1,101 +1,104 @@
-﻿@model IEnumerable<BibliotecaMVC.Models.Prestamo>
+@model IEnumerable<BibliotecaMVC.Models.Prestamo>
 
-<h2>Préstamos Activos</h2>
+@{
+    ViewData["Title"] = "Mis Préstamos Activos";
+}
 
-<div class="mb-3">
-    <a class="btn btn-secondary" asp-controller="Home" asp-action="Index">
-        Volver al Home
-    </a>
-
-    <a class="btn btn-info" asp-action="Historial">
-        Ver Historial de Préstamos
-    </a>
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="fw-bold text-dark">📖 Mis Préstamos Activos</h2>
+    <div>
+        <a class="btn btn-outline-secondary shadow-sm me-2" asp-controller="Home" asp-action="Index">
+            🏠 Volver
+        </a>
+        <a class="btn btn-info text-white shadow-sm" asp-action="Historial">
+            📜 Ver Historial
+        </a>
+    </div>
 </div>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Libro</th>
-            <th>Fecha Préstamo</th>
-            <th>Fecha Límite</th>
-            <th>Días Restantes</th>
-            <th>Estado</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model)
-        {
-            
-            var diasRestantes = (p.FechaDevolucionProgramada - DateTime.Now).Days;
 
+<div class="table-responsive bg-white p-3 rounded-4 shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
             <tr>
-                <td>@p.Libro.Titulo</td>
-                <td>@p.FechaPrestamo.ToShortDateString()</td>
-                <td>@p.FechaDevolucionProgramada.ToShortDateString()</td>
-                <td>
-                    @if (diasRestantes >= 0)
-                    {
-                        <span class="text-success">@diasRestantes días</span>
-                    }
-                    else
-                    {
-                        <span class="text-danger">@Math.Abs(diasRestantes) días de atraso</span>
-                    }
-                </td>
-                <td>
-                    @if (diasRestantes < 0)
-                    {
-                        <span class="badge bg-danger">Atrasado</span>
-                    }
-                    else if (diasRestantes <= 2)
-                    {
-                        <span class="badge bg-warning text-dark">Por vencer</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">Activo</span>
-                    }
-                </td>
-                <td>
-                    <button class="btn btn-success btn-sm"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalDevolver"
-                            data-id="@p.Id"
-                            data-libro="@p.Libro.Titulo">
-                        Devolver
-                    </button>
-                </td>
+                <th class="border-0">Libro</th>
+                <th class="border-0 text-center">Fecha Préstamo</th>
+                <th class="border-0 text-center">Límite</th>
+                <th class="border-0 text-center">Estado</th>
+                <th class="border-0 text-center">Acción</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @if(Model != null && Model.Any()) {
+                @foreach (var p in Model)
+                {
+                    var diasRestantes = (p.FechaDevolucionProgramada - DateTime.Now).Days;
+
+                    <tr>
+                        <td class="fw-semibold text-dark">@p.Libro.Titulo</td>
+                        <td class="text-muted text-center">@p.FechaPrestamo.ToShortDateString()</td>
+                        <td class="text-muted text-center fw-bold">@p.FechaDevolucionProgramada.ToShortDateString()</td>
+                        
+                        <td class="text-center">
+                            @if (diasRestantes < 0)
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Atrasado (@Math.Abs(diasRestantes) días)</span>
+                            }
+                            else if (diasRestantes <= 2)
+                            {
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning">Por vencer (@diasRestantes días)</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">Activo (@diasRestantes días)</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-success btn-sm shadow-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalDevolver"
+                                    data-id="@p.Id"
+                                    data-libro="@p.Libro.Titulo">
+                                🔄 Devolver
+                            </button>
+                        </td>
+                    </tr>
+                }
+            } else {
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No tienes ningún préstamo activo en este momento.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Devolver -->
 <div class="modal fade" id="modalDevolver" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
 
             <form action="@Url.Action("Devolver", "Prestamos")" method="post">
                 @Html.AntiForgeryToken()
 
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirmar devolución</h5>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">↩️ Confirmar Devolución</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
-                <div class="modal-body">
-                    <p>
-                        ¿Está seguro que desea devolver el libro
-                        <strong id="tituloLibro"></strong>?
-                    </p>
-
+                <div class="modal-body text-center mt-3 mb-2">
+                    <h5 class="text-muted mb-3">¿Estás seguro que deseas devolver el libro?</h5>
+                    <div class="bg-light p-3 rounded-3 shadow-sm border border-light">
+                        <strong id="tituloLibro" class="fs-5 text-primary"></strong>
+                    </div>
                     <input type="hidden" name="id" id="prestamoId" />
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">
                         Cancelar
                     </button>
-                    <button type="submit" class="btn btn-success">
-                        Confirmar devolución
+                    <button type="submit" class="btn btn-success px-4 shadow-sm">
+                        Confirmar Devolución
                     </button>
                 </div>
 
@@ -104,20 +107,14 @@
         </div>
     </div>
 </div>
-<script>
-    var modal = document.getElementById('modalDevolver');
 
-    modal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget;
-
-        document.getElementById('prestamoId').value =
-            button.getAttribute('data-id');
-
-        document.getElementById('tituloLibro').textContent =
-            button.getAttribute('data-libro');
-    });
-</script>
-
-
-    
-
+@section Scripts {
+    <script>
+        var modal = document.getElementById('modalDevolver');
+        modal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            document.getElementById('prestamoId').value = button.getAttribute('data-id');
+            document.getElementById('tituloLibro').textContent = button.getAttribute('data-libro');
+        });
+    </script>
+}

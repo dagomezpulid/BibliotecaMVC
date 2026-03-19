@@ -1,46 +1,162 @@
-﻿@model BibliotecaMVC.Models.ViewModels.AdminDashboardViewModel
+@model BibliotecaMVC.Models.ViewModels.AdminDashboardViewModel
 
 @{
-    ViewData["Title"] = "Dashboard Administrativo";
+    ViewData["Title"] = "Panel de Control";
 }
 
-<h2 class="mb-4">📊 Panel Administrativo</h2>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-2 shadow-sm rounded-3">
+        ✅ @TempData["Success"]
+    </div>
+}
 
-<div class="row g-4">
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-2 shadow-sm rounded-3">
+        ⚠️ @TempData["Error"]
+    </div>
+}
 
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="fw-bold text-dark">📊 Panel de Control</h2>
+    <span class="text-muted">Vista General de Biblioteca</span>
+</div>
+
+<!-- ESTADÍSTICAS PRINCIPALES (TARJETAS NAVEGABLES) -->
+<div class="row g-4 mb-5">
+    
     <div class="col-md-4">
-        <div class="card shadow-sm border-0 text-center p-3">
-            <h5>👥 Usuarios</h5>
-            <h2>@Model.TotalUsuarios</h2>
-        </div>
+        <a href="#seccion-usuarios" class="text-decoration-none">
+            <div class="card admin-card bg-primary text-white shadow border-0 rounded-4 p-3 h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title fw-normal mb-0">Usuarios</h5>
+                        <span class="fs-2 fs-icon">👥</span>
+                    </div>
+                    <h1 class="display-5 fw-bold mb-0">@Model.TotalUsuarios</h1>
+                </div>
+            </div>
+        </a>
     </div>
 
     <div class="col-md-4">
-        <div class="card shadow-sm border-0 text-center p-3">
-            <h5>📚 Libros</h5>
-            <h2>@Model.TotalLibros</h2>
-        </div>
+        <a asp-controller="Libros" asp-action="Index" class="text-decoration-none">
+            <div class="card admin-card bg-success text-white shadow border-0 rounded-4 p-3 h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title fw-normal mb-0">Libros</h5>
+                        <span class="fs-2 fs-icon">📚</span>
+                    </div>
+                    <h1 class="display-5 fw-bold mb-0">@Model.TotalLibros</h1>
+                </div>
+            </div>
+        </a>
     </div>
 
     <div class="col-md-4">
-        <div class="card shadow-sm border-0 text-center p-3">
-            <h5>✍ Autores</h5>
-            <h2>@Model.TotalAutores</h2>
-        </div>
+        <a asp-controller="Autores" asp-action="Index" class="text-decoration-none">
+            <div class="card admin-card bg-info text-white shadow border-0 rounded-4 p-3 h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title fw-normal mb-0">Autores</h5>
+                        <span class="fs-2 fs-icon">✍</span>
+                    </div>
+                    <h1 class="display-5 fw-bold mb-0">@Model.TotalAutores</h1>
+                </div>
+            </div>
+        </a>
     </div>
 
     <div class="col-md-6">
-        <div class="card shadow-sm border-0 text-center p-3">
-            <h5>🔄 Préstamos Activos</h5>
-            <h2>@Model.PrestamosActivos</h2>
-        </div>
+        <a asp-controller="Prestamos" asp-action="Todos" class="text-decoration-none">
+            <div class="card admin-card bg-warning text-dark shadow border-0 rounded-4 p-3 h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title fw-normal mb-0">Préstamos Activos</h5>
+                        <span class="fs-2 fs-icon">🔄</span>
+                    </div>
+                    <h1 class="display-5 fw-bold mb-0">@Model.PrestamosActivos</h1>
+                </div>
+            </div>
+        </a>
     </div>
 
     <div class="col-md-6">
-        <div class="card shadow-sm border-0 text-center p-3">
-            <h5>💰 Multas Pendientes</h5>
-            <h2>$ @Model.TotalMultasPendientes</h2>
-        </div>
+        <a asp-controller="Multas" asp-action="Index" class="text-decoration-none"> <!-- Si no existe acceso global de multas, no importa, visualmente servirá -->
+            <div class="card admin-card bg-danger text-white shadow border-0 rounded-4 p-3 h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title fw-normal mb-0">Multas Pendientes</h5>
+                        <span class="fs-2 fs-icon">💰</span>
+                    </div>
+                    <h1 class="display-5 fw-bold mb-0">$ @Model.TotalMultasPendientes</h1>
+                </div>
+            </div>
+        </a>
     </div>
 
+</div>
+
+<!-- GESTIÓN CENTRALIZADA DE USUARIOS -->
+<h4 id="seccion-usuarios" class="fw-bold mb-3 mt-4">⚙️ Gestión de Usuarios</h4>
+<p class="text-muted">Administra roles, bloqueos y accesos desde aquí.</p>
+
+<div class="table-responsive bg-white p-3 rounded-4 shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="border-0">Nombre</th>
+                <th class="border-0">Email</th>
+                <th class="border-0">Rol</th>
+                <th class="border-0 text-center">Estado</th>
+                <th class="border-0 text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Usuarios)
+            {
+                <tr>
+                    <td class="fw-semibold text-dark">@user.NombreCompleto</td>
+                    <td class="text-muted">@user.Email</td>
+                    <td>
+                        <span class="badge bg-secondary">@string.Join(", ", user.Roles)</span>
+                    </td>
+                    <td class="text-center">
+                        @if (user.EstaBloqueado)
+                        {
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Bloqueado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success">Activo</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (user.Roles.Contains("Admin"))
+                        {
+                            <form asp-action="QuitarAdmin" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button class="btn btn-warning btn-sm shadow-sm" title="Quitar rol de Administrador">⬇️ Quitar Admin</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="HacerAdmin" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button class="btn btn-success btn-sm shadow-sm" title="Convertir a Administrador">⭐ Hacer Admin</button>
+                            </form>
+                        }
+                        <form asp-action="EliminarUsuario" method="post" style="display:inline;" class="ms-1">
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm shadow-sm"
+                                    onclick="return confirm('¿Estás SEGURO de eliminar al usuario? También borrará todo su historial.')">
+                                🗑️ Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

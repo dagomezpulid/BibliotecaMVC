@@ -1,56 +1,51 @@
-﻿@model IEnumerable<BibliotecaMVC.Models.Libro>
-
-<h2>Lista de Libros</h2>
-
-@if (User.IsInRole("Ad min"))
-{
-    <a class="btn btn-success" href="/Libros/Create">Agregar Libro</a>
-    <a class="btn btn-secondary" href="/Autores/Create">Agregar Autor</a>
-}
-@if (User.Identity?.IsAuthenticated ?? false)
-{
-    <a class="btn btn-warning" asp-controller="Prestamos" asp-action="Index">
-        Préstamos Activos
-    </a>
+@{
+    ViewData["Title"] = "Inicio";
 }
 
-<br />
-<br />
+<div class="row align-items-center mt-5 mb-5">
+    <div class="col-lg-7">
+        <h1 class="display-4 fw-bold text-dark mb-3">Bienvenido a la <span class="text-primary">Biblioteca Digital</span></h1>
+        <p class="lead text-muted mb-4">Descubre miles de libros, administra tus préstamos y disfruta de la lectura de manera sencilla y rápida bajo una plataforma totalmente revitalizada.</p>
+        
+        <div class="d-flex gap-3">
+            <a asp-controller="Libros" asp-action="Index" class="btn btn-primary btn-lg shadow-sm px-4 rounded-pill fw-semibold">
+                📚 Ver Catálogo Completo
+            </a>
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <a asp-controller="Prestamos" asp-action="Index" class="btn btn-outline-secondary btn-lg shadow-sm bg-white px-4 rounded-pill fw-semibold">
+                    📖 Mis Préstamos
+                </a>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5 text-center d-none d-lg-block">
+        <div class="bg-primary bg-opacity-10 p-5 rounded-circle d-inline-flex justify-content-center align-items-center" style="width: 250px; height: 250px;">
+            <span style="font-size: 6rem;">📚</span>
+        </div>
+    </div>
+</div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Título</th>
-            <th>Autor</th>
-            <th>Stock</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var libro in Model)
-        {
-            <tr>
-                <td>@libro.Titulo</td>
-                <td>@libro.Autor?.Nombre</td>
-                <td>@libro.Stock</td>
-                <td>
-                @if (User.Identity?.IsAuthenticated ?? false)
-                {
-                    @if (libro.Stock > 0)
-                    {
-                         <a class="btn btn-info btn-sm"
-                             asp-controller="Prestamos"
-                             asp-action="ConfirmarPrestamo"
-                             asp-route-id="@libro.Id">
-                             Prestar
-                         </a>
-                    }
-                    else
-                    {
-                        <span class="text-danger">Sin stock</span>
-                    }
-                }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="row mt-5 g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4 text-center">
+            <span class="fs-1 mb-3">🔍</span>
+            <h5 class="fw-bold">Explora</h5>
+            <p class="text-muted small mb-0">Busca tus autores favoritos y descubre las últimas novedades en nuestro extenso catálogo literario.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4 text-center">
+            <span class="fs-1 mb-3">⚡</span>
+            <h5 class="fw-bold">Reserva</h5>
+            <p class="text-muted small mb-0">Solicita préstamos con un solo clic. Tienes 7 días para disfrutar los libros prestados.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100 p-4 text-center">
+            <span class="fs-1 mb-3">📅</span>
+            <h5 class="fw-bold">Gestiona</h5>
+            <p class="text-muted small mb-0">Controla tus fechas de devolución, evita multas y mantén un historial íntegro de tus lecturas.</p>
+        </div>
+    </div>
+</div>

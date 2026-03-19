@@ -1,10 +1,10 @@
-﻿using BibliotecaMVC.Models;
+using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-[Authorize(Roles = "Usuario")]
+[Authorize]
 public class MultasController : Controller
 {
     private readonly BibliotecaContext _context;
@@ -16,6 +16,7 @@ public class MultasController : Controller
         _userManager = userManager;
     }
 
+    [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> MisMultas()
     {
         var usuarioId = _userManager.GetUserId(User);
@@ -30,7 +31,22 @@ public class MultasController : Controller
         return View(multas);
     }
 
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Index()
+    {
+        var multas = await _context.Multas
+            .Include(m => m.Prestamo)
+            .ThenInclude(p => p.Libro)
+            .Include(m => m.Prestamo)
+            .ThenInclude(p => p.Usuario)
+            .OrderByDescending(m => m.FechaGenerada)
+            .ToListAsync();
+
+        return View(multas);
+    }
+
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> MarcarPagada(int id)
     {
         var multa = await _context.Multas.FindAsync(id);

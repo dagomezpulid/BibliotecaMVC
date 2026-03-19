@@ -1,0 +1,61 @@
+@model IEnumerable<BibliotecaMVC.Models.Libro>
+
+@{
+    ViewData["Title"] = "Catálogo de Libros";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="fw-bold text-dark">📚 Catálogo de Libros</h2>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Create" class="btn btn-primary d-flex align-items-center shadow-sm">
+            <span class="fs-5 me-2">➕</span> Nuevo Libro
+        </a>
+    }
+</div>
+
+<div class="table-responsive bg-white p-3 rounded-4 shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="border-0">Título</th>
+                <th class="border-0">Autor</th>
+                <th class="border-0 text-center">Stock</th>
+                <th class="border-0 text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold text-dark">@item.Titulo</td>
+                        <td class="text-muted">@(item.Autor?.Nombre)</td>
+                        <td class="text-center">
+                            @if(item.Stock > 0)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success">@item.Stock Disp.</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Agotado</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-controller="Prestamos" asp-action="ConfirmarPrestamo" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary fw-semibold shadow-sm @(item.Stock <= 0 ? "disabled" : "")">
+                                📖 Solicitar Préstamo
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No hay libros registrados en el catálogo.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

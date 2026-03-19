@@ -1,0 +1,41 @@
+@model IEnumerable<BibliotecaMVC.Models.Autor>
+
+@{
+    ViewData["Title"] = "Autores";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="fw-bold text-dark">✍ Autores Registrados</h2>
+    <a asp-action="Create" class="btn btn-primary d-flex align-items-center shadow-sm">
+        <span class="fs-5 me-2">➕</span> Nuevo Autor
+    </a>
+</div>
+
+<div class="table-responsive bg-white p-3 rounded-4 shadow-sm border-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th class="border-0">ID</th>
+                <th class="border-0">Nombre del Autor</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="text-muted fw-bold">#@item.Id</td>
+                        <td class="fw-semibold text-dark">@item.Nombre</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="2" class="text-center text-muted py-4">No hay autores registrados en el sistema.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

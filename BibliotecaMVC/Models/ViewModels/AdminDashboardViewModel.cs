@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BibliotecaMVC.Models.ViewModels
 {
@@ -9,5 +9,6 @@ namespace BibliotecaMVC.Models.ViewModels
         public int TotalAutores { get; set; }
         public int PrestamosActivos { get; set; }
         public decimal TotalMultasPendientes { get; set; }
+        public List<UserViewModel> Usuarios { get; set; } = new List<UserViewModel>();
     }
 }

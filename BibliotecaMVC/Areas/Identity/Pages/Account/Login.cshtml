@@ -1,45 +1,58 @@
-﻿@page
+@page
 @model BibliotecaMVC.Areas.Identity.Pages.Account.LoginModel
 
 @{
     ViewData["Title"] = "Iniciar Sesión";
 }
 
-<div class="container mt-5" style="max-width: 500px;">
-    <h2 class="text-center mb-4">Iniciar Sesión</h2>
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-md-5 mt-4">
+        <div class="card shadow rounded-4 border-0">
+            <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                <h4 class="mb-0 fw-bold text-center">🔐 Iniciar Sesión</h4>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                
+                <p class="text-muted text-center mb-4">Ingresa tus credenciales para acceder a la Biblioteca Digital.</p>
 
-    <form method="post">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small fw-bold"></div>
 
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="correo@ejemplo.com" />
+                        <label asp-for="Input.Email" class="form-label">Correo Electrónico</label>
+                        <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                    </div>
 
-        <div class="mb-3">
-            <label asp-for="Input.Email" class="form-label"></label>
-            <input asp-for="Input.Email" class="form-control" autocomplete="username" />
-            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="Contraseña" />
+                        <label asp-for="Input.Password" class="form-label">Contraseña</label>
+                        <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check mb-4 mt-2 ms-2">
+                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                        <label class="form-check-label fw-semibold text-secondary" asp-for="Input.RememberMe">
+                            Mantener sesión iniciada
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button id="login-submit" type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill mt-2">
+                            Ingresar
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="text-muted mb-1">¿No tienes cuenta?</p>
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-primary fw-bold text-decoration-none h5">
+                            Regístrate aquí
+                        </a>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label asp-for="Input.Password" class="form-label"></label>
-            <input asp-for="Input.Password" class="form-control" autocomplete="current-password" />
-            <span asp-validation-for="Input.Password" class="text-danger"></span>
-        </div>
-
-        <div class="form-check mb-3">
-            <input class="form-check-input" asp-for="Input.RememberMe" />
-            <label class="form-check-label" asp-for="Input.RememberMe"></label>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100 mb-3">
-            Ingresar
-        </button>
-
-        <div class="text-center">
-            <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">
-                ¿No tienes cuenta? Regístrate aquí
-            </a>
-        </div>
-
-    </form>
+    </div>
 </div>
 
 @section Scripts {

@@ -1,33 +1,40 @@
-﻿@model BibliotecaMVC.Models.Autor
+@model BibliotecaMVC.Models.Autor
 
 @{
     ViewData["Title"] = "Agregar Autor";
 }
 
-<h2>Agregar Autor</h2>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 mt-4">
+        <div class="card shadow rounded-4 border-0">
+            <div class="card-header bg-info text-white rounded-top-4 py-3">
+                <h4 class="mb-0 fw-bold text-center">✍ Registra un Nuevo Autor</h4>
+            </div>
+            <div class="card-body p-4">
+                
+                <form asp-action="Create" method="post">
+                    
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    
+                    <div class="form-floating mb-4">
+                        <input asp-for="Nombre" class="form-control" placeholder="Ej: Gabriel García Márquez" />
+                        <label asp-for="Nombre">Nombre Completo del Autor</label>
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    </div>
 
-<div asp-validation-summary="All" class="text-danger"></div>
-
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label asp-for="Nombre"></label>
-        <input asp-for="Nombre" class="form-control" />
-        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    <div class="d-grid gap-2 input-group mt-2">
+                        <button type="submit" class="btn btn-info text-white btn-lg fw-bold shadow-sm w-50">
+                            Guardar Autor
+                        </button>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-light border btn-lg fw-bold w-50">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <br />
-
-    <div class="mt-3">
-        <button 
-            type="submit" class="btn btn-primary">Guardar
-        </button>
-        <a class="btn btn-secondary"
-           asp-controller="Home"
-           asp-action="Index">
-            Volver al Home
-        </a>
-    </div>    
-</form>
+</div>
 
 @section Scripts {
     @{

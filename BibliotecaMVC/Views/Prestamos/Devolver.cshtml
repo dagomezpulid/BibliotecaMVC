@@ -1,14 +1,37 @@
-﻿@model BibliotecaMVC.Models.Prestamo
+@model BibliotecaMVC.Models.Prestamo
 
-<h2>Devolver Libro</h2>
+@{
+    ViewData["Title"] = "Devolver Libro";
+}
 
-<p><strong>Libro:</strong> @Model.Libro.Titulo</p>
-<p>
-    <strong>Solicitante:</strong> @Model.Usuario?.NombreCompleto</p>
-
-<form asp-action="Devolver" method="post">
-    <input type="hidden" name="id" value="@Model.Id" />
-
-    <button type="submit" class="btn btn-success">Confirmar Devolución</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 mt-4">
+        <div class="card shadow rounded-4 border-0">
+            <div class="card-header bg-success text-white rounded-top-4 py-3">
+                <h4 class="mb-0 fw-bold text-center">↩️ Confirmar Devolución</h4>
+            </div>
+            <div class="card-body p-4 text-center">
+                
+                <h5 class="text-muted mb-4">¿Confirmas la recepción física del siguiente libro?</h5>
+                
+                <div class="bg-light p-3 rounded-3 mb-4 text-start shadow-sm border">
+                    <p class="mb-1"><span class="fw-bold">📚 Libro prestado:</span> @Model.Libro.Titulo</p>
+                    <p class="mb-0"><span class="fw-bold">👤 Lector solicitante:</span> @Model.Usuario?.NombreCompleto</p>
+                </div>
+                
+                <form asp-action="Devolver" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold px-5 shadow-sm">
+                            Registrar Devolución
+                        </button>
+                        <a asp-action="Todos" class="btn btn-light border btn-lg fw-bold px-4">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

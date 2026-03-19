@@ -29,3 +29,21 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* Dashboard Admin Custom Styles */
+.admin-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+.quick-action-btn {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.quick-action-btn:hover {
+    transform: scale(1.05);
+}
+.fs-icon {
+    opacity: 0.8;
+}
