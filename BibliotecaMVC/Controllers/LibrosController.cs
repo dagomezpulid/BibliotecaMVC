@@ -35,8 +35,17 @@ namespace BibliotecaMVC.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create(Libro libro)
+        public async Task<IActionResult> Create(Libro libro)
         {
+            // Excepción: Evitar Libros Duplicados por Título
+            bool existeLibro = await _context.Libros.AnyAsync(l => 
+                l.Titulo.ToLower() == libro.Titulo.ToLower());
+
+            if (existeLibro)
+            {
+                ModelState.AddModelError("Titulo", "Ya existe un libro registrado con este mismo título en la biblioteca.");
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Autores = new SelectList(
@@ -49,7 +58,7 @@ namespace BibliotecaMVC.Controllers
             }
 
             _context.Libros.Add(libro);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
         }

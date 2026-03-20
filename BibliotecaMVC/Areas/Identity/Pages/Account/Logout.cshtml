@@ -1,21 +1,40 @@
-﻿@page
+@page
 @model LogoutModel
 @{
-    ViewData["Title"] = "Log out";
+    ViewData["Title"] = "¡Hasta Pronto!";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
-        {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
-            </form>
-        }
-        else
-        {
-            <p>You have successfully logged out of the application.</p>
-        }
-    }
-</header>
+<div class="row justify-content-center mt-5 mb-5 text-center">
+    <div class="col-md-5 mt-4">
+        <div class="card shadow rounded-4 border-0 p-5">
+            <div class="card-body">
+                <span style="font-size: 4rem;">👋</span>
+                <h2 class="fw-bold mt-3 text-dark">Sesión Cerrada</h2>
+                
+                @if (User.Identity?.IsAuthenticated ?? false)
+                {
+                    <p class="text-muted fs-5 mt-2">¿Deseas desconectarte completamente?</p>
+                    <form class="form-inline mt-3" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                        <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-sm px-5">Cerrar Sesión Ahora</button>
+                    </form>
+                }
+                else
+                {
+                    <p class="text-muted fs-5 mt-2">Has salido de tu cuenta exitosamente. Protegiendo tus datos...</p>
+                    
+                    <div class="spinner-border text-primary mt-3 mb-3" role="status">
+                        <span class="visually-hidden">Redirigiendo...</span>
+                    </div>
+                    <p class="text-muted small">Redirigiendo al inicio automáticamente...</p>
+                    
+                    <script>
+                        setTimeout(function() {
+                            window.location.href = '/';
+                        }, 2000);
+                    </script>
+                }
+                
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,7 @@
 using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Controllers
 {
@@ -29,6 +30,15 @@ namespace BibliotecaMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Autor autor)
         {
+            // Excepción: Evitar Autores Duplicados
+            bool existeAutor = await _context.Autores.AnyAsync(a => 
+                a.Nombre.ToLower() == autor.Nombre.ToLower());
+
+            if (existeAutor)
+            {
+                ModelState.AddModelError("", "Ya existe un autor registrado con ese mismo nombre.");
+            }
+
             if (!ModelState.IsValid)
                 return View(autor);
 
