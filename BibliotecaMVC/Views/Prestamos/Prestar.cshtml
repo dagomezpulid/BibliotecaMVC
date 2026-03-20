@@ -24,14 +24,21 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="libroId" value="@Model" />
 
-                    <div class="mb-4 text-start bg-light p-3 rounded-3 border">
-                        <label for="diasPrestamo" class="form-label fw-bold text-dark">¿Por cuántos días lo necesitas?</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white">📅</span>
-                            <input type="number" id="diasPrestamo" name="diasPrestamo" class="form-control form-control-lg text-center" min="2" max="20" value="7" required />
+                    <div class="mb-4 text-start bg-light p-3 rounded-3 border shadow-sm">
+                        <label for="diasPrestamo" class="form-label fw-bold text-dark">¿Cuándo devolverás el libro?</label>
+                        <div class="input-group input-group-lg">
+                            <input type="date" id="fechaSelector" class="form-control text-center text-primary fw-bold" 
+                                   min="@DateTime.Now.AddDays(2).ToString("yyyy-MM-dd")" 
+                                   max="@DateTime.Now.AddDays(20).ToString("yyyy-MM-dd")" 
+                                   value="@DateTime.Now.AddDays(7).ToString("yyyy-MM-dd")" 
+                                   title="Elegir Fecha Exacta del Calendario"/>
+                            
+                            <span class="input-group-text bg-white text-muted fs-6">equivale a</span>
+                            
+                            <input type="number" id="diasPrestamo" name="diasPrestamo" class="form-control text-center fw-bold text-dark" min="2" max="20" value="7" required />
                             <span class="input-group-text bg-white text-muted">Días</span>
                         </div>
-                        <div class="form-text mt-2 text-center text-secondary"><small><i>*Selecciona un período válido entre 2 y 20 días máximo.</i></small></div>
+                        <div class="form-text mt-2 text-center text-secondary"><small><i>*Tip: Usa el calendario para elegir la fecha o teclea los días directamente (Mínimo 2, Máximo 20).</i></small></div>
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-center">
@@ -47,3 +54,44 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const datePicker = document.getElementById("fechaSelector");
+        const daysInput = document.getElementById("diasPrestamo");
+        
+        // Calcular "Hoy" puro para matemáticas de fechas (forzando medianoche)
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        const buildDateParams = (dias) => {
+            let targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + dias);
+            // Formato normalizado YYYY-MM-DD
+            return targetDate.toISOString().split('T')[0];
+        };
+
+        // Escuchar cuando el usuario escoge una fecha en el Calendario
+        datePicker.addEventListener("change", function () {
+            const selectedDate = new Date(this.value + "T00:00:00");
+            const diffTime = selectedDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays >= 2 && diffDays <= 20) {
+                daysInput.value = diffDays;
+            } else {
+                // Candado de seguridad front-end si rompen o escriben fechas inválidas
+                if (diffDays < 2) { daysInput.value = 2; datePicker.value = buildDateParams(2); }
+                if (diffDays > 20) { daysInput.value = 20; datePicker.value = buildDateParams(20); }
+            }
+        });
+
+        // Escuchar cuando el usuario tipea el número de días
+        daysInput.addEventListener("input", function () {
+            let days = parseInt(this.value);
+            if (!isNaN(days) && days >= 2 && days <= 20) {
+                datePicker.value = buildDateParams(days);
+            }
+        });
+    });
+</script>
