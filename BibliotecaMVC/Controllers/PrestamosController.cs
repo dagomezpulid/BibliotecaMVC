@@ -1,4 +1,4 @@
-﻿using BibliotecaMVC.Models;
+using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -18,17 +18,21 @@ public class PrestamosController : Controller
         _userManager = userManager;
     }
 
+    private IQueryable<Prestamo> ObtenerPrestamosDetallados()
+    {
+        return _context.Prestamos
+            .Include(p => p.Libro)
+            .Include(p => p.Usuario)
+            .Include(p => p.Multa);
+    }
+
     // Préstamos activos
     public IActionResult Index()
     {
         var usuarioId = _userManager.GetUserId(User);
 
-        var prestamos = _context.Prestamos
-            .Include(p => p.Libro)
-            .Include(p => p.Usuario)
-            .Include(p => p.Multa)
-            .Where(p => p.UsuarioId == usuarioId &&
-                p.FechaDevolucionReal == null)
+        var prestamos = ObtenerPrestamosDetallados()
+            .Where(p => p.UsuarioId == usuarioId && p.FechaDevolucionReal == null)
             .ToList();
 
         return View(prestamos);
@@ -64,15 +68,11 @@ public class PrestamosController : Controller
         prestamo.FechaDevolucionReal = DateTime.Now;
         prestamo.Estado = "Devuelto";
 
-        // Generar multa si aplica
-        if (prestamo.FechaDevolucionReal > prestamo.FechaDevolucionProgramada)
+        // Generar multa si aplica a nivel modelo
+        if (prestamo.EstaVencido)
         {
-            var diasMora =
-                (prestamo.FechaDevolucionReal.Value -
-                 prestamo.FechaDevolucionProgramada).Days;
-
             decimal valorPorDia = 1000;
-            decimal totalMulta = diasMora * valorPorDia;
+            decimal totalMulta = prestamo.DiasMora * valorPorDia;
 
             var multa = new Multa
             {
@@ -176,10 +176,7 @@ public class PrestamosController : Controller
     [Authorize(Roles = "Admin")]
     public IActionResult Todos()
     {
-        var prestamos = _context.Prestamos
-            .Include(p => p.Libro)
-            .Include(p => p.Usuario)
-            .Include(p => p.Multa)
+        var prestamos = ObtenerPrestamosDetallados()
             .OrderByDescending(p => p.FechaPrestamo)
             .ToList();
 

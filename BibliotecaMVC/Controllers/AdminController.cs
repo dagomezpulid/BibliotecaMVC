@@ -18,15 +18,30 @@ public class AdminController : Controller
     }
     public async Task<IActionResult> Index()
     {
-        // 1. Cargar y actualizar estado de bloqueos de los usuarios
-        var users = _userManager.Users.ToList();
+        // 1. Cargar usuarios
+        var users = await _userManager.Users.ToListAsync();
+        var usuariosIds = users.Select(u => u.Id).ToList();
+
+        // N+1 SOLVED: Cargar todos los préstamos activos globalmente
+        var prestamosActivosAll = await _context.Prestamos
+            .Where(p => p.FechaDevolucionReal == null && usuariosIds.Contains(p.UsuarioId))
+            .ToListAsync();
+
+        var prestamosPorUsuario = prestamosActivosAll
+            .GroupBy(p => p.UsuarioId!)
+            .ToDictionary(g => g.Key, g => g.ToList());
         
+        // Actualizar estado de bloqueos mediante las propiedades directas del Modelo
         foreach (var user in users)
         {
-            await ActualizarEstadoBloqueo(user);
+            var prestamosUser = prestamosPorUsuario.GetValueOrDefault(user.Id, new List<Prestamo>());
+            bool bloquear = prestamosUser.Any(p => p.DiasMora >= 8);
+
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            await _userManager.SetLockoutEndDateAsync(user, bloquear ? DateTimeOffset.UtcNow.AddYears(100) : null);
         }
 
-        // 2. Preparar el listado visual de usuarios
+        // 2. Preparar el listado visual
         var userViewModels = new List<UserViewModel>();
         foreach (var user in users)
         {
@@ -48,9 +63,7 @@ public class AdminController : Controller
             TotalUsuarios = users.Count,
             TotalLibros = await _context.Libros.CountAsync(),
             TotalAutores = await _context.Autores.CountAsync(),
-            PrestamosActivos = await _context.Prestamos
-                        .Where(p => p.FechaDevolucionReal == null)
-                        .CountAsync(),
+            PrestamosActivos = prestamosActivosAll.Count,
             TotalMultasPendientes = await _context.Multas
                         .Where(m => !m.Pagada)
                         .SumAsync(m => (decimal?)m.Monto) ?? 0,
@@ -142,42 +155,5 @@ public class AdminController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task<bool> DebeEstarBloqueado(ApplicationUser user)
-    {
-        var prestamos = await _context.Prestamos
-            .Where(p => p.UsuarioId == user.Id && p.FechaDevolucionReal == null)
-            .ToListAsync();
-
-        foreach (var prestamo in prestamos)
-        {
-            if (DateTime.Now > prestamo.FechaDevolucionProgramada)
-            {
-                var diasMora =
-                    (DateTime.Now - prestamo.FechaDevolucionProgramada).Days;
-
-                if (diasMora >= 8)
-                    return true;
-            }
-        }
-
-        return false;
-    }
-    private async Task ActualizarEstadoBloqueo(ApplicationUser user)
-    {
-        bool bloquear = await DebeEstarBloqueado(user);
-
-        // Asegurar que el bloqueo esté habilitado para el usuario en la base de datos
-        await _userManager.SetLockoutEnabledAsync(user, true);
-
-        if (bloquear)
-        {
-            // Bloqueamos la cuenta por 100 años si tiene mora
-            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
-        }
-        else
-        {
-            // Quitamos el bloqueo si ya no tiene mora
-            await _userManager.SetLockoutEndDateAsync(user, null);
-        }
-    }
+    // Métodos aislados removidos para delegar al Modelo (Clean Code)
 }

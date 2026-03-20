@@ -55,6 +55,7 @@ public class MultasController : Controller
             return NotFound();
 
         multa.Pagada = true;
+        multa.FechaPago = DateTime.Now;
 
         await _context.SaveChangesAsync();
 

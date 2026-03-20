@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BibliotecaMVC.Models;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
@@ -24,5 +24,9 @@ namespace BibliotecaMVC.Models
         public string Estado { get; set; } = "Activo";
 
         public Multa? Multa { get; set; }
+
+        public bool EstaVencido => FechaDevolucionReal == null && DateTime.Now > FechaDevolucionProgramada;
+        
+        public int DiasMora => EstaVencido ? (DateTime.Now - FechaDevolucionProgramada).Days : 0;
     }
 }

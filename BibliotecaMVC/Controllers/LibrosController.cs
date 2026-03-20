@@ -1,4 +1,4 @@
-﻿using BibliotecaMVC.Models;
+using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -41,7 +41,7 @@ namespace BibliotecaMVC.Controllers
             {
                 ViewBag.Autores = new SelectList(
                     _context.Autores,
-                    "AutorID",
+                    "Id",
                     "Nombre",
                     libro.AutorId);
 
