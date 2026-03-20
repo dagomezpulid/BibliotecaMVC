@@ -4,27 +4,40 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 
-<ul class="navbar-nav">
+<ul class="navbar-nav align-items-center">
 @if (SignInManager.IsSignedIn(User))
 {
-    <li class="nav-item">
-        <a id="manage" class="nav-link text-dark fw-bold btn btn-light rounded-pill px-3 me-2 border shadow-sm" asp-area="Identity" asp-page="/Account/Manage/Index" title="Gestionar Perfil">
-            👤 Mi Perfil (@UserManager.GetUserName(User))
+    var esAdmin = User.IsInRole("Admin");
+    var usuarioActual = await UserManager.GetUserAsync(User);
+    var nombreMostrar = esAdmin ? "Administrador" : usuarioActual?.NombreCompleto ?? UserManager.GetUserName(User);
+
+    <li class="nav-item dropdown me-2">
+        <a class="nav-link dropdown-toggle text-dark fw-bold btn btn-light rounded-pill px-3 border shadow-sm" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            👤 @nombreMostrar
         </a>
-    </li>
-    <li class="nav-item">
-        <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
-        </form>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 rounded-4" aria-labelledby="userDropdown">
+            @if (!esAdmin)
+            {
+                <li><a class="dropdown-item py-2" asp-area="Identity" asp-page="/Account/Manage/Index">⚙️ Configuración General</a></li>
+                <li><a class="dropdown-item py-2" asp-area="Identity" asp-page="/Account/Manage/Email">📧 Cambiar Correo</a></li>
+                <li><a class="dropdown-item py-2" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">🔑 Cambiar Contraseña</a></li>
+                <li><hr class="dropdown-divider"></li>
+            }
+            <li>
+                <form id="logoutForm" class="form-inline m-0 p-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button id="logout" type="submit" class="dropdown-item py-2 text-danger fw-bold">🚪 Cerrar Sesión</button>
+                </form>
+            </li>
+        </ul>
     </li>
 }
 else
 {
-    <li class="nav-item">
-        <a class="nav-link text-dark" id="register" asp-area="Identity" asp-page="/Account/Register">Register</a>
+    <li class="nav-item me-2">
+        <a class="btn btn-outline-primary fw-bold rounded-pill px-4 shadow-sm" id="login" asp-area="Identity" asp-page="/Account/Login">Iniciar Sesión</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link text-dark" id="login" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        <a class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm" id="register" asp-area="Identity" asp-page="/Account/Register">Regístrate</a>
     </li>
 }
 </ul>
