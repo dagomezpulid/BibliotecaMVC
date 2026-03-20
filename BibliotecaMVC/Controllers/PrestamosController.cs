@@ -58,12 +58,25 @@ public class PrestamosController : Controller
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Devolver(int id)
     {
+        var usuarioId = _userManager.GetUserId(User);
+
         var prestamo = await _context.Prestamos
             .Include(p => p.Libro)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         if (prestamo == null)
             return NotFound();
+
+        // BUG: IDOR (Insecure Direct Object Reference). Impedir gestionar libros de otros.
+        if (prestamo.UsuarioId != usuarioId)
+            return Forbid();
+
+        // BUG: Ataque de Doble Petición (Inflación del Stock)
+        if (prestamo.FechaDevolucionReal != null)
+        {
+            TempData["Error"] = "Vulnerabilidad prevenida: El préstamo ya ha sido devuelto y el stock procesado.";
+            return RedirectToAction(nameof(Index));
+        }
 
         prestamo.FechaDevolucionReal = DateTime.Now;
         prestamo.Estado = "Devuelto";
