@@ -30,17 +30,19 @@ namespace BibliotecaMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Autor autor)
         {
-            // Excepción: Evitar Autores Duplicados
+            // 1. Validar primero que los campos no estén vacíos
+            if (!ModelState.IsValid)
+                return View(autor);
+
+            // 2. Solo si hay texto, consultar a BBDD por duplicados
             bool existeAutor = await _context.Autores.AnyAsync(a => 
                 a.Nombre.ToLower() == autor.Nombre.ToLower());
 
             if (existeAutor)
             {
-                ModelState.AddModelError("", "Ya existe un autor registrado con ese mismo nombre.");
-            }
-
-            if (!ModelState.IsValid)
+                ModelState.AddModelError("Nombre", "Ya existe un autor registrado con ese mismo nombre.");
                 return View(autor);
+            }
 
             _context.Autores.Add(autor);
             await _context.SaveChangesAsync();

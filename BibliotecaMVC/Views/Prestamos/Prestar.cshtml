@@ -16,13 +16,23 @@
                 
                 <h3 class="fw-bold mb-4 text-dark">@ViewBag.LibroTitulo</h3>
                 
-                <div class="alert alert-warning bg-opacity-10 py-2 shadow-sm rounded-3 d-inline-block px-4 border-warning">
-                    <small>⏰ Deberás devolverlo a más tardar en <strong>7 días</strong> a partir de hoy.</small>
+                <div class="alert alert-info bg-opacity-10 py-2 shadow-sm rounded-3 d-inline-block px-4 border-info mb-4">
+                    <small>⏰ Elige tu tiempo de lectura sabiamente. Máximo 20 días.</small>
                 </div>
                 
-                <form asp-controller="Prestamos" asp-action="Prestar" method="post" class="mt-4">
+                <form asp-controller="Prestamos" asp-action="Prestar" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="libroId" value="@Model" />
+
+                    <div class="mb-4 text-start bg-light p-3 rounded-3 border">
+                        <label for="diasPrestamo" class="form-label fw-bold text-dark">¿Por cuántos días lo necesitas?</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">📅</span>
+                            <input type="number" id="diasPrestamo" name="diasPrestamo" class="form-control form-control-lg text-center" min="2" max="20" value="7" required />
+                            <span class="input-group-text bg-white text-muted">Días</span>
+                        </div>
+                        <div class="form-text mt-2 text-center text-secondary"><small><i>*Selecciona un período válido entre 2 y 20 días máximo.</i></small></div>
+                    </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-center">
                         <button type="submit" class="btn btn-warning btn-lg fw-bold px-5 shadow-sm">

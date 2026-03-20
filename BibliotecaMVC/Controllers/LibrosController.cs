@@ -37,17 +37,26 @@ namespace BibliotecaMVC.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Libro libro)
         {
-            // Excepción: Evitar Libros Duplicados por Título
+            // 1. Validar que no manden el formulario vacío
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Autores = new SelectList(
+                    _context.Autores,
+                    "Id",
+                    "Nombre",
+                    libro.AutorId);
+
+                return View(libro);
+            }
+
+            // 2. Solo si el título tiene texto legítimo, buscamos clones
             bool existeLibro = await _context.Libros.AnyAsync(l => 
                 l.Titulo.ToLower() == libro.Titulo.ToLower());
 
             if (existeLibro)
             {
                 ModelState.AddModelError("Titulo", "Ya existe un libro registrado con este mismo título en la biblioteca.");
-            }
-
-            if (!ModelState.IsValid)
-            {
+                
                 ViewBag.Autores = new SelectList(
                     _context.Autores,
                     "Id",

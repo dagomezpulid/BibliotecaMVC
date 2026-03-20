@@ -109,7 +109,7 @@ public class PrestamosController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
-    public async Task<IActionResult> Prestar(int libroId)
+    public async Task<IActionResult> Prestar(int libroId, int diasPrestamo)
     {
         var usuarioId = _userManager.GetUserId(User);
 
@@ -117,6 +117,12 @@ public class PrestamosController : Controller
 
         if (libro == null || libro.Stock <= 0)
             return BadRequest("Libro no disponible");
+
+        if (diasPrestamo < 2 || diasPrestamo > 20)
+        {
+            TempData["Error"] = "Cantidad de días inválida. La biblioteca solo permite préstamos entre 2 y 20 días.";
+            return RedirectToAction("ConfirmarPrestamo", new { id = libroId });
+        }
 
         // Validar multas pendientes
         var tieneMultaPendiente = await _context.Multas
@@ -137,7 +143,7 @@ public class PrestamosController : Controller
             LibroId = libroId,
             UsuarioId = usuarioId,
             FechaPrestamo = DateTime.Now,
-            FechaDevolucionProgramada = DateTime.Now.AddDays(7),
+            FechaDevolucionProgramada = DateTime.Now.AddDays(diasPrestamo),
             Estado = "Activo"
         };
 
