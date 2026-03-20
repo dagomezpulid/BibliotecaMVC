@@ -18,7 +18,6 @@
         <thead class="table-light">
             <tr>
                 <th class="border-0">Libro</th>
-                <th class="border-0">Solicitante</th>
                 <th class="border-0">Fecha Préstamo</th>
                 <th class="border-0">Vencimiento</th>
                 <th class="border-0">Devolución Real</th>
@@ -39,7 +38,6 @@
 
                     <tr>
                         <td class="fw-semibold text-dark">@p.Libro?.Titulo</td>
-                        <td class="text-muted">@p.Usuario?.NombreCompleto</td>
                         <td class="text-muted">@p.FechaPrestamo.ToShortDateString()</td>
                         <td class="text-muted">@p.FechaDevolucionProgramada.ToShortDateString()</td>
                         <td class="text-muted fw-bold">@(devuelto ? p.FechaDevolucionReal?.ToShortDateString() : "-")</td>
@@ -66,7 +64,7 @@
                 }
             } else {
                  <tr>
-                    <td colspan="6" class="text-center text-muted py-4">No hay historial de préstamos.</td>
+                    <td colspan="5" class="text-center text-muted py-4">No hay historial de préstamos.</td>
                 </tr>
             }
         </tbody>
