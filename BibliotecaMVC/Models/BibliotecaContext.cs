@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +15,7 @@ namespace BibliotecaMVC.Models
         public DbSet<Libro> Libros { get; set; }
         public DbSet<Prestamo> Prestamos { get; set; }
         public DbSet<Multa> Multas { get; set; }
+        public DbSet<Pago> Pagos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

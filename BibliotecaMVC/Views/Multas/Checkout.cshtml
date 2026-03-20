@@ -1,0 +1,87 @@
+@model BibliotecaMVC.Models.Multa
+
+@{
+    ViewData["Title"] = "Pagar Multa";
+}
+
+<div class="row justify-content-center mt-5 mb-5">
+    <div class="col-md-5 mt-3">
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger shadow-sm rounded-3 fw-semibold">
+                ⚠️ @TempData["Error"]
+            </div>
+        }
+
+        <div class="card shadow rounded-4 border-0">
+            <!-- Header simulando Checkout Seguro -->
+            <div class="card-header bg-dark text-white rounded-top-4 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">🔒 Checkout Seguro</h5>
+                <span class="fs-4">💳</span>
+            </div>
+
+            <div class="card-body p-4 p-md-5 bg-light rounded-bottom-4">
+
+                <!-- Resumen de Cuenta -->
+                <div class="mb-4 text-center">
+                    <p class="text-muted mb-1 text-uppercase fw-semibold" style="letter-spacing: 1px; font-size: 0.85rem;">Total a pagar</p>
+                    <h1 class="display-4 fw-bold text-dark mb-0">$@Model.Monto.ToString("N0")</h1>
+                    <p class="text-muted mt-2">
+                        Multa por retraso de <span class="fw-bold text-dark">@Model.Prestamo?.Libro?.Titulo</span>
+                    </p>
+                </div>
+
+                <hr class="mb-4 text-secondary">
+
+                <!-- Formulario Simulador de Tarjeta -->
+                <form asp-action="ProcesarPago" method="post" id="paymentForm">
+                    <input type="hidden" name="MultaId" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark small">Titular de la Tarjeta</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person"></i> 👤</span>
+                            <input type="text" class="form-control border-start-0" placeholder="Ej. Juan Pérez" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark small">Número de la Tarjeta</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted">💳</span>
+                            <input type="text" name="NumeroTarjeta" class="form-control border-start-0" placeholder="0000 0000 0000 0000" minlength="13" maxlength="19" required>
+                            <span class="input-group-text bg-white text-primary fw-bold">VISA</span>
+                        </div>
+                        <div class="form-text mt-2"><small><i>*Esto es una simulación. Puedes ingresar cualquier número ficticio de 16 dígitos para propósitos de prueba.</i></small></div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <label class="form-label fw-bold text-dark small">Vencimiento</label>
+                            <input type="text" class="form-control" placeholder="MM/YY" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold text-dark small">CVV</label>
+                            <input type="text" class="form-control" placeholder="123" maxlength="4" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-2">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm rounded-pill py-3 h5 mb-0" id="btnPagar">
+                            Procesar Pago Seguro
+                        </button>
+                        <a asp-action="MisMultas" class="btn btn-link text-muted text-decoration-none mt-2">Cancelar y volver</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        
+        <!-- Trust Badges -->
+        <div class="text-center mt-4">
+            <span class="text-muted small">🔒 Cifrado SSL de 256-bits | Pagos procesados por MockServer</span>
+        </div>
+
+    </div>
+</div>

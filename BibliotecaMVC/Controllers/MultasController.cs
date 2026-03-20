@@ -31,6 +31,72 @@ public class MultasController : Controller
         return View(multas);
     }
 
+    [Authorize(Roles = "Usuario")]
+    public async Task<IActionResult> Checkout(int id)
+    {
+        var multa = await _context.Multas
+            .Include(m => m.Prestamo)
+            .ThenInclude(p => p.Libro)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (multa == null || multa.Pagada)
+            return NotFound();
+
+        var usuarioId = _userManager.GetUserId(User);
+        if (multa.Prestamo?.UsuarioId != usuarioId)
+            return Forbid();
+
+        return View(multa);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Usuario")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ProcesarPago(int MultaId, string NumeroTarjeta)
+    {
+        var multa = await _context.Multas
+             .Include(m => m.Prestamo)
+             .FirstOrDefaultAsync(m => m.Id == MultaId);
+
+        if (multa == null || multa.Pagada)
+            return BadRequest("La multa ya fue pagada o no existe.");
+
+        var usuarioId = _userManager.GetUserId(User);
+        if (multa.Prestamo?.UsuarioId != usuarioId)
+            return Forbid();
+
+        // Simulamos validación de tarjeta (básica)
+        string tarjetaLimpia = NumeroTarjeta?.Replace(" ", "") ?? "";
+        if (tarjetaLimpia.Length < 13 || tarjetaLimpia.Length > 19)
+        {
+            TempData["Error"] = "Número de tarjeta inválido. Verifica los dígitos.";
+            return RedirectToAction(nameof(Checkout), new { id = MultaId });
+        }
+
+        string ultimosDigitos = tarjetaLimpia.Substring(Math.Max(0, tarjetaLimpia.Length - 4));
+
+        var pago = new Pago
+        {
+            MultaId = multa.Id,
+            UsuarioId = usuarioId,
+            Monto = multa.Monto,
+            FechaPago = DateTime.Now,
+            MetodoPago = "Tarjeta de Crédito",
+            UltimosDigitosTarjeta = ultimosDigitos
+        };
+
+        _context.Pagos.Add(pago);
+
+        multa.Pagada = true;
+        multa.FechaPago = DateTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        TempData["Success"] = $"¡Pago de ${multa.Monto.ToString("N0")} aprobado exitosamente! Tu multa ha sido saldada.";
+        
+        return RedirectToAction(nameof(MisMultas));
+    }
+
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Index()
     {
