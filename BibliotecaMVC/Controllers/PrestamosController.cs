@@ -69,7 +69,7 @@ public class PrestamosController : Controller
         prestamo.Estado = "Devuelto";
 
         // Generar multa si aplica a nivel modelo
-        if (prestamo.EstaVencido)
+        if (prestamo.DiasMora > 0)
         {
             decimal valorPorDia = 1000;
             decimal totalMulta = prestamo.DiasMora * valorPorDia;

@@ -27,6 +27,13 @@ namespace BibliotecaMVC.Models
 
         public bool EstaVencido => FechaDevolucionReal == null && DateTime.Now > FechaDevolucionProgramada;
         
-        public int DiasMora => EstaVencido ? (DateTime.Now - FechaDevolucionProgramada).Days : 0;
+        public int DiasMora 
+        {
+            get 
+            {
+                var fin = FechaDevolucionReal ?? DateTime.Now;
+                return fin > FechaDevolucionProgramada ? (fin - FechaDevolucionProgramada).Days : 0;
+            }
+        }
     }
 }
