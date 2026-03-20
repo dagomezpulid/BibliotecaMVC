@@ -84,6 +84,15 @@ public class PrestamosController : Controller
         // Generar multa si aplica a nivel modelo
         if (prestamo.DiasMora > 0)
         {
+            // CASTIGO AUTOMÁTICO: Bloquear cuenta del usuario local
+            var usuarioInfractor = await _userManager.FindByIdAsync(usuarioId);
+            if (usuarioInfractor != null)
+            {
+                usuarioInfractor.BloqueadoParaPrestamos = true;
+                await _userManager.UpdateAsync(usuarioInfractor);
+                TempData["Error"] += "Has devuelto el libro con retraso. Tu cuenta ha sido SUSPENDIDA temporalmente.";
+            }
+
             decimal valorPorDia = 1000;
             decimal totalMulta = prestamo.DiasMora * valorPorDia;
 
@@ -125,6 +134,14 @@ public class PrestamosController : Controller
     public async Task<IActionResult> Prestar(int libroId, int diasPrestamo)
     {
         var usuarioId = _userManager.GetUserId(User);
+
+        // Candado Fuerte: Bloqueo Administrativo
+        var usuarioDB = await _userManager.FindByIdAsync(usuarioId);
+        if (usuarioDB != null && usuarioDB.BloqueadoParaPrestamos)
+        {
+            TempData["Error"] = "¡Cuenta Suspendida! Tuviste un retraso anterior. Un administrador debe evaluar tu caso para restablecer tu acceso.";
+            return RedirectToAction("Index", "Libros");
+        }
 
         var libro = await _context.Libros.FindAsync(libroId);
 

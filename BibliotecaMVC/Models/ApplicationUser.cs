@@ -1,4 +1,4 @@
-﻿using BibliotecaMVC.Models;
+using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,6 +13,8 @@ namespace BibliotecaMVC.Models
         [Required]
         [StringLength(100)]
         public string Apellido { get; set; } = string.Empty;
+
+        public bool BloqueadoParaPrestamos { get; set; } = false;
 
         public string NombreCompleto => $"{Nombre} {Apellido}";
     }

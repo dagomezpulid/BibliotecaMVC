@@ -30,16 +30,6 @@ public class AdminController : Controller
         var prestamosPorUsuario = prestamosActivosAll
             .GroupBy(p => p.UsuarioId!)
             .ToDictionary(g => g.Key, g => g.ToList());
-        
-        // Actualizar estado de bloqueos mediante las propiedades directas del Modelo
-        foreach (var user in users)
-        {
-            var prestamosUser = prestamosPorUsuario.GetValueOrDefault(user.Id, new List<Prestamo>());
-            bool bloquear = prestamosUser.Any(p => p.DiasMora >= 8);
-
-            await _userManager.SetLockoutEnabledAsync(user, true);
-            await _userManager.SetLockoutEndDateAsync(user, bloquear ? DateTimeOffset.UtcNow.AddYears(100) : null);
-        }
 
         // 2. Preparar el listado visual
         var userViewModels = new List<UserViewModel>();
@@ -53,7 +43,7 @@ public class AdminController : Controller
                 NombreCompleto = user.NombreCompleto,
                 Email = user.Email,
                 Roles = roles.ToList(),
-                EstaBloqueado = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now
+                EstaBloqueado = user.BloqueadoParaPrestamos
             });
         }
 
@@ -100,6 +90,20 @@ public class AdminController : Controller
             await _userManager.RemoveFromRoleAsync(user, "Admin");
         }
 
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DesbloquearUsuario(string id)
+    {
+        var usuario = await _userManager.FindByIdAsync(id);
+        if (usuario == null) return NotFound();
+
+        usuario.BloqueadoParaPrestamos = false;
+        await _userManager.UpdateAsync(usuario);
+
+        TempData["Success"] = $"El usuario {usuario.NombreCompleto} ha sido rehabilitado exitosamente para nuevos préstamos.";
         return RedirectToAction(nameof(Index));
     }
 

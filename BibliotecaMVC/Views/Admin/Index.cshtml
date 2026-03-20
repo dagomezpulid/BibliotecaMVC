@@ -125,14 +125,22 @@
                     <td class="text-center">
                         @if (user.EstaBloqueado)
                         {
-                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Bloqueado</span>
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Suspendido</span>
                         }
                         else
                         {
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success">Activo</span>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success">Limpio</span>
                         }
                     </td>
                     <td class="text-center">
+                        @if (user.EstaBloqueado)
+                        {
+                            <form asp-action="DesbloquearUsuario" method="post" style="display:inline;">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button class="btn btn-outline-success btn-sm shadow-sm" title="Rehabilitar Cuenta">🔓 Perdonar</button>
+                            </form>
+                        }
+                        
                         @if (user.Roles.Contains("Admin"))
                         {
                             <form asp-action="QuitarAdmin" method="post" style="display:inline;">
