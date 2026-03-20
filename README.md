@@ -6,34 +6,36 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 - **Backend:** C# / .NET 10.0
 - **Frontend:** HTML5, CSS3, Razor Pages, Bootstrap 5 (UI basada en Componentes de Tarjeta y Sombras).
 - **Base de Datos:** SQL Server gestionado mediante **Entity Framework Core**.
-- **Autenticación:** ASP.NET Core Identity (Autenticación por Cookies, Roles y Validaciones de Seguridad).
+- **Autenticación:** ASP.NET Core Identity (Autenticación por Cookies, Roles y Configuración Override).
+- **QA Automation:** Preparación estructural para Pruebas E2E utilizando **Selenium con Python**.
 
 ## ✨ Características y Funcionalidades
 
 ### 1. 🛡️ Sistema de Roles y Seguridad (Identity)
 - **Rol Administrador:** Acceso irrestricto al Panel de Control (Dashboard central), y capacidades de gestión y auditoría globales.
-- **Rol Usuario (Lector):** Acceso al catálogo digital y al flujo personal de préstamos/multas.
-- **Bloqueo Inteligente (Auto-Ban):** Restricción automática del inicio de sesión (LockoutEnd) para aquellos usuarios que mantengan préstamos expirados por más de 8 días.
+- **Rol Usuario (Lector):** Acceso al catálogo digital, panel unificado "Mi Perfil" (autoservicio de actualización de correo y contraseñas) y al flujo personal de préstamos.
+- **Bloqueo Restrictivo (Mora):** Sistema implacable de "Suspensión Automática" sobre el privilegio de préstamos si un usuario entrega un libro tarde. El infractor conserva acceso parcial a su historial, pero solo un Administrador puede conceder la "Amnistía" (Desbloqueo) desde el panel central.
 
-### 2. 📖 Catálogo Dinámico (Libros y Autores)
-- **Gestión de Stock:** El sistema valida e impide el préstamo si el libro alcanza un stock de `0`. El stock se reduce al prestar y se restaura al devolver (Control riguroso usando FKs hacia Autores).
-- **Interfaz Premium:** Catálogo modernizado en formato de tabla inmersiva ocultando o deshabilitando acciones según el perfil (Ej. el Admin no puede prestarse libros a sí mismo).
+### 2. 📖 Catálogo Dinámico y Validaciones
+- **Gestión de Stock Rigurosa:** El sistema valida e impide el préstamo si el libro alcanza un stock de `0`. El stock transita orgánicamente (se reduce al prestar, se restaura al devolver).
+- **Escudo Anti-Duplicados:** Validaciones asíncronas de base de datos (`AnyAsync`) previenen errores humanos impidiendo la creación de Autores o Libros repetidos, manteniendo el catálogo pulcro.
 
-### 3. 🔄 Motor Central de Préstamos
-- **Reglas de Negocio Estrictas:**
-  - Máximo 3 préstamos activos en simultáneo por usuario.
-  - Préstamos bloqueados si el usuario posee multas pendientes.
-  - El sistema detecta automáticamente si el usuario intenta solicitar el mismo libro dos veces.
-- **Auditoría de Devoluciones:** Las fechas reales y programadas se evalúan al segundo para generar o exceptuar cobros adicionales.
+### 3. 🔄 Motor Avanzado de Préstamos
+- **Duración Dinámica (User-Choice):** Los usuarios rigen sus propios tiempos eligiendo la duración de sus préstamos mediante un doble input sincronizado por JavaScript (Selector de Fecha Calendario y Selector de Días). Condicionado a reglas de negocio (Min: 2 días, Max: 20 días).
+- **Reglas Base Simultáneas:**
+  - Máximo 3 préstamos activos en simultáneo.
+  - Intercepción inmediata bloqueando préstamos si hay multas sin pagar.
+  - Prevención de duplicidad de copias de un mismo título.
+- **Defensa Técnica Integral:** El controlador está completamente blindado contra vulnerabilidades de referencia (IDOR) y ataques por doble envío de peticiones (Double-Submit), asegurando que el stock sea impenetrable.
 
-### 4. 💰 Sistema Híbrido de Multas y Pasarela de Pagos (Mock)
-- Calculadora interna de **Días de Mora** integrada estandarizadamente en el modelo `Prestamo.cs`. 
-- Generación automática de recargos transaccionales para entregas tardías (Ej. $1,000 por día de retraso).
-- **Checkout Seguro Simulador:** Pasarela digital para la liquidación de multas generada en un entorno ficticio altamente pulido (acepta tarjetas simuladas, registra el modelo de `Pago` y cierra automáticamente el ciclo de la Multa liberando la cuenta).
+### 4. 💰 Híbrido de Multas y Pasarela (Mock)
+- Calculadora temporal para deducir **Días de Mora** procesados al segundo de efectuar la Devolución Real.
+- Generación automática de recargos financieros para entregas tardías.
+- **Checkout Seguro (Simulación):** Pasarela digital moderna para liquidación de deudas, la cual interactúa con modelos de Pagos, limpia la mora y restablece la moralidad del usuario.
 
-### 5. 📊 Panel de Control Administrativo (Dashboard)
-- Listado unificado con las estadísticas en tiempo real (Usuarios, Libros, Autores, Préstamos Activos, Dinero en Deuda).
-- Control E2E de usuarios: los administradores tienen el privilegio de promocionar usuarios a Administrador, remover cuentas y auditar estados de bloqueos con un clic.
+### 5. 📊 Dashboard Administrativo 
+- Tarjetas de monitoreo en tiempo real (Usuarios, Libros, Autores, Préstamos, Deuda Acumulada).
+- Control de Usuarios *End-to-End*: Privilegios para promover cuentas, eliminación en cascada de datos sensibles y el ansiado **botón de "Perdonar / Rehabilitar"** cuentas con candados por mora.
 
 ---
 
@@ -41,18 +43,18 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 
 1. Clona el repositorio e instálate en el directorio raíz.
 2. Asegúrate de tener **.NET 10.0 SDK** y **SQL Server** activos.
-3. Actualiza el archivo `appsettings.json` o confía en el `DefaultConnection` localdb de tu sistema.
-4. Genera la base de datos corriendo el comando:
+3. Actualiza el archivo `appsettings.json` o confía en el `DefaultConnection` localdb de tu ecosistema virtual.
+4. Aplica las migraciones de tabla para construir la BD:
    ```bash
    dotnet ef database update
    ```
-5. Inicia el servidor:
+5. Compila e inicia el servidor de desarrollo:
    ```bash
    dotnet run
    ```
-6. **(Credencial Maestra):** La base de datos, en caso de no poseer ningún administrador, genera dinámicamente al primer inicio en `Program.cs` la cuenta:
+6. **(Credencial Maestra Automática):** Al primer inicio, el sistema *seedeará* la cuenta super-admin:
    - **Correo:** `dgomezpulid@outlook.com` 
    - **Contraseña:** `Admin_123`
 
 ---
-*Desarrollado y mantenido con estándares de Clean Code, MVC Patterns y DRY.*
+*Desarrollado y mantenido con estándares de Clean Code, MVC Patterns y metodologías ágiles.*
