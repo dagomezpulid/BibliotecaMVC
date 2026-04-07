@@ -113,6 +113,7 @@ public class MultasController : Controller
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarcarPagada(int id)
     {
         var multa = await _context.Multas.FindAsync(id);

@@ -64,6 +64,7 @@ public class AdminController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> HacerAdmin(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
@@ -79,6 +80,7 @@ public class AdminController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> QuitarAdmin(string id)
     {
         var user = await _userManager.FindByIdAsync(id);

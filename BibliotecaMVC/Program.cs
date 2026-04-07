@@ -24,6 +24,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<BibliotecaContext>();
 
+// 🔹 Registrar Servicio Transaccional de Correos. Reemplaza el Mock de Identity por el nuestro.
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, BibliotecaMVC.Services.EmailSender>();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddRazorPages();

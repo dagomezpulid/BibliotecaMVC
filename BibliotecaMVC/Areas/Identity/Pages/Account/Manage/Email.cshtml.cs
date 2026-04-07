@@ -126,10 +126,10 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account.Manage
                     protocol: Request.Scheme);
                 await _emailSender.SendEmailAsync(
                     Input.NewEmail,
-                    "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    "Confirma tu nuevo correo - BibliotecaMVC",
+                    $"Hola,<br/><br/>Por favor confirma tu cambio de correo electrónico haciendo <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clic aquí</a>.");
 
-                StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                StatusMessage = "Enlace de confirmación cifrado enviado. Por favor, revisa la bandeja principal (o Spam) de tu nueva dirección de correo electrónico.";
                 return RedirectToPage();
             }
 
@@ -162,10 +162,10 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account.Manage
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                "Validación Criptográfica de Correo - BibliotecaMVC",
+                $"Hola de nuevo,<br/><br/>Para autenticar oficialmente tu identidad y enlazar tu cuenta en nuestro sistema, por favor haz <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clic aquí de manera segura</a>.");
 
-            StatusMessage = "Verification email sent. Please check your email.";
+            StatusMessage = "El servidor ha despachado tu código de verificación. Revisa de inmediato tu buzón.";
             return RedirectToPage();
         }
     }

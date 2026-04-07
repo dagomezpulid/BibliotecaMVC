@@ -1,4 +1,4 @@
-﻿@model List<BibliotecaMVC.Models.ViewModels.UserViewModel>
+@model List<BibliotecaMVC.Models.ViewModels.UserViewModel>
 @using Microsoft.AspNetCore.Identity
 @using BibliotecaMVC.Models
 @inject UserManager<ApplicationUser> UserManager
@@ -7,19 +7,6 @@
     ViewData["Title"] = "Gestión de Usuarios";
 }
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["Success"]
-    </div>
-}
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["Error"]
-    </div>
-}
 
 <h2 class="mb-4">👥 Gestión de Usuarios</h2>
 

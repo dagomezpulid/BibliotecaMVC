@@ -35,7 +35,7 @@ namespace BibliotecaMVC.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(Libro libro)
+        public async Task<IActionResult> Create([Bind("Titulo,AutorId,Stock")] Libro libro)
         {
             // 1. Validar que no manden el formulario vacío
             if (!ModelState.IsValid)

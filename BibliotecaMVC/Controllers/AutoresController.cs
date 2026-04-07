@@ -28,7 +28,7 @@ namespace BibliotecaMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Autor autor)
+        public async Task<IActionResult> Create([Bind("Nombre")] Autor autor)
         {
             // 1. Validar primero que los campos no estén vacíos
             if (!ModelState.IsValid)
