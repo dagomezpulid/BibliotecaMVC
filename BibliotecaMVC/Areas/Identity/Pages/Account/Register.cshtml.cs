@@ -1,4 +1,4 @@
-﻿using BibliotecaMVC.Models;
+using BibliotecaMVC.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -37,8 +37,13 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
             [Required]
             public string Nombre { get; set; } = string.Empty;
 
-            [Required]
+            [Required(ErrorMessage = "Debe registrar un Apellido.")]
             public string Apellido { get; set; } = string.Empty;
+
+            [Required(ErrorMessage = "El número telefónico es obligatorio de proveer.")]
+            [Phone]
+            [Display(Name = "Teléfono Móvil / WhatsApp")]
+            public string PhoneNumber { get; set; } = string.Empty;
 
             [Required]
             [EmailAddress]
@@ -70,7 +75,8 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
                 UserName = Input.Email,
                 Email = Input.Email,
                 Nombre = Input.Nombre,
-                Apellido = Input.Apellido
+                Apellido = Input.Apellido,
+                PhoneNumber = Input.PhoneNumber
             };
 
             var result = await _userManager.CreateAsync(user, Input.Password);

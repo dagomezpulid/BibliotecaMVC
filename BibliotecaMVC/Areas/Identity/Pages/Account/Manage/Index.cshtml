@@ -5,27 +5,46 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<partial name="_StatusMessage" for="StatusMessage" />
+
 <div class="row">
-    <div class="col-md-9">
-        <form id="profile-form" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Username" class="form-control bg-light" placeholder="Usuario Actual" disabled />
-                <label asp-for="Username" class="form-label text-muted">Nombre de Usuario Generado</label>
+    <div class="col-md-10">
+        @if (Model.EstaBloqueado)
+        {
+            <div class="alert alert-danger shadow-sm rounded-3 fw-bold mb-4 border-danger">
+                ⛔ Tu cuenta se encuentra SUSPENDIDA por morosidad. No puedes realizar nuevos préstamos.
             </div>
-            
-            <div class="form-floating mb-4">
-                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Introduce tu teléfono"/>
-                <label asp-for="Input.PhoneNumber" class="form-label">Teléfono (Opcional)</label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+        }
+        else
+        {
+            <div class="alert alert-success shadow-sm rounded-3 fw-bold mb-4 border-success">
+                ✅ Tu cuenta está AL DÍA y habilitada para la biblioteca.
             </div>
-            
-            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary fw-bold shadow-sm rounded-pill pt-2 pb-2">
-                💾 Guardar Cambios
-            </button>
-        </form>
+        }
+
+        <div class="card shadow-sm border-0 bg-light rounded-4">
+            <div class="card-body p-4">
+                
+                <div class="mb-3">
+                    <label class="text-muted small fw-bold mb-1">IDENTIFICADOR DE ACCESO (EMAIL)</label>
+                    <input class="form-control bg-white fw-semibold" value="@Model.Username" disabled />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small fw-bold mb-1">NOMBRE COMPLETO</label>
+                        <input class="form-control bg-white fw-semibold" value="@Model.NombreCompleto" disabled />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small fw-bold mb-1">TELÉFONO MÓVIL</label>
+                        <input class="form-control bg-white fw-semibold" value="@Model.Telefono" disabled />
+                    </div>
+                </div>
+
+                <div class="text-muted text-center mt-3 pt-3 border-top small">
+                    <i>Los datos mostrados aquí son de solo lectura. Para modificarlos, utiliza el menú lateral.</i>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

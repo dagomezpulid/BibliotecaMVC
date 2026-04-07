@@ -36,6 +36,12 @@
                     </div>
 
                     <div class="form-floating mb-3">
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Ej: 3001234567" />
+                        <label asp-for="Input.PhoneNumber">Teléfono Móvil (WhatsApp)</label>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
                         <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="correo@ejemplo.com" />
                         <label asp-for="Input.Email">Correo Electrónico</label>
                         <span asp-validation-for="Input.Email" class="text-danger small"></span>

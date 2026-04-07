@@ -1,0 +1,33 @@
+@page
+@model PhoneModel
+@{
+    ViewData["Title"] = "Gestión Celular";
+    ViewData["ActivePage"] = ManageNavPages.Phone;
+}
+
+<partial name="_StatusMessage" for="StatusMessage" />
+<div class="row">
+    <div class="col-md-9">
+
+        <h4 class="fw-bold mb-3">Gestión de Celular</h4>
+        <p class="text-muted mb-4 pb-2 border-bottom">Actualiza tu contacto móvil. Este será usado primordialmente por la Biblioteca para enviarte recordatorios, avisos de bloqueo o para autenticaciones avanzadas de doble factor en el futuro.</p>
+
+        <form id="phone-form" method="post" class="mt-2">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3 fw-bold" role="alert"></div>
+            
+            <div class="form-floating mb-4">
+                <input asp-for="Input.PhoneNumber" class="form-control" autocomplete="tel" placeholder="000 000 0000" />
+                <label asp-for="Input.PhoneNumber">Nuevo Número de Celular</label>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger small fw-bold"></span>
+            </div>
+            
+            <button id="update-phone-button" type="submit" class="w-100 btn btn-lg btn-primary fw-bold shadow-sm rounded-pill pt-2 pb-2">
+                🔄 Actualizar Teléfono
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
