@@ -7,13 +7,14 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 - **Frontend:** HTML5, CSS3, Razor Pages, Bootstrap 5 (UI basada en Componentes de Tarjeta y Sombras).
 - **Base de Datos:** SQL Server gestionado mediante **Entity Framework Core**.
 - **Autenticación:** ASP.NET Core Identity (Autenticación por Cookies, Roles y Configuración Override).
-- **QA Automation:** Preparación estructural para Pruebas E2E utilizando **Selenium con Python**.
 
 ## ✨ Características y Funcionalidades
 
 ### 1. 🛡️ Sistema de Roles y Seguridad (Identity)
 - **Rol Administrador:** Acceso irrestricto al Panel de Control (Dashboard central), y capacidades de gestión y auditoría globales.
 - **Rol Usuario (Lector):** Acceso al catálogo digital, panel unificado "Mi Perfil" (autoservicio de actualización de correo y contraseñas) y al flujo personal de préstamos.
+- **Verificación SMTP Real:** Configuración integral de un Servidor de Correos (vía SmtpClient) para el envío asíncrono y real de enlaces de uso único al momento de solicitar o confirmar cambios en el correo electrónico.
+- **Datos Expandibles:** El perfil está preparado nativamente para almacenar el Teléfono del usuario (`PhoneNumber`), abriendo paso a futuras integraciones (Ej. Bots de Twilio o Autenticación 2FA).
 - **Bloqueo Restrictivo (Mora):** Sistema implacable de "Suspensión Automática" sobre el privilegio de préstamos si un usuario entrega un libro tarde. El infractor conserva acceso parcial a su historial, pero solo un Administrador puede conceder la "Amnistía" (Desbloqueo) desde el panel central.
 
 ### 2. 📖 Catálogo Dinámico y Validaciones
@@ -36,6 +37,11 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 ### 5. 📊 Dashboard Administrativo 
 - Tarjetas de monitoreo en tiempo real (Usuarios, Libros, Autores, Préstamos, Deuda Acumulada).
 - Control de Usuarios *End-to-End*: Privilegios para promover cuentas, eliminación en cascada de datos sensibles y el ansiado **botón de "Perdonar / Rehabilitar"** cuentas con candados por mora.
+
+### 6. 🛡️ Ciberseguridad Defensiva y Pulimento UI (Auditoría Cero Fisuras)
+- **Prevención Over-Posting (Asignación Masiva):** Extrema precaución en los Controladores delimitando mediante el atributo `[Bind]` exactamente qué propiedades viajan a la Base de Datos, previniendo inyecciones de identificadores u otros parámetros ocultos.
+- **Escudo Antibots CSRF:** Inyección estricta de `[ValidateAntiForgeryToken]` en todas las transacciones y controladores sensibles de post-administración, evadiendo ataques de Falsificación de Petición en Sitios Cruzados.
+- **Interfaz Pulcra:** Sistema de Notificaciones Flash (`TempData`) centralizado topológicamente en el *Layout* principal para garantizar cero alertas repetidas; y toda la arquitectura frontal (incluyendo menús autogenerados de Identity) traducida meticulosamente al español.
 
 ---
 
