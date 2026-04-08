@@ -46,6 +46,7 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 ### 7. 📲 Infraestructura de Mensajería Celular (Integración Twilio)
 - **Captura Rigurosa Cero-Evasión:** Reescritura del modelo nativo de Registro de Identity convirtiendo el contacto móvil en un componente **obligatorio** para garantizar que ningún lector ingrese de forma anónima al ecosistema físico.
 - **Motor de Refracción a la Realidad (Fire-and-Forget):** Inyección de Dependencias `ISmsSender` ligada a la SDK global de **Twilio**. Cuando el controlador de préstamos dicta una sentencia de Mora y suspende una cuenta, el servidor automáticamente lanza un hilo de ejecución independiente para despachar un **SMS de Infracción** al mundo real, alertando inmediatamente al usuario al vibrar su bolsillo.
+- **Vigilante Nocturno Automatizado (Cron Job):** Diseño e implementación de una arquitectura en segundo plano (`IHostedService`). Un motor autónomo patrulla la base de datos cada 24 horas detectando deudores evadidos y disparando alertas SMS automáticas, respaldado por mecanismos booleanos de seguridad en SQL Server (`AlertaMoraEnviada`) para impedir ciclos de acoso o mensajería duplicada.
 
 ---
 
