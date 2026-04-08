@@ -144,5 +144,10 @@
                 }
             });
         }
+
+        // Validación en tiempo real (keyup)
+        $('form#registerForm input').on('keyup blur', function () {
+            $(this).valid(); // Fuerza la validación de jQuery al instante
+        });
     </script>
 }
