@@ -43,6 +43,10 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 - **Escudo Antibots CSRF:** Inyección estricta de `[ValidateAntiForgeryToken]` en todas las transacciones y controladores sensibles de post-administración, evadiendo ataques de Falsificación de Petición en Sitios Cruzados.
 - **Interfaz Pulcra:** Sistema de Notificaciones Flash (`TempData`) centralizado topológicamente en el *Layout* principal para garantizar cero alertas repetidas; y toda la arquitectura frontal (incluyendo menús autogenerados de Identity) traducida meticulosamente al español.
 
+### 7. 📲 Infraestructura de Mensajería Celular (Integración Twilio)
+- **Captura Rigurosa Cero-Evasión:** Reescritura del modelo nativo de Registro de Identity convirtiendo el contacto móvil en un componente **obligatorio** para garantizar que ningún lector ingrese de forma anónima al ecosistema físico.
+- **Motor de Refracción a la Realidad (Fire-and-Forget):** Inyección de Dependencias `ISmsSender` ligada a la SDK global de **Twilio**. Cuando el controlador de préstamos dicta una sentencia de Mora y suspende una cuenta, el servidor automáticamente lanza un hilo de ejecución independiente para despachar un **SMS de Infracción** al mundo real, alertando inmediatamente al usuario al vibrar su bolsillo.
+
 ---
 
 ## 💻 Instalación y Configuración Local
