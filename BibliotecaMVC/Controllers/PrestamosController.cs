@@ -221,6 +221,20 @@ public class PrestamosController : Controller
         _context.Prestamos.Add(prestamo);
         await _context.SaveChangesAsync();
 
+        // 🔥 Confirmación Inmediata al Usuario (SMS Vía Twilio)
+        if (usuarioDB != null && !string.IsNullOrEmpty(usuarioDB.PhoneNumber))
+        {
+            string tituloLegible = libro.Titulo ?? "desconocido";
+            string fechaLim = prestamo.FechaDevolucionProgramada.ToShortDateString();
+            
+            string smsBody = $"BibliotecaMVC Confirmación: Préstamo de '{tituloLegible}' exitoso. " +
+                             $"Límite de devolución: {fechaLim}. " +
+                             $"Recuerda: Entregar tarde generará multas inmediatas y congelamiento de tu cuenta.";
+            
+            // Fire and forget descartable para no ahogar el controlador MVC
+            _ = _smsSender.SendSmsAsync(usuarioDB.PhoneNumber, smsBody);
+        }
+
         TempData["Success"] = "Préstamo realizado correctamente.";
 
         return RedirectToAction(nameof(Index));
