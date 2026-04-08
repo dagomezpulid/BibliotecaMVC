@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace BibliotecaMVC.Areas.Identity.Pages.Account
 {
@@ -67,6 +68,23 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync()
         {
+            if (!ModelState.IsValid)
+                return Page();
+
+            // Verificación de correo electrónico duplicado
+            var existingEmail = await _userManager.FindByEmailAsync(Input.Email);
+            if (existingEmail != null)
+            {
+                ModelState.AddModelError("Input.Email", "Ya existe una cuenta registrada con este correo electrónico.");
+            }
+
+            // Verificación de número telefónico duplicado
+            var existingPhone = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == Input.PhoneNumber);
+            if (existingPhone != null)
+            {
+                ModelState.AddModelError("Input.PhoneNumber", "Ya existe una cuenta registrada con este número telefónico.");
+            }
+
             if (!ModelState.IsValid)
                 return Page();
 
