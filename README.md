@@ -43,10 +43,13 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 - **Escudo Antibots CSRF:** Inyección estricta de `[ValidateAntiForgeryToken]` en todas las transacciones y controladores sensibles de post-administración, evadiendo ataques de Falsificación de Petición en Sitios Cruzados.
 - **Interfaz Pulcra:** Sistema de Notificaciones Flash (`TempData`) centralizado topológicamente en el *Layout* principal para garantizar cero alertas repetidas; y toda la arquitectura frontal (incluyendo menús autogenerados de Identity) traducida meticulosamente al español.
 
-### 7. 📲 Infraestructura de Mensajería Celular (Integración Twilio)
+### 7. 📲 Infraestructura de Mensajería (Integración Twilio / WhatsApp)
 - **Captura Rigurosa Cero-Evasión:** Reescritura del modelo nativo de Registro de Identity convirtiendo el contacto móvil en un componente **obligatorio** para garantizar que ningún lector ingrese de forma anónima al ecosistema físico.
-- **Motor de Refracción a la Realidad (Fire-and-Forget):** Inyección de Dependencias `ISmsSender` ligada a la SDK global de **Twilio**. Cuando el controlador de préstamos dicta una sentencia de Mora y suspende una cuenta, el servidor automáticamente lanza un hilo de ejecución independiente para despachar un **SMS de Infracción** al mundo real, alertando inmediatamente al usuario al vibrar su bolsillo.
-- **Vigilante Nocturno Automatizado (Cron Job):** Diseño e implementación de una arquitectura en segundo plano (`IHostedService`). Un motor autónomo patrulla la base de datos cada 24 horas detectando deudores evadidos y disparando alertas SMS automáticas, respaldado por mecanismos booleanos de seguridad en SQL Server (`AlertaMoraEnviada`) para impedir ciclos de acoso o mensajería duplicada.
+- **Transmutación a WhatsApp (Sandbox):** El núcleo de telecomunicaciones fue elevado insertando el prefijo de protocolo `whatsapp:` a la API de Twilio, evadiendo las rigurosas mallas Anti-Spam (A2P 10DLC) de SMS internacionales y logrando una entregabilidad celular del 100% hacia cualquier país.
+- **Motor de Refracción (Fire-and-Forget):** Inyección de Dependencias `ISmsSender` ligada a la SDK global de **Twilio**. El sistema despacha notificaciones a WhatsApp de manera asíncrona sin congelar la Interfaz Web en dos escenarios críticos:
+  - **Confirmación Predictiva:** Notificación inmediata al rentar un libro dictando las reglas y la fecha de vencimiento.
+  - **Multa Reactiva:** Notificación de sanción al devolver un libro con retraso temporal, anunciando la suspensión y la deuda financiera.
+- **Vigilante Nocturno Automatizado (Cron Job):** Diseño e implementación de una arquitectura en segundo plano (`IHostedService`). Un motor autónomo patrulla la base de datos cada 24 horas detectando deudores evadidos y disparando alertas preventivas automáticas, respaldado por mecanismos booleanos de seguridad en SQL Server (`AlertaMoraEnviada`) para impedir ciclos de acoso o mensajería duplicada.
 
 ---
 
