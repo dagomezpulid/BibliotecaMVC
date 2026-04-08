@@ -25,6 +25,8 @@ namespace BibliotecaMVC.Models
 
         public Multa? Multa { get; set; }
 
+        public bool AlertaMoraEnviada { get; set; } = false;
+
         public bool EstaVencido => FechaDevolucionReal == null && DateTime.Now > FechaDevolucionProgramada;
         
         public int DiasMora 

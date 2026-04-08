@@ -30,7 +30,7 @@ namespace BibliotecaMVC.Services
             // Modo Mock/Desarrollo Activo para probar hasta que el usuario reemplace sus variables.
             if (string.IsNullOrEmpty(accountSid) || accountSid.Contains("TU_SID_TWILIO"))
             {
-                _logger.LogInformation($"\n========== TICKET SMS A {number} ==========\n{message}\n=========================================\n");
+                _logger.LogWarning($"\n========== TICKET SMS PREVENTIVO A {number} ==========\n{message}\n=========================================\n");
                 return;
             }
 

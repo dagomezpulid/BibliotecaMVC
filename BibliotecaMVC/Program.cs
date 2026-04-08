@@ -30,6 +30,9 @@ builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSe
 // 🔹 Registrar Servicio Transaccional de SMS Móvil (Twilio).
 builder.Services.AddTransient<BibliotecaMVC.Services.ISmsSender, BibliotecaMVC.Services.TwilioSmsSender>();
 
+// 🤖 Inyectar Motor en Segundo Plano (Cron Job SMS)
+builder.Services.AddHostedService<BibliotecaMVC.Services.SmsBackgroundWorker>();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddRazorPages();
