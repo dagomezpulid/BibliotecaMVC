@@ -18,7 +18,7 @@ namespace BibliotecaMVC.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("🤖 Cron Job Iniciado: Motor Automático de SMS patrullando en 2do plano.");
+            _logger.LogInformation("[CRON JOB EMPEZADO] Motor Automatico de SMS patrullando en 2do plano.");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -38,7 +38,7 @@ namespace BibliotecaMVC.Services
                     var context = scope.ServiceProvider.GetRequiredService<BibliotecaContext>();
                     var smsSender = scope.ServiceProvider.GetRequiredService<ISmsSender>();
 
-                    _logger.LogInformation("🕵️‍♂️ Vigilante Nocturno escaneando Base de Datos buscando deudores fugitivos...");
+                    _logger.LogInformation("[VIGILANTE NOCTURNO] Escaneando Base de Datos buscando deudores fugitivos...");
 
                     // Encontrar los préstamos que expiran hoy o antes y su flag 'Enviada' está apagada
                     var prestamosVencidos = await context.Prestamos
@@ -72,13 +72,13 @@ namespace BibliotecaMVC.Services
                     if (enviadosContador > 0)
                     {
                         await context.SaveChangesAsync(stoppingToken);
-                        _logger.LogInformation($"✅ Vigilante Nocturno cerró patrulla: Castigó/Notificó a {enviadosContador} morosos nuevos.");
+                        _logger.LogInformation($"[VIGILANTE NOCTURNO] Termino patrulla: Castigo/Notifico a {enviadosContador} morosos nuevos.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Fatal: Colapso del Motor SMS Automático.");
+                _logger.LogError(ex, "[FATAL ERROR] Colapso del Motor SMS Automatico.");
             }
         }
     }
