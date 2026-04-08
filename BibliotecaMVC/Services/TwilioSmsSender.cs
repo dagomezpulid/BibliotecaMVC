@@ -36,23 +36,27 @@ namespace BibliotecaMVC.Services
 
             try
             {
-                // Validación E.164: Inyectar +57 (Colombia) si alguien digitó el número puro.
+                // Validación E.164: Inyectar +57 (Colombia)
                 string safeNumber = number.Trim();
                 if (!safeNumber.StartsWith("+"))
                 {
                     safeNumber = $"+57{safeNumber}";
                 }
 
+                // 🔥 CONVERSIÓN OFICIAL DEL DRIVER A WHATSAPP
+                string wTarget = $"whatsapp:{safeNumber}";
+                string wSender = $"whatsapp:{twilioPhoneNumber}";
+
                 TwilioClient.Init(accountSid, authToken);
 
-                var messageOptions = new CreateMessageOptions(new PhoneNumber(safeNumber))
+                var messageOptions = new CreateMessageOptions(new PhoneNumber(wTarget))
                 {
-                    From = new PhoneNumber(twilioPhoneNumber),
+                    From = new PhoneNumber(wSender),
                     Body = message
                 };
 
                 var resource = await MessageResource.CreateAsync(messageOptions);
-                _logger.LogInformation($"Twilio envió con ÉXITO el SMS hacia {safeNumber} => Código ID: {resource.Sid}");
+                _logger.LogInformation($"[WHATSAPP TWILIO] Mensaje despachado exitosamente hacia {wTarget} => Código ID: {resource.Sid}");
             }
             catch (Exception ex)
             {
