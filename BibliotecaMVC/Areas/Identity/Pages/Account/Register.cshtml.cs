@@ -44,12 +44,10 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
             [Required(ErrorMessage = "El número telefónico es obligatorio de proveer.")]
             [Phone]
             [Display(Name = "Teléfono Móvil / WhatsApp")]
-            [Remote(action: "VerifyPhone", controller: "Validation")]
             public string PhoneNumber { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "Debe proporcionar un correo electrónico.")]
             [EmailAddress(ErrorMessage = "El formato del correo electrónico no es válido.")]
-            [Remote(action: "VerifyEmail", controller: "Validation")]
             public string Email { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "La contraseña es obligatoria.")]

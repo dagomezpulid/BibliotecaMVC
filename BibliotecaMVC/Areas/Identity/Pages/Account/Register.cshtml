@@ -145,9 +145,51 @@
             });
         }
 
-        // Validación en tiempo real (keyup)
-        $('form#registerForm input').on('keyup blur', function () {
-            $(this).valid(); // Fuerza la validación de jQuery al instante
+        // Validación en tiempo real (instantánea) para el comparador de contraseñas
+        $('#Input_ConfirmPassword').on('keyup blur', function () {
+            $(this).valid(); 
+        });
+
+        $(document).ready(function() {
+            // Regla personalizada para evaluar Duplicados del Correo de forma síncrona (Aparece junto a todo lo demás)
+            $.validator.addMethod("checkDuplicateEmail", function(value, element) {
+                if (!value) return true; // Deja que el atributo [Required] se encargue si esta vacio
+                let isValid = true;
+                let errMsg = "";
+                $.ajax({
+                    url: "/Validation/VerifyEmail",
+                    type: "GET",
+                    data: { "Input.Email": value },
+                    async: false,
+                    success: function(response) {
+                        if(response !== true) { isValid = false; errMsg = response; }
+                    }
+                });
+                $.validator.messages.checkDuplicateEmail = errMsg;
+                return isValid;
+            }, function() { return $.validator.messages.checkDuplicateEmail; });
+
+            // Regla personalizada para evaluar Duplicados del Teléfono de forma síncrona
+            $.validator.addMethod("checkDuplicatePhone", function(value, element) {
+                if (!value) return true;
+                let isValid = true;
+                let errMsg = "";
+                $.ajax({
+                    url: "/Validation/VerifyPhone",
+                    type: "GET",
+                    data: { "Input.PhoneNumber": value },
+                    async: false,
+                    success: function(response) {
+                        if(response !== true) { isValid = false; errMsg = response; }
+                    }
+                });
+                $.validator.messages.checkDuplicatePhone = errMsg;
+                return isValid;
+            }, function() { return $.validator.messages.checkDuplicatePhone; });
+
+            // Aplicar las reglas personalizadas a los inputs
+            $('#Input_Email').rules("add", { checkDuplicateEmail: true });
+            $('#Input_PhoneNumber').rules("add", { checkDuplicatePhone: true });
         });
     </script>
 }
