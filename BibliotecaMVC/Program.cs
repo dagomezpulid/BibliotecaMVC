@@ -27,6 +27,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 // 🔹 Registrar Servicio Transaccional de Correos. Reemplaza el Mock de Identity por el nuestro.
 builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender, BibliotecaMVC.Services.EmailSender>();
 
+// 🔹 Registrar Servicio Transaccional de SMS Móvil (Twilio).
+builder.Services.AddTransient<BibliotecaMVC.Services.ISmsSender, BibliotecaMVC.Services.TwilioSmsSender>();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddRazorPages();

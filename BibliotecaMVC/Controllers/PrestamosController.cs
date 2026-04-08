@@ -3,19 +3,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using BibliotecaMVC.Services;
 
 [Authorize]
 public class PrestamosController : Controller
 {
     private readonly BibliotecaContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ISmsSender _smsSender;
 
     public PrestamosController(
         BibliotecaContext context,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        ISmsSender smsSender)
     {
         _context = context;
         _userManager = userManager;
+        _smsSender = smsSender;
     }
 
     private IQueryable<Prestamo> ObtenerPrestamosDetallados()
@@ -105,6 +109,20 @@ public class PrestamosController : Controller
             };
 
             _context.Multas.Add(multa);
+
+            // 🚀 INTEGRACIÓN MUNDIAL TWILIO: Disparar el castigo al dispositivo celular
+            if (usuarioInfractor != null && !string.IsNullOrEmpty(usuarioInfractor.PhoneNumber))
+            {
+                string tituloLegible = prestamo.Libro != null && !string.IsNullOrEmpty(prestamo.Libro.Titulo) 
+                                        ? prestamo.Libro.Titulo 
+                                        : "solicitado";
+
+                string smsBody = $"BibliotecaMVC: Tu libro '{tituloLegible}' fue devuelto tarde. " +
+                                 $"Se generó una multa de ${totalMulta}. Tu cuenta ha sido bloqueada hasta sanear tu deuda.";
+                
+                // Fire and forget (Descartes), la UI no debe colgarse esperando al gateway celular
+                _ = _smsSender.SendSmsAsync(usuarioInfractor.PhoneNumber, smsBody);
+            }
         }
 
         prestamo.Libro.Stock++;
