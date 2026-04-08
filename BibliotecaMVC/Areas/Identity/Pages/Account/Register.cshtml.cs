@@ -35,7 +35,7 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
+            [Required(ErrorMessage = "El campo Nombre es obligatorio.")]
             public string Nombre { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "Debe registrar un Apellido.")]
@@ -46,19 +46,20 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
             [Display(Name = "Teléfono Móvil / WhatsApp")]
             public string PhoneNumber { get; set; } = string.Empty;
 
-            [Required]
-            [EmailAddress]
+            [Required(ErrorMessage = "Debe proporcionar un correo electrónico.")]
+            [EmailAddress(ErrorMessage = "El formato del correo electrónico no es válido.")]
             public string Email { get; set; } = string.Empty;
 
-            [Required]
+            [Required(ErrorMessage = "La contraseña es obligatoria.")]
             [Display(Name = "Contraseña")]
             [StringLength(100, ErrorMessage = "La {0} debe tener al menos {2} caracteres, contener mayúsculas, minúsculas, y números.", MinimumLength = 8)]
             [DataType(DataType.Password)]
             public string Password { get; set; } = string.Empty;
 
+            [Required(ErrorMessage = "Debe confirmar su contraseña.")]
             [Display(Name = "Confirmar contraseña")]
             [DataType(DataType.Password)]
-            [Compare("Password")]
+            [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
             public string ConfirmPassword { get; set; } = string.Empty;
         }
 
