@@ -52,7 +52,7 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
 
             [Required]
             [Display(Name = "Contraseña")]
-            [StringLength(100, MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = "La {0} debe tener al menos {2} caracteres, contener mayúsculas, minúsculas, y números.", MinimumLength = 8)]
             [DataType(DataType.Password)]
             public string Password { get; set; } = string.Empty;
 
