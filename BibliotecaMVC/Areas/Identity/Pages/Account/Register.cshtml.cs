@@ -52,7 +52,8 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
 
             [Required(ErrorMessage = "La contraseña es obligatoria.")]
             [Display(Name = "Contraseña")]
-            [StringLength(100, ErrorMessage = "La {0} debe tener al menos {2} caracteres, contener mayúsculas, minúsculas, y números.", MinimumLength = 8)]
+            [StringLength(100, ErrorMessage = "La {0} debe tener al menos {2} caracteres.", MinimumLength = 8)]
+            [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", ErrorMessage = "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas y números.")]
             [DataType(DataType.Password)]
             public string Password { get; set; } = string.Empty;
 
