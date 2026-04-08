@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using BibliotecaMVC.Services;
 
 namespace BibliotecaMVC.Areas.Identity.Pages.Account
 {
@@ -17,17 +18,23 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<RegisterModel> _logger;
+        private readonly IEmailSender _emailSender;
+        private readonly IUserValidationService _validationService;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
-            ILogger<RegisterModel> logger)
+            ILogger<RegisterModel> logger,
+            IEmailSender emailSender,
+            IUserValidationService validationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _logger = logger;
+            _emailSender = emailSender;
+            _validationService = validationService;
         }
 
         [BindProperty]
@@ -70,22 +77,15 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
-                return Page();
-
             // Verificación de correo electrónico duplicado
-            var existingEmail = await _userManager.FindByEmailAsync(Input.Email);
-            if (existingEmail != null)
-            {
-                ModelState.AddModelError("Input.Email", "Ya existe una cuenta registrada con este correo electrónico.");
-            }
+            var emailError = await _validationService.CheckDuplicateEmailAsync(Input.Email);
+            if (emailError != null)
+                ModelState.AddModelError("Input.Email", emailError);
 
             // Verificación de número telefónico duplicado
-            var existingPhone = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == Input.PhoneNumber);
-            if (existingPhone != null)
-            {
-                ModelState.AddModelError("Input.PhoneNumber", "Ya existe una cuenta registrada con este número telefónico.");
-            }
+            var phoneError = _validationService.CheckDuplicatePhone(Input.PhoneNumber);
+            if (phoneError != null)
+                ModelState.AddModelError("Input.PhoneNumber", phoneError);
 
             if (!ModelState.IsValid)
                 return Page();

@@ -12,6 +12,18 @@ public class PrestamosController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ISmsSender _smsSender;
 
+    private void NotificarUsuarioSmsAsync(ApplicationUser usuario, Prestamo prestamo, string cuerpoPrincipal)
+    {
+        if (usuario != null && !string.IsNullOrEmpty(usuario.PhoneNumber))
+        {
+            string tituloLegible = prestamo.Libro?.Titulo ?? "solicitado";
+            string smsBody = $"BibliotecaMVC: {cuerpoPrincipal} (Libro: '{tituloLegible}').";
+            
+            // Fire and forget descartable
+            _ = _smsSender.SendSmsAsync(usuario.PhoneNumber, smsBody);
+        }
+    }
+
     public PrestamosController(
         BibliotecaContext context,
         UserManager<ApplicationUser> userManager,
@@ -111,18 +123,7 @@ public class PrestamosController : Controller
             _context.Multas.Add(multa);
 
             // 🚀 INTEGRACIÓN MUNDIAL TWILIO: Disparar el castigo al dispositivo celular
-            if (usuarioInfractor != null && !string.IsNullOrEmpty(usuarioInfractor.PhoneNumber))
-            {
-                string tituloLegible = prestamo.Libro != null && !string.IsNullOrEmpty(prestamo.Libro.Titulo) 
-                                        ? prestamo.Libro.Titulo 
-                                        : "solicitado";
-
-                string smsBody = $"BibliotecaMVC: Tu libro '{tituloLegible}' fue devuelto tarde. " +
-                                 $"Se generó una multa de ${totalMulta}. Tu cuenta ha sido bloqueada hasta sanear tu deuda.";
-                
-                // Fire and forget (Descartes), la UI no debe colgarse esperando al gateway celular
-                _ = _smsSender.SendSmsAsync(usuarioInfractor.PhoneNumber, smsBody);
-            }
+            NotificarUsuarioSmsAsync(usuarioInfractor, prestamo, $"Tu préstamo fue devuelto tarde. Se generó una multa de ${totalMulta}. Tu cuenta ha sido bloqueada hasta sanear tu deuda");
         }
 
         prestamo.Libro.Stock++;
@@ -222,18 +223,8 @@ public class PrestamosController : Controller
         await _context.SaveChangesAsync();
 
         // 🔥 Confirmación Inmediata al Usuario (SMS Vía Twilio)
-        if (usuarioDB != null && !string.IsNullOrEmpty(usuarioDB.PhoneNumber))
-        {
-            string tituloLegible = libro.Titulo ?? "desconocido";
-            string fechaLim = prestamo.FechaDevolucionProgramada.ToShortDateString();
-            
-            string smsBody = $"BibliotecaMVC Confirmación: Préstamo de '{tituloLegible}' exitoso. " +
-                             $"Límite de devolución: {fechaLim}. " +
-                             $"Recuerda: Entregar tarde generará multas inmediatas y congelamiento de tu cuenta.";
-            
-            // Fire and forget descartable para no ahogar el controlador MVC
-            _ = _smsSender.SendSmsAsync(usuarioDB.PhoneNumber, smsBody);
-        }
+        string fechaLim = prestamo.FechaDevolucionProgramada.ToShortDateString();
+        NotificarUsuarioSmsAsync(usuarioDB, prestamo, $"Préstamo exitoso. Límite de devolución: {fechaLim}. Recuerda: Entregar tarde generará multas inmediatas y congelamiento de tu cuenta");
 
         TempData["Success"] = "Préstamo realizado correctamente.";
 

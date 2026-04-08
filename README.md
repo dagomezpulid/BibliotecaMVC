@@ -49,7 +49,12 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 - **Motor de Refracción (Fire-and-Forget):** Inyección de Dependencias `ISmsSender` ligada a la SDK global de **Twilio**. El sistema despacha notificaciones a WhatsApp de manera asíncrona sin congelar la Interfaz Web en dos escenarios críticos:
   - **Confirmación Predictiva:** Notificación inmediata al rentar un libro dictando las reglas y la fecha de vencimiento.
   - **Multa Reactiva:** Notificación de sanción al devolver un libro con retraso temporal, anunciando la suspensión y la deuda financiera.
-- **Vigilante Nocturno Automatizado (Cron Job):** Diseño e implementación de una arquitectura en segundo plano (`IHostedService`). Un motor autónomo patrulla la base de datos cada 24 horas detectando deudores evadidos y disparando alertas preventivas automáticas, respaldado por mecanismos booleanos de seguridad en SQL Server (`AlertaMoraEnviada`) para impedir ciclos de acoso o mensajería duplicada.
+  - **Vigilante Nocturno Automatizado (Cron Job):** Diseño e implementación de una arquitectura en segundo plano (`IHostedService`). Un motor autónomo patrulla la base de datos cada 24 horas detectando deudores evadidos y disparando alertas preventivas automáticas, respaldado por mecanismos booleanos de seguridad en SQL Server (`AlertaMoraEnviada`) para impedir ciclos de acoso o mensajería duplicada.
+
+### 8. 🧹 Refactorización de Capas (Clean Code)
+- **Centralización de Validaciones:** Inyección de Dependencias `IUserValidationService` para abstraer reglas duplicadas de autenticación, logrando un escudo antibloqueos que evalúa reglas de Email y Teléfono mediante respuestas JSON asíncronas aisladas de jQuery.
+- **Micro-Delegación Eager Loading:** Centralización de cadenas repetitivas de Entidades con métodos privados `Task<Multa>` para mantener un controlador de Multas hermético y mantenible.
+- **Aislamiento Notificador:** Las cadenas lógicas de redacción de SMS y mapeos de datos desde Twilio se han confinado en métodos dedicados, impidiendo derramamientos lógicos que contaminen el ciclo puro de MVC.
 
 ---
 

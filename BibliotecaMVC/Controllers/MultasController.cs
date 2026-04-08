@@ -16,6 +16,14 @@ public class MultasController : Controller
         _userManager = userManager;
     }
 
+    private async Task<Multa> ObtenerMultaDetalladaAsync(int multaId)
+    {
+        return await _context.Multas
+            .Include(m => m.Prestamo)
+            .ThenInclude(p => p.Libro)
+            .FirstOrDefaultAsync(m => m.Id == multaId);
+    }
+
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> MisMultas()
     {
@@ -34,10 +42,7 @@ public class MultasController : Controller
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Checkout(int id)
     {
-        var multa = await _context.Multas
-            .Include(m => m.Prestamo)
-            .ThenInclude(p => p.Libro)
-            .FirstOrDefaultAsync(m => m.Id == id);
+        var multa = await ObtenerMultaDetalladaAsync(id);
 
         if (multa == null || multa.Pagada)
             return NotFound();
@@ -54,9 +59,7 @@ public class MultasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ProcesarPago(int MultaId, string NumeroTarjeta)
     {
-        var multa = await _context.Multas
-             .Include(m => m.Prestamo)
-             .FirstOrDefaultAsync(m => m.Id == MultaId);
+        var multa = await ObtenerMultaDetalladaAsync(MultaId);
 
         if (multa == null || multa.Pagada)
             return BadRequest("La multa ya fue pagada o no existe.");

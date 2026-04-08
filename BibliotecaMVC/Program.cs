@@ -1,4 +1,5 @@
 using BibliotecaMVC.Models;
+using BibliotecaMVC.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,9 @@ builder.Services.AddTransient<BibliotecaMVC.Services.ISmsSender, BibliotecaMVC.S
 
 // 🤖 Inyectar Motor en Segundo Plano (Cron Job SMS)
 builder.Services.AddHostedService<BibliotecaMVC.Services.SmsBackgroundWorker>();
+
+// Servicios de validación
+builder.Services.AddScoped<IUserValidationService, UserValidationService>();
 
 builder.Services.AddControllersWithViews();
 
