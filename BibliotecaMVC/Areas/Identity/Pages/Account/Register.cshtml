@@ -36,15 +36,17 @@
                     </div>
 
                     <div class="form-floating mb-3">
-                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Ej: 3001234567" />
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Ej: 3001234567" id="Input_PhoneNumber" />
                         <label asp-for="Input.PhoneNumber">Teléfono Móvil (WhatsApp)</label>
                         <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                        <span id="phone-duplicate-error" class="text-danger small fw-bold"></span>
                     </div>
 
                     <div class="form-floating mb-3">
-                        <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="correo@ejemplo.com" />
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="correo@ejemplo.com" id="Input_Email" />
                         <label asp-for="Input.Email">Correo Electrónico</label>
                         <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        <span id="email-duplicate-error" class="text-danger small fw-bold"></span>
                     </div>
 
                     <div class="form-floating mb-3 position-relative">
@@ -145,51 +147,40 @@
             });
         }
 
-        // Validación en tiempo real (instantánea) para el comparador de contraseñas
+        // Validación de confirmación de contraseña (tiempo real)
         $('#Input_ConfirmPassword').on('keyup blur', function () {
             $(this).valid(); 
         });
 
-        $(document).ready(function() {
-            // Regla personalizada para evaluar Duplicados del Correo de forma síncrona (Aparece junto a todo lo demás)
-            $.validator.addMethod("checkDuplicateEmail", function(value, element) {
-                if (!value) return true; // Deja que el atributo [Required] se encargue si esta vacio
-                let isValid = true;
-                let errMsg = "";
-                $.ajax({
-                    url: "/Validation/VerifyEmail",
-                    type: "GET",
-                    data: { "Input.Email": value },
-                    async: false,
-                    success: function(response) {
-                        if(response !== true) { isValid = false; errMsg = response; }
-                    }
-                });
-                $.validator.messages.checkDuplicateEmail = errMsg;
-                return isValid;
-            }, function() { return $.validator.messages.checkDuplicateEmail; });
+        // 3. Sistema independiente de validación en tiempo real para Evitar Conflictos con jQuery Validate
+        const emailInput = document.getElementById('Input_Email');
+        const phoneInput = document.getElementById('Input_PhoneNumber');
+        const emailError = document.getElementById('email-duplicate-error');
+        const phoneError = document.getElementById('phone-duplicate-error');
 
-            // Regla personalizada para evaluar Duplicados del Teléfono de forma síncrona
-            $.validator.addMethod("checkDuplicatePhone", function(value, element) {
-                if (!value) return true;
-                let isValid = true;
-                let errMsg = "";
-                $.ajax({
-                    url: "/Validation/VerifyPhone",
-                    type: "GET",
-                    data: { "Input.PhoneNumber": value },
-                    async: false,
-                    success: function(response) {
-                        if(response !== true) { isValid = false; errMsg = response; }
-                    }
-                });
-                $.validator.messages.checkDuplicatePhone = errMsg;
-                return isValid;
-            }, function() { return $.validator.messages.checkDuplicatePhone; });
+        function validateDuplicates() {
+            if(emailInput.value) {
+                fetch('/Validation/VerifyEmail?Input.Email=' + encodeURIComponent(emailInput.value))
+                    .then(res => res.json())
+                    .then(data => {
+                        emailError.textContent = data !== true ? data : "";
+                    });
+            }
+            if(phoneInput.value) {
+                fetch('/Validation/VerifyPhone?Input.PhoneNumber=' + encodeURIComponent(phoneInput.value))
+                    .then(res => res.json())
+                    .then(data => {
+                        phoneError.textContent = data !== true ? data : "";
+                    });
+            }
+        }
 
-            // Aplicar las reglas personalizadas a los inputs
-            $('#Input_Email').rules("add", { checkDuplicateEmail: true });
-            $('#Input_PhoneNumber').rules("add", { checkDuplicatePhone: true });
+        emailInput.addEventListener('blur', validateDuplicates);
+        phoneInput.addEventListener('blur', validateDuplicates);
+        
+        document.getElementById('registerSubmit').addEventListener('click', function() {
+            validateDuplicates();
         });
+
     </script>
 }
