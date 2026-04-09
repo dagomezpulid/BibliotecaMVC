@@ -46,26 +46,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-    string[] roles = { "Admin", "Usuario" };
-
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
-}
-
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var configuration = services.GetRequiredService<IConfiguration>();
 
     string[] roles = { "Admin", "Usuario" };
 
@@ -77,41 +60,38 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    // 🔹 Crear Admin fijo si no existe
-    string adminEmail = "dgomezpulid@outlook.com";
-    string adminPassword = "Admin_123";
+    // 🔹 Crear Admin inicial desde configuración para seguridad
+    string adminEmail = configuration["AdminSettings:Email"] ?? "dgomezpulid@outlook.com";
+    string adminPassword = configuration["AdminSettings:Password"];
 
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-
-    if (adminUser == null)
+    if (!string.IsNullOrEmpty(adminPassword))
     {
-        var newAdmin = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            Nombre = "Administrador",
-            Apellido = "General"
-        };
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-        var result = await userManager.CreateAsync(newAdmin, adminPassword);
-
-        if (result.Succeeded)
+        if (adminUser == null)
         {
-            await userManager.AddToRoleAsync(newAdmin, "Admin");
+            var newAdmin = new ApplicationUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                Nombre = "Administrador",
+                Apellido = "General",
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(newAdmin, adminPassword);
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(newAdmin, "Admin");
+            }
         }
         else
         {
-            foreach (var error in result.Errors)
+            if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
             {
-                Console.WriteLine(error.Description);
+                await userManager.AddToRoleAsync(adminUser, "Admin");
             }
-        }
-    }
-    else
-    {
-        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
-        {
-            await userManager.AddToRoleAsync(adminUser, "Admin");
         }
     }
 }

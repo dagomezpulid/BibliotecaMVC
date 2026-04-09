@@ -27,10 +27,6 @@ public class AdminController : Controller
             .Where(p => p.FechaDevolucionReal == null && usuariosIds.Contains(p.UsuarioId))
             .ToListAsync();
 
-        var prestamosPorUsuario = prestamosActivosAll
-            .GroupBy(p => p.UsuarioId!)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
         // 2. Preparar el listado visual
         var userViewModels = new List<UserViewModel>();
         foreach (var user in users)
@@ -150,6 +146,12 @@ public class AdminController : Controller
                             .Where(m => prestamosIds.Contains(m.PrestamoId))
                             .ToListAsync();
 
+            var multasIds = multas.Select(m => m.Id).ToList();
+            var pagos = await _context.Pagos
+                            .Where(p => multasIds.Contains(p.MultaId))
+                            .ToListAsync();
+
+            _context.Pagos.RemoveRange(pagos);
             _context.Multas.RemoveRange(multas);
             _context.Prestamos.RemoveRange(historialPrestamos);
             await _context.SaveChangesAsync(); // Guardamos los cambios de eliminación en cascada

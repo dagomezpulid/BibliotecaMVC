@@ -21,6 +21,12 @@ namespace BibliotecaMVC.Controllers
         [Route("VerifyEmail")]
         public async Task<IActionResult> VerifyEmail([FromQuery(Name = "Input.Email")] string email)
         {
+            // Mitigación básica: Solo responder a peticiones AJAX/Fetch
+            if (Request.Headers["X-Requested-With"] != "XMLHttpRequest" && !Request.Headers["Accept"].ToString().Contains("application/json"))
+            {
+                return BadRequest();
+            }
+
             var error = await _validationService.CheckDuplicateEmailAsync(email);
             return error != null ? Json(error) : Json(true);
         }
@@ -29,6 +35,12 @@ namespace BibliotecaMVC.Controllers
         [Route("VerifyPhone")]
         public IActionResult VerifyPhone([FromQuery(Name = "Input.PhoneNumber")] string phoneNumber)
         {
+            // Mitigación básica: Solo responder a peticiones AJAX/Fetch
+            if (Request.Headers["X-Requested-With"] != "XMLHttpRequest" && !Request.Headers["Accept"].ToString().Contains("application/json"))
+            {
+                return BadRequest();
+            }
+
             var error = _validationService.CheckDuplicatePhone(phoneNumber);
             return error != null ? Json(error) : Json(true);
         }

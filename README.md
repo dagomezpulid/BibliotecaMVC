@@ -38,12 +38,13 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 - Tarjetas de monitoreo en tiempo real (Usuarios, Libros, Autores, Préstamos, Deuda Acumulada).
 - Control de Usuarios *End-to-End*: Privilegios para promover cuentas, eliminación en cascada de datos sensibles y el ansiado **botón de "Perdonar / Rehabilitar"** cuentas con candados por mora.
 
-### 6. 🛡️ Ciberseguridad Defensiva y Pulimento UI (Auditoría Cero Fisuras)
-- **Prevención Over-Posting (Asignación Masiva):** Extrema precaución en los Controladores delimitando mediante el atributo `[Bind]` exactamente qué propiedades viajan a la Base de Datos, previniendo inyecciones de identificadores u otros parámetros ocultos.
-- **Escudo Antibots CSRF:** Inyección estricta de `[ValidateAntiForgeryToken]` en todas las transacciones y controladores sensibles de post-administración, evadiendo ataques de Falsificación de Petición en Sitios Cruzados.
-- **Interfaz Pulcra:** Sistema de Notificaciones Flash (`TempData`) centralizado topológicamente en el *Layout* principal para garantizar cero alertas repetidas; y toda la arquitectura frontal (incluyendo menús autogenerados de Identity) traducida meticulosamente al español.
+### 6. 🛡️ Ciberseguridad Defensiva (Auditoría Cero Fisuras)
+- **Hardening de Secretos:** Eliminación de toda credencial real en el código fuente. Implementación de **User Secrets** para el manejo de llaves de API (Twilio), contraseñas SMTP y el acceso maestro administrativo.
+- **Prevención de Enumeración:** Los endpoints de validación asíncrona han sido blindados para responder únicamente a peticiones legítimas de la aplicación (AJAX/Fetch), mitigando intentos de barrido o cosecha de datos por parte de atacantes externos.
+- **Limpieza de Datos (Cascada Segura):** El flujo de baja de usuarios ha sido optimizado para limpiar recursivamente historiales de **Pagos**, Multas y Préstamos, evitando errores de integridad referencial y fugas de datos huérfanos.
+- **Escudo Antibots CSRF:** Uso estricto de `[ValidateAntiForgeryToken]` en todas las transacciones sensibles.
 
-### 7. 📲 Infraestructura de Mensajería (Integración Twilio / WhatsApp)
+### 7. 📲 Infraestructura de Mensajería (Twilio / WhatsApp)
 - **Captura Rigurosa Cero-Evasión:** Reescritura del modelo nativo de Registro de Identity convirtiendo el contacto móvil en un componente **obligatorio** para garantizar que ningún lector ingrese de forma anónima al ecosistema físico.
 - **Transmutación a WhatsApp (Sandbox):** El núcleo de telecomunicaciones fue elevado insertando el prefijo de protocolo `whatsapp:` a la API de Twilio, evadiendo las rigurosas mallas Anti-Spam (A2P 10DLC) de SMS internacionales y logrando una entregabilidad celular del 100% hacia cualquier país.
 - **Motor de Refracción (Fire-and-Forget):** Inyección de Dependencias `ISmsSender` ligada a la SDK global de **Twilio**. El sistema despacha notificaciones a WhatsApp de manera asíncrona sin congelar la Interfaz Web en dos escenarios críticos:
@@ -51,29 +52,38 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
   - **Multa Reactiva:** Notificación de sanción al devolver un libro con retraso temporal, anunciando la suspensión y la deuda financiera.
   - **Vigilante Nocturno Automatizado (Cron Job):** Diseño e implementación de una arquitectura en segundo plano (`IHostedService`). Un motor autónomo patrulla la base de datos cada 24 horas detectando deudores evadidos y disparando alertas preventivas automáticas, respaldado por mecanismos booleanos de seguridad en SQL Server (`AlertaMoraEnviada`) para impedir ciclos de acoso o mensajería duplicada.
 
-### 8. 🧹 Refactorización de Capas (Clean Code)
-- **Centralización de Validaciones:** Inyección de Dependencias `IUserValidationService` para abstraer reglas duplicadas de autenticación, logrando un escudo antibloqueos que evalúa reglas de Email y Teléfono mediante respuestas JSON asíncronas aisladas de jQuery.
-- **Micro-Delegación Eager Loading:** Centralización de cadenas repetitivas de Entidades con métodos privados `Task<Multa>` para mantener un controlador de Multas hermético y mantenible.
-- **Aislamiento Notificador:** Las cadenas lógicas de redacción de SMS y mapeos de datos desde Twilio se han confinado en métodos dedicados, impidiendo derramamientos lógicos que contaminen el ciclo puro de MVC.
+### 8. 🧹 Refactorización y Rendimiento
+- **Gestión de Memoria:** Eliminación de variables de estado redundantes y optimización de consultas Eager Loading para reducir el consumo de recursos en el servidor.
+- **D.R.Y (Don't Repeat Yourself):** Consolidación de procesos de sembrado de datos (Seeding) y validaciones de identidad en servicios inyectados.
 
 ---
 
 ## 💻 Instalación y Configuración Local
 
-1. Clona el repositorio e instálate en el directorio raíz.
-2. Asegúrate de tener **.NET 10.0 SDK** y **SQL Server** activos.
-3. Actualiza el archivo `appsettings.json` o confía en el `DefaultConnection` localdb de tu ecosistema virtual.
-4. Aplica las migraciones de tabla para construir la BD:
+1. **Clonación:** Clona el repositorio e instálate en el directorio raíz.
+2. **Requisitos:** Asegúrate de tener **.NET 10.0 SDK** y **SQL Server** activos (LocalDB o Express).
+3. **Configuración de Secretos (CRÍTICO):** Al eliminar las credenciales del `appsettings.json`, debes configurar tus llaves locales para que el sistema funcione:
+   ```bash
+   # Dentro de la carpeta BibliotecaMVC/BibliotecaMVC/
+   dotnet user-secrets set "EmailSettings:Username" "tu_gmail@gmail.com"
+   dotnet user-secrets set "EmailSettings:Password" "tu_app_password"
+   dotnet user-secrets set "TwilioSettings:AccountSid" "tu_sid"
+   dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token"
+   dotnet user-secrets set "AdminSettings:Password" "TuPasswordAdmin123!"
+   ```
+4. **Base de Datos:** Aplica las migraciones para construir el esquema:
    ```bash
    dotnet ef database update
    ```
-5. Compila e inicia el servidor de desarrollo:
+5. **Ejecución:** Inicia el servidor de desarrollo:
    ```bash
    dotnet run
    ```
-6. **(Credencial Maestra Automática):** Al primer inicio, el sistema *seedeará* la cuenta super-admin:
-   - **Correo:** `dgomezpulid@outlook.com` 
-   - **Contraseña:** `Admin_123`
+
+## 🔐 Acceso Administrativo
+Al iniciar por primera vez, el sistema creará automáticamente el administrador raíz:
+- **Usuario:** `dgomezpulid@outlook.com`
+- **Contraseña:** La que hayas configurado en el comando `dotnet user-secrets set "AdminSettings:Password" ...` (Paso 3).
 
 ---
-*Desarrollado y mantenido con estándares de Clean Code, MVC Patterns y metodologías ágiles.*
+*Desarrollado con estándares de Clean Code, MVC Patterns y auditoría de seguridad preventiva.*
