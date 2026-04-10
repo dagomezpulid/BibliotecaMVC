@@ -40,7 +40,8 @@ namespace BibliotecaMVC.Controllers
                 librosQuery = librosQuery.Where(l => 
                     l.Titulo.ToLower().Contains(query) || 
                     l.Autor.Nombre.ToLower().Contains(query) ||
-                    l.Categorias.Any(c => c.Nombre.ToLower().Contains(query))
+                    l.Categorias.Any(c => c.Nombre.ToLower().Contains(query)) ||
+                    l.ISBN.Contains(query)
                 );
             }
 
