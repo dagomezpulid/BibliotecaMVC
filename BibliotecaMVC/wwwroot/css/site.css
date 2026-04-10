@@ -60,16 +60,15 @@ body {
     background-color: var(--primary-op) !important;
 }
 
-.form-control, .form-select {
-    background-color: var(--input-bg);
+.form-control, .form-control:focus, .form-control[readonly], .form-select, .form-select:focus {
+    background-color: var(--input-bg) !important;
     color: var(--input-color) !important;
-    border-color: var(--border-color);
+    border-color: var(--border-color) !important;
 }
 
-.form-control:focus, .form-select:focus {
-    background-color: var(--input-bg);
-    color: var(--input-color) !important;
-    border-color: var(--primary-op);
+/* Specific fix for high-contrast on disabled/readonly */
+.form-control:disabled, .form-control[readonly] {
+    opacity: 0.8;
 }
 
 /* Ensure legible placeholder */
