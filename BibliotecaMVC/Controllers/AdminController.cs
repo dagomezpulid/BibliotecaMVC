@@ -62,7 +62,9 @@ public class AdminController : Controller
             .GroupBy(m => new { m.Prestamo.UsuarioId, m.Prestamo.Usuario.Nombre, m.Prestamo.Usuario.Apellido })
             .Select(g => new {
                 Nombre = g.Key.Nombre + " " + g.Key.Apellido,
-                TotalMora = g.Sum(m => m.Monto)
+                TotalMora = g.Sum(m => m.Monto),
+                // Calculamos los días de mora totales sumando la diferencia de días entre lo programado y lo real (o ahora)
+                TotalDias = g.Sum(m => EF.Functions.DateDiffDay(m.Prestamo.FechaDevolucionProgramada, m.Prestamo.FechaDevolucionReal ?? DateTime.Now))
             })
             .OrderByDescending(x => x.TotalMora)
             .Take(5)
@@ -108,6 +110,7 @@ public class AdminController : Controller
             // Poblado de analíticas
             LabelsMorosos = morososData.Select(x => x.Nombre).ToList(),
             ValoresMorosos = morososData.Select(x => x.TotalMora).ToList(),
+            ValoresDiasMora = morososData.Select(x => x.TotalDias).ToList(),
 
             LabelsLibrosPopulares = librosPopularesData.Select(x => x.Titulo ?? "Sin Título").ToList(),
             ValoresLibrosPopulares = librosPopularesData.Select(x => x.Cantidad).ToList(),

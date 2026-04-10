@@ -24,6 +24,7 @@ namespace BibliotecaMVC.Models.ViewModels
         // Usuarios con más mora (Top 5)
         public List<string> LabelsMorosos { get; set; } = new List<string>();
         public List<decimal> ValoresMorosos { get; set; } = new List<decimal>();
+        public List<int> ValoresDiasMora { get; set; } = new List<int>();
 
         // Libros más prestados (Top 5)
         public List<string> LabelsLibrosPopulares { get; set; } = new List<string>();

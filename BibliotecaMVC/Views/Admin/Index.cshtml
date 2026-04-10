@@ -244,25 +244,56 @@
                 }
             });
 
-            // 3. Gráfico de Morosos (Barras Horizontales)
+            // 3. Gráfico de Morosos (Barras Horizontales con Doble Métrica)
             new Chart(document.getElementById('morososChart'), {
                 type: 'bar',
                 data: {
                     labels: @Html.Raw(Json.Serialize(Model.LabelsMorosos)),
-                    datasets: [{
-                        label: 'Monto Total en Mora ($)',
-                        data: @Html.Raw(Json.Serialize(Model.ValoresMorosos)),
-                        backgroundColor: '#dc3545',
-                        borderRadius: 10
-                    }]
+                    datasets: [
+                        {
+                            label: 'Monto Total en Mora ($)',
+                            data: @Html.Raw(Json.Serialize(Model.ValoresMorosos)),
+                            backgroundColor: '#dc3545',
+                            borderRadius: 5
+                        },
+                        {
+                            label: 'Días de Mora Acumulados',
+                            data: @Html.Raw(Json.Serialize(Model.ValoresDiasMora)),
+                            backgroundColor: '#fd7e14',
+                            borderRadius: 5
+                        }
+                    ]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { beginAtZero: true, grid: { color: colorGrid } },
+                        x: { 
+                            beginAtZero: true, 
+                            grid: { color: colorGrid },
+                            title: { display: true, text: 'Magnitud (Dólares / Días)' }
+                        },
                         y: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.datasetIndex === 0) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.x);
+                                    } else {
+                                        label += context.parsed.x + ' días';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
                     }
                 }
             });
