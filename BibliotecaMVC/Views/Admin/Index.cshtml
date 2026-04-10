@@ -85,6 +85,34 @@
 
 </div>
 
+<!-- ANALÍTICAS DEL SISTEMA -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-4">📈 Tendencia de Préstamos (6 Meses)</h5>
+            <div style="height: 300px;">
+                <canvas id="tendenciaChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-4">🏆 Libros Más Populares</h5>
+            <div style="height: 300px;">
+                <canvas id="librosChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-4 p-4">
+            <h5 class="fw-bold mb-4">⚠️ Ranking de Mora Histórica (Usuarios)</h5>
+            <div style="height: 350px;">
+                <canvas id="morososChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- GESTIÓN CENTRALIZADA DE USUARIOS -->
 <h4 id="seccion-usuarios" class="fw-bold mb-3 mt-4">⚙️ Gestión de Usuarios</h4>
 <p class="text-muted">Administra roles, bloqueos y accesos desde aquí.</p>
@@ -155,3 +183,89 @@
         </tbody>
     </table>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuración Global de Chart.js para que respete el modo oscuro si es posible
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            const colorText = isDark ? '#f1f5f9' : '#212529';
+            const colorGrid = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+            Chart.defaults.color = colorText;
+            Chart.defaults.borderColor = colorGrid;
+
+            // 1. Gráfico de Tendencia (Línea)
+            new Chart(document.getElementById('tendenciaChart'), {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.LabelsTendencia)),
+                    datasets: [{
+                        label: 'Préstamos Mensuales',
+                        data: @Html.Raw(Json.Serialize(Model.ValoresTendencia)),
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: colorGrid } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Gráfico de Libros Populares (Doughnut)
+            new Chart(document.getElementById('librosChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.LabelsLibrosPopulares)),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.ValoresLibrosPopulares)),
+                        backgroundColor: [
+                            '#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#dc3545'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // 3. Gráfico de Morosos (Barras Horizontales)
+            new Chart(document.getElementById('morososChart'), {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.LabelsMorosos)),
+                    datasets: [{
+                        label: 'Monto Total en Mora ($)',
+                        data: @Html.Raw(Json.Serialize(Model.ValoresMorosos)),
+                        backgroundColor: '#dc3545',
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: colorGrid } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        });
+    </script>
+}

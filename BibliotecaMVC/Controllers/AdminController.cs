@@ -53,6 +53,46 @@ public class AdminController : Controller
             });
         }
 
+        // --- CÁLCULO DE DATOS PARA GRÁFICOS ---
+
+        // A. Usuarios con más mora histórica (Top 5)
+        var morososData = await _context.Multas
+            .Include(m => m.Prestamo)
+                .ThenInclude(p => p.Usuario)
+            .GroupBy(m => m.Prestamo.Usuario.NombreCompleto)
+            .Select(g => new {
+                Nombre = g.Key,
+                TotalMora = g.Sum(m => m.Monto)
+            })
+            .OrderByDescending(x => x.TotalMora)
+            .Take(5)
+            .ToListAsync();
+
+        // B. Libros más prestados (Top 5)
+        var librosPopularesData = await _context.Prestamos
+            .Include(p => p.Libro)
+            .GroupBy(p => p.Libro.Titulo)
+            .Select(g => new {
+                Titulo = g.Key,
+                Cantidad = g.Count()
+            })
+            .OrderByDescending(x => x.Cantidad)
+            .Take(5)
+            .ToListAsync();
+
+        // C. Tendencia de préstamos (Últimos 6 meses)
+        var seisMesesAtras = DateTime.Now.AddMonths(-5);
+        var tendenciaData = await _context.Prestamos
+            .Where(p => p.FechaPrestamo >= new DateTime(seisMesesAtras.Year, seisMesesAtras.Month, 1))
+            .GroupBy(p => new { p.FechaPrestamo.Year, p.FechaPrestamo.Month })
+            .Select(g => new {
+                Anio = g.Key.Year,
+                Mes = g.Key.Month,
+                Cantidad = g.Count()
+            })
+            .OrderBy(x => x.Anio).ThenBy(x => x.Mes)
+            .ToListAsync();
+
         // 3. Preparar el modelo general del Dashboard
         var model = new AdminDashboardViewModel
         {
@@ -63,7 +103,17 @@ public class AdminController : Controller
             TotalMultasPendientes = await _context.Multas
                         .Where(m => !m.Pagada)
                         .SumAsync(m => (decimal?)m.Monto) ?? 0,
-            Usuarios = userViewModels
+            Usuarios = userViewModels,
+
+            // Poblado de analíticas
+            LabelsMorosos = morososData.Select(x => x.Nombre).ToList(),
+            ValoresMorosos = morososData.Select(x => x.TotalMora).ToList(),
+
+            LabelsLibrosPopulares = librosPopularesData.Select(x => x.Titulo ?? "Sin Título").ToList(),
+            ValoresLibrosPopulares = librosPopularesData.Select(x => x.Cantidad).ToList(),
+
+            LabelsTendencia = tendenciaData.Select(x => new DateTime(x.Anio, x.Mes, 1).ToString("MMM yyyy")).ToList(),
+            ValoresTendencia = tendenciaData.Select(x => x.Cantidad).ToList()
         };
 
         return View(model);

@@ -1,0 +1,38 @@
+@model IEnumerable<BibliotecaMVC.Models.Libro>
+
+@{
+    ViewData["Title"] = "Mis Favoritos";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <div>
+        <h2 class="fw-bold text-dark">❤️ Mi Biblioteca Personal</h2>
+        <p class="text-muted">Libros que has marcado como favoritos para leer después.</p>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary rounded-pill px-4">
+        📚 Explorar más libros
+    </a>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    @* Marcamos de nuevo los libros como favoritos para que el partial los dibuje con corazón rojo *@
+    foreach(var l in Model) { l.EsFavorito = true; }
+    
+    <div id="favoritesContainer">
+        @await Html.PartialAsync("../Libros/_LibrosGrid", Model)
+    </div>
+}
+else
+{
+    <div class="text-center py-5">
+        <div class="bg-light rounded-4 border border-dashed p-5">
+            <span class="display-1">✨</span>
+            <h3 class="mt-3 text-dark fw-bold">Aún no tienes favoritos</h3>
+            <p class="text-muted">Explora nuestro catálogo y presiona el icono de ❤️ para guardar tus libros preferidos aquí.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill shadow px-4 py-2 mt-2">
+                Ir al Catálogo
+            </a>
+        </div>
+    </div>
+}

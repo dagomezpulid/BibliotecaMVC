@@ -70,5 +70,12 @@ namespace BibliotecaMVC.Models
         /// Propiedad calculada que determina si existen unidades disponibles para prestar.
         /// </summary>
         public bool TieneStock => Stock > 0;
+
+        /// <summary>
+        /// Propiedad volatil para indicar si el usuario actual tiene este libro en favoritos.
+        /// No se persiste en DB, se llena en tiempo de ejecución.
+        /// </summary>
+        [NotMapped]
+        public bool EsFavorito { get; set; } = false;
     }
 }

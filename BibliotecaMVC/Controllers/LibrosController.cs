@@ -47,6 +47,21 @@ namespace BibliotecaMVC.Controllers
 
             var libros = await librosQuery.ToListAsync();
 
+            // Lógica de Favoritos: Marcar los libros que ya tiene el usuario
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var favoritosIds = await _context.Favoritos
+                    .Where(f => f.UsuarioId == userId)
+                    .Select(f => f.LibroId)
+                    .ToListAsync();
+
+                foreach (var l in libros)
+                {
+                    if (favoritosIds.Contains(l.Id)) l.EsFavorito = true;
+                }
+            }
+
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return PartialView("_LibrosGrid", libros);
@@ -71,6 +86,14 @@ namespace BibliotecaMVC.Controllers
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (libro == null) return NotFound();
+
+            // Verificar si es favorito del usuario actual
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                libro.EsFavorito = await _context.Favoritos
+                    .AnyAsync(f => f.LibroId == libro.Id && f.UsuarioId == userId);
+            }
 
             return View(libro);
         }

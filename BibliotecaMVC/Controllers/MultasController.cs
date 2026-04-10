@@ -170,6 +170,35 @@ public class MultasController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ExportarCSV()
+    {
+        var multas = await _context.Multas
+            .Include(m => m.Prestamo)
+                .ThenInclude(p => p.Libro)
+            .Include(m => m.Prestamo)
+                .ThenInclude(p => p.Usuario)
+            .OrderByDescending(m => m.FechaGenerada)
+            .ToListAsync();
 
+        var builder = new System.Text.StringBuilder();
+        builder.AppendLine("ID,Usuario,Libro,Monto,Fecha Emision,Estado,Fecha Pago");
 
+        foreach (var m in multas)
+        {
+            var estado = m.Pagada ? "Saldada" : "Pendiente";
+            var fechaPago = m.FechaPago?.ToShortDateString() ?? "-";
+            
+            // Escapar comas en campos de texto para evitar errores de formato CSV
+            var usuario = m.Prestamo?.Usuario?.NombreCompleto?.Replace(",", ";");
+            var libro = m.Prestamo?.Libro?.Titulo?.Replace(",", ";");
+
+            builder.AppendLine($"{m.Id},{usuario},{libro},{m.Monto},{m.FechaGenerada.ToShortDateString()},{estado},{fechaPago}");
+        }
+
+        var csvContent = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+        var fileName = $"Reporte_Multas_{DateTime.Now:yyyyMMdd}.csv";
+
+        return File(csvContent, "text/csv; charset=utf-8", fileName);
+    }
 }
