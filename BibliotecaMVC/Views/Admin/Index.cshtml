@@ -244,7 +244,7 @@
                 }
             });
 
-            // 3. Gráfico de Morosos (Barras Horizontales con Doble Métrica)
+            // 3. Gráfico de Morosos (Barras Horizontales con DOBLE EJE para legibilidad)
             new Chart(document.getElementById('morososChart'), {
                 type: 'bar',
                 data: {
@@ -254,13 +254,15 @@
                             label: 'Monto Total en Mora ($)',
                             data: @Html.Raw(Json.Serialize(Model.ValoresMorosos)),
                             backgroundColor: '#dc3545',
-                            borderRadius: 5
+                            borderRadius: 5,
+                            xAxisID: 'x-monto'
                         },
                         {
                             label: 'Días de Mora Acumulados',
                             data: @Html.Raw(Json.Serialize(Model.ValoresDiasMora)),
                             backgroundColor: '#fd7e14',
-                            borderRadius: 5
+                            borderRadius: 5,
+                            xAxisID: 'x-dias'
                         }
                     ]
                 },
@@ -269,10 +271,21 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        x: { 
+                        'x-monto': { 
+                            type: 'linear',
+                            position: 'bottom',
                             beginAtZero: true, 
                             grid: { color: colorGrid },
-                            title: { display: true, text: 'Magnitud (Dólares / Días)' }
+                            title: { display: true, text: 'Monto en Deuda ($)', color: '#dc3545' },
+                            ticks: { color: '#dc3545' }
+                        },
+                        'x-dias': { 
+                            type: 'linear',
+                            position: 'top',
+                            beginAtZero: true, 
+                            grid: { display: false }, // Evitar ruidos visuales
+                            title: { display: true, text: 'Días de Retraso', color: '#fd7e14' },
+                            ticks: { color: '#fd7e14' }
                         },
                         y: { grid: { display: false } }
                     },
