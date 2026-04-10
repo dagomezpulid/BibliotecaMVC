@@ -1,0 +1,98 @@
+@model BibliotecaMVC.Models.Libro
+
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Catálogo</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Detalles del Libro</li>
+        </ol>
+    </nav>
+
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="row g-0">
+            <div class="col-md-4 bg-light d-flex align-items-center justify-content-center p-4 border-end">
+                @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+                {
+                    <img src="@Model.ImagenUrl" class="img-fluid rounded-3 shadow" alt="@Model.Titulo" style="max-height: 500px; width: auto;">
+                }
+                else
+                {
+                    <div class="text-center py-5">
+                        <span class="display-1 text-muted">📖</span>
+                        <p class="text-muted mt-2">Sin imagen de portada</p>
+                    </div>
+                }
+            </div>
+            <div class="col-md-8">
+                <div class="card-body p-4 p-md-5">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            @if (Model.Categorias != null && Model.Categorias.Any())
+                            {
+                                foreach (var cat in Model.Categorias)
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 me-1">@cat.Nombre</span>
+                                }
+                            }
+                            <h1 class="display-5 fw-bold text-dark mt-2 mb-1">@Model.Titulo</h1>
+                            <p class="fs-4 text-muted">por <span class="text-dark fw-semibold">@(Model.Autor?.Nombre)</span></p>
+                        </div>
+                        <div class="text-end">
+                            @if (Model.Stock > 0)
+                            {
+                                <span class="badge bg-success rounded-pill px-3 py-2">Disponible: @Model.Stock</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger rounded-pill px-3 py-2">Agotado</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-4 mb-5">
+                        <h5 class="fw-bold text-dark border-bottom pb-2">Sinopsis</h5>
+                        <p class="text-muted lh-lg">
+                            @(string.IsNullOrEmpty(Model.Descripcion) ? "No hay una descripción disponible para este libro aún." : Model.Descripcion)
+                        </p>
+                    </div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-6 col-sm-4">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <small class="text-muted d-block mb-1">ISBN</small>
+                                <span class="fw-bold text-dark">@(string.IsNullOrEmpty(Model.ISBN) ? "N/A" : Model.ISBN)</span>
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-4">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <small class="text-muted d-block mb-1">ID Sistema</small>
+                                <span class="fw-bold text-dark">#@Model.Id</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        @if (!User.IsInRole("Admin"))
+                        {
+                            <a asp-controller="Prestamos" asp-action="ConfirmarPrestamo" asp-route-id="@Model.Id" 
+                               class="btn btn-primary btn-lg rounded-pill px-5 shadow @(Model.Stock <= 0 ? "disabled" : "")">
+                                Solicitar Préstamo
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-dark btn-lg rounded-pill px-5 shadow">
+                                Editar Datos
+                            </a>
+                        }
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill px-4">Volver al Catálogo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

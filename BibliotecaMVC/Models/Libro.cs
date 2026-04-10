@@ -20,6 +20,17 @@ namespace BibliotecaMVC.Models
         [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")]
         public int? Stock { get; set; }
 
+        [StringLength(20)]
+        public string? ISBN { get; set; }
+
+        [Display(Name = "URL de la Portada")]
+        public string? ImagenUrl { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        public string? Descripcion { get; set; }
+
+        public ICollection<Categoria> Categorias { get; set; } = new List<Categoria>();
+
         public bool TieneStock => Stock > 0;
     }
 }

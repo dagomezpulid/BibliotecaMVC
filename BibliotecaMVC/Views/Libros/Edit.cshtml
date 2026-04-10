@@ -1,49 +1,46 @@
 @model BibliotecaMVC.Models.Libro
 
 @{
-    ViewData["Title"] = "Nuevo Libro";
+    ViewData["Title"] = "Editar Libro";
 }
 
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow rounded-4 border-0">
-                <div class="card-header bg-primary text-white p-4 rounded-top-4">
-                    <h3 class="fw-bold mb-0">📖 Registrar Nuevo Libro</h3>
-                    <p class="mb-0 text-white-50">Completa la información técnica y visual del catálogo</p>
+                <div class="card-header bg-dark text-white p-4 rounded-top-4">
+                    <h3 class="fw-bold mb-0">📝 Editar Información</h3>
+                    <p class="mb-0 text-white-50">Actualizando "@Model.Titulo"</p>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <form asp-action="Create">
+                    <form asp-action="Edit">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
+                        <input type="hidden" asp-for="Id" />
 
                         <div class="row g-4">
-                            <!-- Sección Principal -->
                             <div class="col-md-12">
-                                <label asp-for="Titulo" class="form-label fw-semibold text-dark">Título del Libro</label>
-                                <input asp-for="Titulo" class="form-control form-control-lg rounded-3" placeholder="Ej: Rayuela" />
+                                <label asp-for="Titulo" class="form-label fw-semibold text-dark">Título</label>
+                                <input asp-for="Titulo" class="form-control form-control-lg rounded-3" />
                                 <span asp-validation-for="Titulo" class="text-danger small"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label asp-for="AutorId" class="form-label fw-semibold text-dark">Autor</label>
-                                <select asp-for="AutorId" class="form-select rounded-3" asp-items="ViewBag.Autores">
-                                    <option value="">-- Seleccionar Autor --</option>
-                                </select>
+                                <select asp-for="AutorId" class="form-select rounded-3" asp-items="ViewBag.Autores"></select>
                                 <span asp-validation-for="AutorId" class="text-danger small"></span>
                             </div>
 
                             <div class="col-md-6">
-                                <label asp-for="Stock" class="form-label fw-semibold text-dark">Stock Inicial</label>
+                                <label asp-for="Stock" class="form-label fw-semibold text-dark">Stock</label>
                                 <input asp-for="Stock" class="form-control rounded-3" type="number" min="0" />
                                 <span asp-validation-for="Stock" class="text-danger small"></span>
                             </div>
 
-                            <!-- Metadatos Avanzados -->
                             <hr class="my-4 text-muted border-top border-opacity-10">
                             
                             <div class="col-md-6">
                                 <label asp-for="ISBN" class="form-label fw-semibold text-dark">ISBN</label>
-                                <input asp-for="ISBN" class="form-control rounded-3" placeholder="978-XXXXXXXXXX" />
+                                <input asp-for="ISBN" class="form-control rounded-3" />
                                 <span asp-validation-for="ISBN" class="text-danger small"></span>
                             </div>
 
@@ -51,25 +48,24 @@
                                 <label class="form-label fw-semibold text-dark">Categorías</label>
                                 <select name="CategoriasSeleccionadas" class="form-select rounded-3" multiple size="4" asp-items="ViewBag.Categorias">
                                 </select>
-                                <p class="text-muted small mt-1"><i class="bi bi-info-circle me-1"></i>Manten presionado Ctrl para seleccionar varias.</p>
                             </div>
 
                             <div class="col-12">
                                 <label asp-for="ImagenUrl" class="form-label fw-semibold text-dark">URL de la Portada</label>
-                                <input asp-for="ImagenUrl" class="form-control rounded-3" placeholder="https://ejemplo.com/portada.jpg" />
+                                <input asp-for="ImagenUrl" class="form-control rounded-3" />
                                 <span asp-validation-for="ImagenUrl" class="text-danger small"></span>
                             </div>
 
                             <div class="col-12">
-                                <label asp-for="Descripcion" class="form-label fw-semibold text-dark">Descripción / Sinopsis</label>
-                                <textarea asp-for="Descripcion" class="form-control rounded-3" rows="4" placeholder="Breve resumen del libro..."></textarea>
+                                <label asp-for="Descripcion" class="form-label fw-semibold text-dark">Descripción</label>
+                                <textarea asp-for="Descripcion" class="form-control rounded-3" rows="4"></textarea>
                                 <span asp-validation-for="Descripcion" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
                             <a asp-action="Index" class="btn btn-light px-4 rounded-pill border">Cancelar</a>
-                            <button type="submit" class="btn btn-primary px-5 rounded-pill shadow">Guardar Libro</button>
+                            <button type="submit" class="btn btn-dark px-5 rounded-pill shadow">Guardar Cambios</button>
                         </div>
                     </form>
                 </div>

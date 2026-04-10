@@ -16,6 +16,7 @@ namespace BibliotecaMVC.Models
         public DbSet<Prestamo> Prestamos { get; set; }
         public DbSet<Multa> Multas { get; set; }
         public DbSet<Pago> Pagos { get; set; }
+        public DbSet<Categoria> Categorias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +34,17 @@ namespace BibliotecaMVC.Models
                 .HasOne(m => m.Prestamo)
                 .WithOne(p => p.Multa)
                 .HasForeignKey<Multa>(m => m.PrestamoId);
+
+            // Seed Categorías
+            modelBuilder.Entity<Categoria>().HasData(
+                new Categoria { Id = 1, Nombre = "Ficción" },
+                new Categoria { Id = 2, Nombre = "Ciencia" },
+                new Categoria { Id = 3, Nombre = "Tecnología" },
+                new Categoria { Id = 4, Nombre = "Historia" },
+                new Categoria { Id = 5, Nombre = "Biografía" },
+                new Categoria { Id = 6, Nombre = "Fantasía" },
+                new Categoria { Id = 7, Nombre = "Misterio" }
+            );
         }
     }
 }
