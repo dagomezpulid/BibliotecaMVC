@@ -25,11 +25,58 @@
         color: #ffc107;
     }
     .review-card {
-        border-left: 4px solid #0d6efd;
-        background: #f8f9fa;
+        border-left: 5px solid #0d6efd;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
     }
+    .review-card:hover { transform: translateX(5px); }
     .star-filled { color: #ffc107; }
     .star-empty { color: #ddd; }
+
+    /* Carousel Styles */
+    .recommendations-wrapper {
+        position: relative;
+        overflow: hidden;
+        padding: 20px 0;
+    }
+    .recommendations-scroll {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scrollbar-width: none; /* Firefox */
+        padding-bottom: 20px;
+    }
+    .recommendations-scroll::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+    
+    .recommended-card {
+        min-width: 200px;
+        max-width: 200px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+    .recommended-card:hover {
+        transform: translateY(-10px);
+    }
+    .carousel-control-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        z-index: 10;
+        cursor: pointer;
+        border: none;
+    }
+    .carousel-control-btn.prev { left: 0; }
+    .carousel-control-btn.next { right: 0; }
 </style>
 
 <div class="container py-5">
@@ -107,8 +154,11 @@
                     </div>
 
                     <div class="mt-4 mb-5">
-                        <h5 class="fw-bold text-dark border-bottom pb-2">Sinopsis</h5>
-                        <p class="text-muted lh-lg">
+                        <div class="d-flex align-items-center mb-2">
+                            <h5 class="fw-bold text-dark mb-0 me-2">Sinopsis</h5>
+                            <span id="externalBadge" class="badge bg-info text-white d-none" style="font-size: 0.6rem;">Enriquecido con Google Books</span>
+                        </div>
+                        <p id="bookDescription" class="text-muted lh-lg">
                             @(string.IsNullOrEmpty(Model.Descripcion) ? "No hay una descripción disponible para este libro aún." : Model.Descripcion)
                         </p>
                     </div>
@@ -149,8 +199,8 @@
         </div>
     </div>
 
-    @* --- SECCIÓN DE RESEÑAS --- *@
-    <div class="row g-5">
+    @* --- SECCIÓN DE RESEÑAS (MODERNIZADA FASE 4) --- *@
+    <div class="row g-5 mt-5">
         <div class="col-lg-7">
             <h3 class="fw-bold mb-4">Comentarios de Lectores</h3>
             @if (Model.Resenas != null && Model.Resenas.Any())
@@ -160,41 +210,52 @@
                     <div class="card review-card border-0 shadow-sm rounded-4 p-4 mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div class="d-flex align-items-center">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; font-weight: bold;">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 50px; height: 50px; font-weight: bold; font-size: 1.2rem;">
                                     @(resena.Usuario?.Nombre?.Substring(0, 1) ?? "U")
                                 </div>
-                                <div>
-                                    <h6 class="mb-0 fw-bold">@(resena.Usuario?.NombreCompleto ?? "Usuario de la Biblioteca")</h6>
-                                    <small class="text-muted">@resena.FechaPublicacion.ToString("dd MMM yyyy, hh:mm tt")</small>
+                                <div class="line-height-1">
+                                    <h6 class="mb-0 fw-bold text-dark">@(resena.Usuario?.NombreCompleto ?? "Lector de la Biblioteca")</h6>
+                                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> @resena.FechaPublicacion.ToString("dd MMM yyyy")</small>
                                 </div>
                             </div>
                             <div class="text-warning fs-5">
                                 @for (int i = 1; i <= 5; i++)
                                 {
-                                    <span>@(i <= resena.Puntuacion ? "★" : "☆")</span>
+                                    <span class="bi @(i <= resena.Puntuacion ? "bi-star-fill" : "bi-star")"></span>
                                 }
                             </div>
                         </div>
-                        <p class="text-dark mb-0 italic">"@resena.Comentario"</p>
+                        <div class="bg-light p-3 rounded-3 position-relative">
+                            <span class="position-absolute translate-middle-y top-0 start-0 ms-3 badge bg-white text-primary border shadow-sm">
+                                <i class="bi bi-chat-quote-fill"></i> Reseña
+                            </span>
+                            <p class="text-dark mb-0 mt-2 fst-italic">"@resena.Comentario"</p>
+                        </div>
                     </div>
                 }
             }
             else
             {
-                <div class="text-center py-5 bg-light rounded-4 border border-dashed">
-                    <p class="text-muted mb-0">Nadie ha calificado este libro todavía. ¡Sé el primero!</p>
+                <div class="text-center py-5 bg-white rounded-4 border border-dashed shadow-sm">
+                    <span class="display-4 text-muted">💬</span>
+                    <p class="text-muted mt-3 mb-0">Nadie ha calificado este libro todavía. ¡Sé el primero en compartir tu experiencia!</p>
                 </div>
             }
         </div>
 
         <div class="col-lg-5">
-            <div class="card border-0 shadow rounded-4 p-4 sticky-top" style="top: 2rem;">
-                <h4 class="fw-bold mb-3">Deja tu opinión</h4>
+            <div class="card border-0 shadow-lg rounded-4 p-4 sticky-top overflow-hidden" style="top: 2rem;">
+                <div class="position-absolute top-0 end-0 p-3 opacity-10">
+                    <i class="bi bi-pencil-square display-1"></i>
+                </div>
+                <h4 class="fw-bold mb-3">¿Qué te pareció?</h4>
+                <p class="text-muted small mb-4">Tu calificación ayuda a otros lectores a descubrir nuevas historias.</p>
+                
                 <form asp-action="PostResena" method="post">
                     <input type="hidden" name="LibroId" value="@Model.Id" />
                     
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Tu Calificación</label>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Tu Calificación</label>
                         <div class="star-rating">
                             <input type="radio" id="star5" name="Puntuacion" value="5" required /><label for="star5" title="5 estrellas">★</label>
                             <input type="radio" id="star4" name="Puntuacion" value="4" /><label for="star4" title="4 estrellas">★</label>
@@ -204,19 +265,106 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">Tu Comentario</label>
-                        <textarea name="Comentario" class="form-control rounded-3" rows="4" placeholder="¿Qué te pareció el libro? Comparte tu experiencia..." required minlength="10"></textarea>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Tu Comentario</label>
+                        <textarea name="Comentario" class="form-control rounded-3 border-0 bg-light p-3" rows="4" placeholder="Cuéntanos más sobre el libro..." required minlength="10"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 shadow-sm fw-bold">
-                        Publicar Reseña
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 shadow fw-bold transition-all">
+                        <i class="bi bi-send-fill me-2"></i>Publicar Reseña
                     </button>
-                    <p class="text-muted small mt-3 text-center">
-                        <i class="bi bi-shield-check"></i> Tu opinión ayuda a otros lectores a elegir su próxima historia.
-                    </p>
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10 rounded-3 mt-4 mb-0 py-2 px-3 small">
+                        <i class="bi bi-info-circle-fill me-2"></i>Recuerda que tu opinión debe ser respetuosa y evitar spoilers.
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+@* --- SECCIÓN DE RECOMENDACIONES (INTELIGENCIA FASE 4) --- *@
+@if (ViewBag.Recomendados != null && ((List<BibliotecaMVC.Models.Libro>)ViewBag.Recomendados).Any())
+{
+    <div class="bg-light py-5 mt-5">
+        <div class="container">
+            <h3 class="fw-bold mb-4">Quizás te interese...</h3>
+            <div class="recommendations-wrapper">
+                <button class="carousel-control-btn prev" onclick="scrollCarousel(-1)">
+                    <i class="bi bi-chevron-left text-primary"></i>
+                </button>
+                <div id="recoCarousel" class="recommendations-scroll">
+                    @foreach (var reco in (List<BibliotecaMVC.Models.Libro>)ViewBag.Recomendados)
+                    {
+                        <a asp-action="Details" asp-route-id="@reco.Id" class="text-decoration-none">
+                            <div class="card recommended-card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                                @if (!string.IsNullOrEmpty(reco.ImagenUrl))
+                                {
+                                    <img src="@reco.ImagenUrl" class="card-img-top" alt="@reco.Titulo" style="height: 220px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary bg-opacity-10 d-flex flex-column align-items-center justify-content-center" style="height: 220px;">
+                                        <span class="fs-1">📖</span>
+                                    </div>
+                                }
+                                <div class="card-body p-3">
+                                    <h6 class="text-dark fw-bold mb-1 text-truncate">@reco.Titulo</h6>
+                                    <small class="text-muted d-block mb-2">@reco.Autor?.Nombre</small>
+                                    <div class="text-warning small">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <span>@(i <= Math.Round(reco.RatingPromedio) ? "★" : "☆")</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+                <button class="carousel-control-btn next" onclick="scrollCarousel(1)">
+                    <i class="bi bi-chevron-right text-primary"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // LUIS: Enriquecimiento dinámico con Google Books API
+        document.addEventListener("DOMContentLoaded", function() {
+            const isbn = "@Model.ISBN";
+            const descElement = document.getElementById("bookDescription");
+            const badge = document.getElementById("externalBadge");
+
+            if (isbn && isbn.length >= 10) {
+                fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.items && data.items.length > 0) {
+                            const info = data.items[0].volumeInfo;
+                            
+                            // Si la descripción actual es muy corta o genérica, usar la de Google
+                            if (descElement.innerText.length < 100 && info.description) {
+                                descElement.style.opacity = "0";
+                                setTimeout(() => {
+                                    descElement.innerText = info.description;
+                                    descElement.style.transition = "opacity 0.5s ease";
+                                    descElement.style.opacity = "1";
+                                    badge.classList.remove("d-none");
+                                }, 300);
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Error al enriquecer con Google Books:", err));
+            }
+        });
+
+        // Lógica del Carrusel Manual
+        function scrollCarousel(direction) {
+            const carousel = document.getElementById("recoCarousel");
+            const scrollAmount = 300;
+            carousel.scrollLeft += direction * scrollAmount;
+        }
+    </script>
+}

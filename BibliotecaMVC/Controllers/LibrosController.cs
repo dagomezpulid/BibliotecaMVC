@@ -88,13 +88,33 @@ namespace BibliotecaMVC.Controllers
 
             if (libro == null) return NotFound();
 
-            // Verificar si es favorito del usuario actual
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrEmpty(userId))
-            {
-                libro.EsFavorito = await _context.Favoritos
-                    .AnyAsync(f => f.LibroId == libro.Id && f.UsuarioId == userId);
-            }
+            // --- MOTOR DE RECOMENDACIONES (Fase 4) ---
+            var categoriaIds = libro.Categorias.Select(c => c.Id).ToList();
+            
+            // 1. Recomendaciones por Categoría (50%)
+            var recomendadosPorCategoria = await _context.Libros
+                .Include(l => l.Autor)
+                .Where(l => l.Id != id && l.Categorias.Any(c => categoriaIds.Contains(c.Id)))
+                .OrderByDescending(l => l.Resenas.Average(r => (double?)r.Puntuacion) ?? 0)
+                .Take(4)
+                .ToListAsync();
+
+            // 2. Recomendaciones por Autor (50%)
+            var recomendadosPorAutor = await _context.Libros
+                .Include(l => l.Autor)
+                .Where(l => l.Id != id && l.AutorId == libro.AutorId)
+                .OrderByDescending(l => l.Resenas.Average(r => (double?)r.Puntuacion) ?? 0)
+                .Take(4)
+                .ToListAsync();
+
+            // 3. Combinar y limpiar duplicados
+            var recomendadosDocs = recomendadosPorCategoria
+                .Union(recomendadosPorAutor)
+                .DistinctBy(l => l.Id)
+                .Take(8)
+                .ToList();
+
+            ViewBag.Recomendados = recomendadosDocs;
 
             return View(libro);
         }
