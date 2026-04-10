@@ -59,9 +59,9 @@ public class AdminController : Controller
         var morososData = await _context.Multas
             .Include(m => m.Prestamo)
                 .ThenInclude(p => p.Usuario)
-            .GroupBy(m => m.Prestamo.Usuario.NombreCompleto)
+            .GroupBy(m => new { m.Prestamo.UsuarioId, m.Prestamo.Usuario.Nombre, m.Prestamo.Usuario.Apellido })
             .Select(g => new {
-                Nombre = g.Key,
+                Nombre = g.Key.Nombre + " " + g.Key.Apellido,
                 TotalMora = g.Sum(m => m.Monto)
             })
             .OrderByDescending(x => x.TotalMora)

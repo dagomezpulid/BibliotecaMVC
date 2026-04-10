@@ -26,14 +26,13 @@
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link px-3" asp-controller="Home" asp-action="Index">Catálogo</a>
+                            @* El Catalogo es el Home, ya esta en el Brand Logo *@
                         </li>
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             @if (User.IsInRole("Usuario"))
                             {
-                                <li class="nav-item"><a class="nav-link px-3" asp-controller="Prestamos" asp-action="Index">Mis Préstamos</a></li>
                                 <li class="nav-item"><a class="nav-link px-3" asp-controller="Prestamos" asp-action="Index">Mis Préstamos</a></li>
                                 <li class="nav-item"><a class="nav-link px-3" asp-controller="Favoritos" asp-action="Index">Favoritos ❤️</a></li>
                                 <li class="nav-item"><a class="nav-link px-3" asp-controller="Multas" asp-action="MisMultas">Mis Multas</a></li>
