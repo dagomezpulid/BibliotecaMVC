@@ -57,6 +57,16 @@ namespace BibliotecaMVC.Models
         public ICollection<Categoria> Categorias { get; set; } = new List<Categoria>();
 
         /// <summary>
+        /// Lista de reseñas y calificaciones otorgadas por los usuarios.
+        /// </summary>
+        public ICollection<Resena> Resenas { get; set; } = new List<Resena>();
+
+        /// <summary>
+        /// Calcula el promedio de estrellas redondeado a un decimal.
+        /// </summary>
+        public double RatingPromedio => Resenas.Any() ? Math.Round(Resenas.Average(r => r.Puntuacion), 1) : 0;
+
+        /// <summary>
         /// Propiedad calculada que determina si existen unidades disponibles para prestar.
         /// </summary>
         public bool TieneStock => Stock > 0;

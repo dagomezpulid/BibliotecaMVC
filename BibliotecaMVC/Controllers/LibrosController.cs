@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace BibliotecaMVC.Controllers
 {
@@ -20,20 +22,41 @@ namespace BibliotecaMVC.Controllers
         }
 
         /// <summary>
-        /// Muestra el catálogo completo de libros en formato de tarjetas premium.
+        /// Muestra el catálogo completo de libros. Soporta filtrado por texto (Título, Autor, Categoría).
         /// </summary>
-        /// <returns>Vista con la lista de libros, autores y sus categorías asociadas.</returns>
+        /// <param name="query">Palabra clave de búsqueda.</param>
         [Authorize]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string query)
         {
-            var libros = await _context.Libros
+            var librosQuery = _context.Libros
                 .Include(l => l.Autor)
                 .Include(l => l.Categorias)
-                .ToListAsync();
+                .Include(l => l.Resenas)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                query = query.ToLower();
+                librosQuery = librosQuery.Where(l => 
+                    l.Titulo.ToLower().Contains(query) || 
+                    l.Autor.Nombre.ToLower().Contains(query) ||
+                    l.Categorias.Any(c => c.Nombre.ToLower().Contains(query))
+                );
+            }
+
+            var libros = await librosQuery.ToListAsync();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_LibrosGrid", libros);
+            }
 
             return View(libros);
         }
 
+        /// <summary>
+        /// Muestra la información técnica completa y la sección de reseñas del libro.
+        /// </summary>
         [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
@@ -42,11 +65,55 @@ namespace BibliotecaMVC.Controllers
             var libro = await _context.Libros
                 .Include(l => l.Autor)
                 .Include(l => l.Categorias)
+                .Include(l => l.Resenas)
+                    .ThenInclude(r => r.Usuario)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (libro == null) return NotFound();
 
             return View(libro);
+        }
+
+        /// <summary>
+        /// Registra una nueva reseña y calificación en el sistema.
+        /// </summary>
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostResena(int LibroId, int Puntuacion, string Comentario)
+        {
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(usuarioId)) return Unauthorized();
+
+            // Validar si el usuario ya dejó una reseña para este libro (Antispam)
+            var yaReseno = await _context.Resenas.AnyAsync(r => r.LibroId == LibroId && r.UsuarioId == usuarioId);
+            if (yaReseno)
+            {
+                TempData["Error"] = "Ya has calificado este libro anteriormente.";
+                return RedirectToAction(nameof(Details), new { id = LibroId });
+            }
+
+            var resena = new Resena
+            {
+                LibroId = LibroId,
+                UsuarioId = usuarioId,
+                Puntuacion = Puntuacion,
+                Comentario = Comentario,
+                FechaPublicacion = DateTime.Now
+            };
+
+            if (ModelState.IsValid)
+            {
+                _context.Resenas.Add(resena);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "¡Gracias por tu opinión! Tu reseña ha sido publicada.";
+            }
+            else
+            {
+                TempData["Error"] = "Hubo un error al procesar tu reseña. Por favor intenta de nuevo.";
+            }
+
+            return RedirectToAction(nameof(Details), new { id = LibroId });
         }
 
         [Authorize(Roles = "Admin")]
