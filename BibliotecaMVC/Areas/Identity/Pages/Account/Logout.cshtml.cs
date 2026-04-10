@@ -13,6 +13,10 @@ using System.Threading.Tasks;
 
 namespace BibliotecaMVC.Areas.Identity.Pages.Account
 {
+    /// <summary>
+    /// Gestiona la finalización de la sesión del usuario.
+    /// Limpia las cookies de autenticación y redirige al inicio.
+    /// </summary>
     public class LogoutModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;

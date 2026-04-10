@@ -5,6 +5,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace BibliotecaMVC.Services
 {
+    /// <summary>
+    /// Proveedor de servicios de correo electrónico (SMTP).
+    /// Utilizado por ASP.NET Core Identity para confirmación de cuentas y recuperación de claves.
+    /// </summary>
     public class EmailSender : IEmailSender
     {
         private readonly IConfiguration _configuration;

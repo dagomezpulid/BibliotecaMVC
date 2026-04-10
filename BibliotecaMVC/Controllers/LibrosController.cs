@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Controllers
 {
+    /// <summary>
+    /// Gestiona el catálogo de libros, incluyendo visualización premium, 
+    /// creación con metadatos (ISBN, Portadas) y edición de categorías.
+    /// </summary>
     public class LibrosController : Controller
     {
         private readonly BibliotecaContext _context;
@@ -15,6 +19,10 @@ namespace BibliotecaMVC.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Muestra el catálogo completo de libros en formato de tarjetas premium.
+        /// </summary>
+        /// <returns>Vista con la lista de libros, autores y sus categorías asociadas.</returns>
         [Authorize]
         public async Task<IActionResult> Index()
         {
@@ -49,6 +57,12 @@ namespace BibliotecaMVC.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Procesa la creación de un nuevo libro.
+        /// Realiza validaciones de duplicidad por título y asocia metadatos extendidos.
+        /// </summary>
+        /// <param name="libro">Modelo del libro a crear (ISBN, ImagenUrl, etc).</param>
+        /// <param name="CategoriasSeleccionadas">Array de IDs de las categorías seleccionadas.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]

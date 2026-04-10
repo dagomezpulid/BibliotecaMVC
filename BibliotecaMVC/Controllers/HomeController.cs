@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Controllers
 {
+    /// <summary>
+    /// Punto de entrada público de la aplicación.
+    /// Enfocado en la visualización del catálogo para visitantes y gestión de errores.
+    /// </summary>
     public class HomeController : Controller
     {
         private readonly BibliotecaContext _context;

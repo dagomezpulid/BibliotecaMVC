@@ -11,6 +11,10 @@ namespace BibliotecaMVC.Services
         string CheckDuplicatePhone(string phoneNumber);
     }
 
+    /// <summary>
+    /// Servicio centralizado de validación de identidad.
+    /// Encargado de verificar la unicidad de credenciales (Email/Teléfono) antes del registro.
+    /// </summary>
     public class UserValidationService : IUserValidationService
     {
         private readonly UserManager<ApplicationUser> _userManager;

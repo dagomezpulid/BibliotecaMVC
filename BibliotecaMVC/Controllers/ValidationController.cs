@@ -7,6 +7,11 @@ using BibliotecaMVC.Services;
 
 namespace BibliotecaMVC.Controllers
 {
+    /// <summary>
+    /// Provee endpoints de validación asíncrona (AJAX) para formularios.
+    /// Utilizado principalmente por jQuery Validation Unobtrusive para validaciones en tiempo real.
+    /// Incluye medidas para mitigar ataques de enumeración.
+    /// </summary>
     [Route("[controller]")]
     public class ValidationController : Controller
     {
@@ -17,6 +22,11 @@ namespace BibliotecaMVC.Controllers
             _validationService = validationService;
         }
 
+        /// <summary>
+        /// Valida si un correo electrónico ya está registrado en el sistema.
+        /// </summary>
+        /// <param name="email">Correo a verificar.</param>
+        /// <returns>JSON con el mensaje de error o true si es válido.</returns>
         [AcceptVerbs("GET", "POST")]
         [Route("VerifyEmail")]
         public async Task<IActionResult> VerifyEmail([FromQuery(Name = "Input.Email")] string email)

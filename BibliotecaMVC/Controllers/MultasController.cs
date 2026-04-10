@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Gestiona la visualización, liquidación y auditoría de sanciones financieras.
+/// Permite a los usuarios pagar multas mediante una pasarela simulada 
+/// y a los administradores supervisar el estado de las deudas globales.
+/// </summary>
 [Authorize]
 public class MultasController : Controller
 {
@@ -24,6 +29,10 @@ public class MultasController : Controller
             .FirstOrDefaultAsync(m => m.Id == multaId);
     }
 
+    /// <summary>
+    /// Muestra las deudas y el historial de pagos del usuario autenticado.
+    /// </summary>
+    /// <returns>Vista con listado de multas personales y sus estados.</returns>
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> MisMultas()
     {
@@ -54,6 +63,12 @@ public class MultasController : Controller
         return View(multa);
     }
 
+    /// <summary>
+    /// Procesa el pago de una multa mediante la pasarela de pagos segura (Mock).
+    /// Valida el número de tarjeta, asocia la transacción al usuario y sanea la deuda.
+    /// </summary>
+    /// <param name="MultaId">ID de la multa a liquidar.</param>
+    /// <param name="NumeroTarjeta">Cadenas de dígitos de la tarjeta (se almacenan solo los últimos 4).</param>
     [HttpPost]
     [Authorize(Roles = "Usuario")]
     [ValidateAntiForgeryToken]

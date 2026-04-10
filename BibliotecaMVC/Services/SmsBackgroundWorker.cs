@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Services
 {
+    /// <summary>
+    /// Servicio en segundo plano (Cron Job) que patrulla la base de datos diariamente.
+    /// Detecta préstamos vencidos que aún no han sido notificados y envía una alerta SMS automática.
+    /// </summary>
     public class SmsBackgroundWorker : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;

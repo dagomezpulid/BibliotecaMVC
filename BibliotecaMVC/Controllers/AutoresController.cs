@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Controllers
 {
+    /// <summary>
+    /// Gestiona el registro y mantenimiento de autores literarios.
+    /// Acceso restringido únicamente a usuarios con rol de Administrador.
+    /// </summary>
     [Authorize(Roles = "Admin")]
     public class AutoresController : Controller
     {
@@ -15,6 +19,10 @@ namespace BibliotecaMVC.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Lista todos los autores registrados en el sistema.
+        /// </summary>
+        /// <returns>Vista con la colección de autores.</returns>
         public IActionResult Index()
         {
             var autores = _context.Autores.ToList();
@@ -26,15 +34,18 @@ namespace BibliotecaMVC.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Procesa la creación de un nuevo autor.
+        /// Valida la integridad de los datos y previene la duplicidad de nombres mediante AnyAsync.
+        /// </summary>
+        /// <param name="autor">Entidad Autor a persistir.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Nombre")] Autor autor)
         {
-            // 1. Validar primero que los campos no estén vacíos
             if (!ModelState.IsValid)
                 return View(autor);
 
-            // 2. Solo si hay texto, consultar a BBDD por duplicados
             bool existeAutor = await _context.Autores.AnyAsync(a => 
                 a.Nombre.ToLower() == autor.Nombre.ToLower());
 

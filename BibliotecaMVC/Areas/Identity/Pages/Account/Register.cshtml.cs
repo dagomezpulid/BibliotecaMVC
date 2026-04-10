@@ -11,6 +11,10 @@ using BibliotecaMVC.Services;
 
 namespace BibliotecaMVC.Areas.Identity.Pages.Account
 {
+    /// <summary>
+    /// Gestiona la lógica de autoregistro de nuevos lectores en el sistema.
+    /// Implementa validaciones de fortaleza de clave y control de duplicidad (Email/Teléfono).
+    /// </summary>
     [AllowAnonymous]
     public class RegisterModel : PageModel
     {

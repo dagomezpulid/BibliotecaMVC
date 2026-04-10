@@ -5,6 +5,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Panel de control administrativo para la gestión global del sistema.
+/// Permite supervisar usuarios, escalar privilegios, rehabilitar cuentas con mora
+/// y realizar bajas controladas con eliminación en cascada.
+/// </summary>
 [Authorize(Roles = "Admin")]
 public class AdminController : Controller
 {
@@ -16,6 +21,11 @@ public class AdminController : Controller
         _context = context;
         _userManager = userManager;
     }
+    /// <summary>
+    /// Genera la vista principal del Dashboard con estadísticas consolidadas.
+    /// Resuelve problemas de N+1 al cargar préstamos y multas de forma optimizada.
+    /// </summary>
+    /// <returns>Modelo de vista con contadores globales y lista de usuarios.</returns>
     public async Task<IActionResult> Index()
     {
         // 1. Cargar usuarios
@@ -59,6 +69,10 @@ public class AdminController : Controller
         return View(model);
     }
 
+    /// <summary>
+    /// Eleva a un usuario al rol de Administrador.
+    /// </summary>
+    /// <param name="id">ID de Identity del usuario.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> HacerAdmin(string id)
@@ -91,6 +105,11 @@ public class AdminController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Restablece los privilegios de préstamo de un usuario que estaba suspendido por mora.
+    /// Conocido técnicamente como el proceso de "Amnistía Administrativa".
+    /// </summary>
+    /// <param name="id">ID del usuario a rehabilitar.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DesbloquearUsuario(string id)
@@ -105,6 +124,12 @@ public class AdminController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Elimina a un usuario del sistema de forma segura.
+    /// Realiza una limpieza recursiva de Pagos, Multas e Historial de Préstamos
+    /// para evitar errores de integridad referencial.
+    /// </summary>
+    /// <param name="id">ID del usuario a eliminar.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EliminarUsuario(string id)

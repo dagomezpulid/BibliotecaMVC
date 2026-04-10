@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Models
 {
+    /// <summary>
+    /// Contexto de acceso a datos que hereda de IdentityDbContext.
+    /// Define la estructura de tablas, relaciones Fluent API y semillas de datos (Seeding).
+    /// </summary>
     public class BibliotecaContext : IdentityDbContext<ApplicationUser>
     {
         public BibliotecaContext(DbContextOptions<BibliotecaContext> options)
@@ -18,6 +22,10 @@ namespace BibliotecaMVC.Models
         public DbSet<Pago> Pagos { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
 
+        /// <summary>
+        /// Configuración avanzada del modelo de datos mediante Fluent API.
+        /// Define relaciones 1:1, 1:N y M:N, además de datos iniciales.
+        /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -4,6 +4,10 @@ using Twilio.Types;
 
 namespace BibliotecaMVC.Services
 {
+    /// <summary>
+    /// Implementación del servicio de mensajería asíncrona mediante Twilio SDK.
+    /// Soporta envío de SMS y conversión dinámica al protocolo WhatsApp Business.
+    /// </summary>
     public class TwilioSmsSender : ISmsSender
     {
         private readonly IConfiguration _config;
@@ -15,6 +19,12 @@ namespace BibliotecaMVC.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Despacha un mensaje a un dispositivo móvil.
+        /// Realiza normalización de números a formato E.164 e inyecta el prefijo 'whatsapp:'.
+        /// </summary>
+        /// <param name="number">Número de destino (con o sin indicativo).</param>
+        /// <param name="message">Cuerpo del mensaje a enviar.</param>
         public async Task SendSmsAsync(string number, string message)
         {
             if (string.IsNullOrWhiteSpace(number)) 

@@ -5,6 +5,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using BibliotecaMVC.Services;
 
+/// <summary>
+/// Controlador principal para la gestión de préstamos.
+/// Implementa reglas de negocio críticas como el límite de préstamos por usuario, 
+/// prevención de IDOR, y notificaciones automáticas vía SMS (Twilio).
+/// </summary>
 [Authorize]
 public class PrestamosController : Controller
 {
@@ -12,6 +17,13 @@ public class PrestamosController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ISmsSender _smsSender;
 
+    /// <summary>
+    /// Despacha una notificación SMS de forma asíncrona (Fire and Forget)
+    /// para no afectar el tiempo de respuesta del servidor web.
+    /// </summary>
+    /// <param name="usuario">Usuario receptor del mensaje.</param>
+    /// <param name="prestamo">Referencia del préstamo involucrado.</param>
+    /// <param name="cuerpoPrincipal">Texto personalizado para la notificación.</param>
     private void NotificarUsuarioSmsAsync(ApplicationUser usuario, Prestamo prestamo, string cuerpoPrincipal)
     {
         if (usuario != null && !string.IsNullOrEmpty(usuario.PhoneNumber))
@@ -68,7 +80,12 @@ public class PrestamosController : Controller
         return View(historial);
     }
 
-    // Devolver libro
+    /// <summary>
+    /// Procesa la devolución de un libro.
+    /// Ejecuta el peritaje de mora, genera multas si aplica, restaura el stock 
+    /// y bloquea la cuenta del usuario si el entrega es tardía.
+    /// </summary>
+    /// <param name="id">ID del préstamo a devolver.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
@@ -146,7 +163,13 @@ public class PrestamosController : Controller
         return View("Prestar", libro.Id);
     }
 
-    // Crear préstamo
+    /// <summary>
+    /// Crea un nuevo registro de préstamo en la base de datos.
+    /// Valida: Suspensión de cuenta, Stock disponible, Rango de días (2-20),
+    /// Deudas pendientes y Límite de 3 préstamos activos.
+    /// </summary>
+    /// <param name="libroId">ID del libro a rentar.</param>
+    /// <param name="diasPrestamo">Duración elegida por el usuario.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]

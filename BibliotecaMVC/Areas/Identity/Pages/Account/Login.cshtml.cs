@@ -18,6 +18,11 @@ using Microsoft.Extensions.Logging;
 
 namespace BibliotecaMVC.Areas.Identity.Pages.Account
 {
+    /// <summary>
+    /// Gestiona la autenticación de usuarios registrados.
+    /// Valida credenciales, gestiona el estado de persistencia de la sesión 
+    /// y redirige a la URL de origen tras un acceso exitoso.
+    /// </summary>
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;

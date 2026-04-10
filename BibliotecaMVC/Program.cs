@@ -3,11 +3,17 @@ using BibliotecaMVC.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Configuración principal de la aplicación BibliotecaMVC.
+/// Orquesta la inyección de dependencias, la configuración de seguridad (Identity)
+/// y el pipeline de procesamiento de solicitudes HTTP.
+/// </summary>
 var builder = WebApplication.CreateBuilder(args);
+// Registro del Contexto de Datos (Entity Framework Core)
 builder.Services.AddDbContext<BibliotecaContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add services to the container.
+// Configuración de Identity (Gestión de Usuarios, Roles y Seguridad)
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
@@ -37,10 +43,13 @@ builder.Services.AddHostedService<BibliotecaMVC.Services.SmsBackgroundWorker>();
 // Servicios de validación
 builder.Services.AddScoped<IUserValidationService, UserValidationService>();
 
+// Registro de Controladores con Vistas (MVC) e infraestructura de Razor Pages
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddRazorPages();
 
+/// <summary>
+/// Construcción de la aplicación y configuración del pipeline.
+/// </summary>
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -123,4 +132,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Inicia el ciclo de vida de la aplicación y escucha peticiones entrantes.
 app.Run();
