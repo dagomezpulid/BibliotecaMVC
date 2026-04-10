@@ -20,18 +20,40 @@ namespace BibliotecaMVC.Models.ViewModels
         public List<UserViewModel> Usuarios { get; set; } = new List<UserViewModel>();
 
         // --- DATOS PARA GRÁFICOS (CHART.JS) ---
-        
-        // Usuarios con más mora (Top 5)
+
+        /// <summary>
+        /// Etiquetas (Nombres) de los usuarios con mayores deudas históricas.
+        /// </summary>
         public List<string> LabelsMorosos { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Montos acumulados de deuda para el Top 5 de morosos.
+        /// </summary>
         public List<decimal> ValoresMorosos { get; set; } = new List<decimal>();
+
+        /// <summary>
+        /// Sumatoria de días de retraso acumulados para el Top 5 de morosos.
+        /// </summary>
         public List<int> ValoresDiasMora { get; set; } = new List<int>();
 
-        // Libros más prestados (Top 5)
+        /// <summary>
+        /// Títulos de los libros más solicitados en el sistema.
+        /// </summary>
         public List<string> LabelsLibrosPopulares { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Conteo de préstamos realizados para los libros más populares.
+        /// </summary>
         public List<int> ValoresLibrosPopulares { get; set; } = new List<int>();
 
-        // Tendencia de préstamos (Meses)
+        /// <summary>
+        /// Nombres de los meses analizados para la tendencia de actividad.
+        /// </summary>
         public List<string> LabelsTendencia { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Cantidad de préstamos registrados por cada mes analizado.
+        /// </summary>
         public List<int> ValoresTendencia { get; set; } = new List<int>();
     }
 }

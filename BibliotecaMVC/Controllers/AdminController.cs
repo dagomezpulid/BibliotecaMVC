@@ -16,6 +16,11 @@ public class AdminController : Controller
     private readonly BibliotecaContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
 
+    /// <summary>
+    /// Inicializa una nueva instancia del Panel Administrativo con los servicios necesarios.
+    /// </summary>
+    /// <param name="context">Acceso al motor de persistencia de la biblioteca.</param>
+    /// <param name="userManager">Servicio para la gestión avanzada de identidades y roles.</param>
     public AdminController(BibliotecaContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;

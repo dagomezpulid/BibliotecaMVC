@@ -22,11 +22,12 @@ namespace BibliotecaMVC.Controllers
         }
 
         /// <summary>
-        /// Muestra el catálogo completo de libros. Soporta filtrado por texto (Título, Autor, Categoría).
+        /// Muestra el catálogo de libros con soporte para búsqueda dinámica y marcado de favoritos.
         /// </summary>
-        /// <param name="query">Palabra clave de búsqueda.</param>
+        /// <param name="query">Término de búsqueda opcional (Título, Autor, Categoría o ISBN).</param>
+        /// <returns>Vista con listado de libros filtrados.</returns>
         [Authorize]
-        public async Task<IActionResult> Index(string query)
+        public async Task<IActionResult> Index(string? query)
         {
             var librosQuery = _context.Libros
                 .Include(l => l.Autor)

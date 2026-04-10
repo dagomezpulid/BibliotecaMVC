@@ -6,12 +6,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BibliotecaMVC.Controllers
 {
+    /// <summary>
+    /// Gestiona la interacción social de los usuarios con el catálogo.
+    /// Permite administrar la lista de libros favoritos y la biblioteca personal.
+    /// </summary>
     [Authorize]
     public class FavoritosController : Controller
     {
         private readonly BibliotecaContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
+        /// <summary>
+        /// Inicializa una nueva instancia del controlador con inyección de dependencias.
+        /// </summary>
+        /// <param name="context">Contexto de datos de la biblioteca.</param>
+        /// <param name="userManager">Servicio de gestión de identidad de usuarios.</param>
         public FavoritosController(BibliotecaContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
@@ -20,8 +29,11 @@ namespace BibliotecaMVC.Controllers
 
         /// <summary>
         /// Alterna el estado de favorito de un libro para el usuario actual.
+        /// Si el libro ya es favorito, se elimina; de lo contrario, se agrega.
         /// Diseñado para interacción mediante AJAX.
         /// </summary>
+        /// <param name="libroId">ID único del libro a procesar.</param>
+        /// <returns>JSON indicando el éxito y el estado resultante (esFavorito).</returns>
         [HttpPost]
         public async Task<IActionResult> Toggle(int libroId)
         {
@@ -54,8 +66,10 @@ namespace BibliotecaMVC.Controllers
         }
 
         /// <summary>
-        /// Vista de la biblioteca personal del usuario.
+        /// Muestra la colección personal de libros marcados como favoritos por el usuario.
+        /// Incluye carga de autores y categorías para la rejilla visual.
         /// </summary>
+        /// <returns>Vista con el listado de libros favoritos.</returns>
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);

@@ -33,6 +33,11 @@ public class MultasController : Controller
         await _context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Inicializa el controlador con los servicios de contexto y gestión de identidades.
+    /// </summary>
+    /// <param name="context">Acceso al modelo de datos.</param>
+    /// <param name="userManager">Gestor de usuarios de Identity.</param>
     public MultasController(BibliotecaContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
@@ -170,6 +175,11 @@ public class MultasController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Genera un reporte administrativo en formato CSV con el histórico de multas.
+    /// Incluye datos del usuario, libro, montos y estados de pago.
+    /// </summary>
+    /// <returns>Archivo descargable con codificación UTF-8 compatible con Excel.</returns>
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> ExportarCSV()
     {
