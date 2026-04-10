@@ -13,71 +13,72 @@
 <body class ="d-flex flex-column min-vh-100">
 
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm mb-3">
-            <div class="container-fluid">
-
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                    📚 Sistema de Biblioteca
+        <nav class="navbar navbar-expand-sm navbar-light shadow-sm mb-3 py-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <span class="fs-3 me-2">📚</span> <span>Biblioteca<span class="text-primary">MVC</span></span>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#mainNavbar">
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto">
-
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                Home
-                            </a>
+                            <a class="nav-link px-3" asp-controller="Home" asp-action="Index">Catálogo</a>
                         </li>
 
-                        @if (User.IsInRole("Usuario"))
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Prestamos" asp-action="Index">
-                                    Préstamos
-                                </a>
-                            </li>
+                            @if (User.IsInRole("Usuario"))
+                            {
+                                <li class="nav-item"><a class="nav-link px-3" asp-controller="Prestamos" asp-action="Index">Mis Préstamos</a></li>
+                                <li class="nav-item"><a class="nav-link px-3" asp-controller="Multas" asp-action="MisMultas">Mis Multas</a></li>
+                            }
 
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Prestamos" asp-action="Historial">
-                                    Historial
-                                </a>
-                            </li>
-                            <li>
-                                <a class="nav-link" asp-controller="Multas" asp-action="MisMultas">
-                                    Mis Multas
-                                </a>
-                            </li>
-
-                            @await Component.InvokeAsync("MultaUsuario")
-                        }
-
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Index">
-                                    Dashboard
-                                </a>
-                            </li>
-                            
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Libros" asp-action="Create">
-                                    Agregar Libro
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Autores" asp-action="Create">
-                                    Agregar Autor
-                                </a>
-                            </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item"><a class="nav-link px-3 fw-semibold text-primary" asp-controller="Admin" asp-action="Index">Panel Admin</a></li>
+                            }
                         }
                     </ul>
-                    <partial name="_LoginPartial" />
+
+                    <div class="d-flex align-items-center gap-2">
+                        @* -- Modo Oscuro Toggle -- *@
+                        <div class="theme-toggle-btn" id="themeToggle" title="Cambiar tema">
+                            <span id="themeIcon">🌓</span>
+                        </div>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @* -- Centro de Notificaciones -- *@
+                            <div class="dropdown me-2">
+                                <a class="nav-link position-relative theme-toggle-btn dropdown-toggle no-caret" href="#" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    🔔
+                                    <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" style="font-size: 0.6rem;">
+                                        0
+                                    </span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end p-0 rounded-4 shadow-lg border-0" aria-labelledby="notifDropdown">
+                                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light rounded-top-4">
+                                        <h6 class="mb-0 fw-bold">Notificaciones</h6>
+                                        <span class="badge bg-primary rounded-pill small" id="notifCountText">0 nuevas</span>
+                                    </div>
+                                    <div id="notifList" class="notif-scroll">
+                                        <div class="p-4 text-center text-muted">
+                                            <small>Cargando notificaciones...</small>
+                                        </div>
+                                    </div>
+                                    <div class="p-2 text-center border-top">
+                                        <small class="text-muted">Centro de Alertas Biblioteca</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </div>
         </nav>
@@ -85,47 +86,118 @@
 
     <div class="container flex-fill">
         <main role="main" class="pb-3">
-
             <div class="container mt-3">
-
                 @if (TempData["Success"] != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show">
-                        @TempData["Success"]
+                    <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 bg-success bg-opacity-10 text-success">
+                        <span class="me-2">✅</span> @TempData["Success"]
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 }
 
                 @if (TempData["Error"] != null)
                 {
-                    <div class="alert alert-danger alert-dismissible fade show">
-                        @TempData["Error"]
+                    <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm border-0 bg-danger bg-opacity-10 text-danger">
+                        <span class="me-2">⚠️</span> @TempData["Error"]
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 }
-
             </div>
 
             @RenderBody()
-
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-auto">
+    <footer class="border-top footer text-muted mt-auto py-4 bg-light bg-opacity-50">
         <div class="container text-center">
-            &copy; 2026 - BibliotecaMVC
+            &copy; 2026 - <span class="fw-bold text-dark">BibliotecaMVC</span> - Phase 2 Interactividad
         </div>
     </footer>
 
-    <script>
-            setTimeout(function () {
-                let alerts = document.querySelectorAll('.alert');
-                alerts.forEach(a => a.classList.remove('show'));
-            }, 4000);
-    </script>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
 
+    <script>
+        // --- GESTIÓN DE TEMA (DARK MODE) ---
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+
+        function setTheme(theme) {
+            html.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // --- GESTIÓN DE NOTIFICACIONES ---
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <text>
+            async function updateNotifications() {
+                try {
+                    const res = await fetch('/Notificaciones/GetRecientes');
+                    const data = await res.json();
+                    
+                    const list = document.getElementById('notifList');
+                    const badge = document.getElementById('notifBadge');
+                    const countText = document.getElementById('notifCountText');
+
+                    if (data.length === 0) {
+                        list.innerHTML = '<div class="p-4 text-center text-muted"><small>No tienes notificaciones</small></div>';
+                        badge.classList.add('d-none');
+                        countText.textContent = "0 nuevas";
+                        return;
+                    }
+
+                    const unreadCount = data.filter(n => !n.leida).length;
+                    if(unreadCount > 0) {
+                        badge.textContent = unreadCount;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                    }
+                    countText.textContent = `${unreadCount} nuevas`;
+
+                    list.innerHTML = data.map(n => `
+                        <div class="notif-item p-3 ${n.leida ? '' : 'unread'}" onclick="markAsRead(${n.id})">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="fw-bold small">${n.titulo}</span>
+                                <small class="text-muted" style="font-size: 0.7rem;">${new Date(n.fechaCreacion).toLocaleTimeString()}</small>
+                            </div>
+                            <p class="mb-0 small text-muted text-truncate">${n.contenido}</p>
+                        </div>
+                    `).join('');
+
+                } catch (e) { console.error("Error notif:", e); }
+            }
+
+            async function markAsRead(id) {
+                await fetch(`/Notificaciones/MarcarLeida?id=${id}`, { method: 'POST' });
+                updateNotifications();
+            }
+
+            // Polling suave cada 60 segundos
+            updateNotifications();
+            setInterval(updateNotifications, 60000);
+            </text>
+        }
+
+        // Auto-hide alert
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(a => {
+                const bsAlert = new bootstrap.Alert(a);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

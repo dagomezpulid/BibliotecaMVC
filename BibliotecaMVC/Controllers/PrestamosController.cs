@@ -18,12 +18,23 @@ public class PrestamosController : Controller
     private readonly ISmsSender _smsSender;
 
     /// <summary>
-    /// Despacha una notificación SMS de forma asíncrona (Fire and Forget)
-    /// para no afectar el tiempo de respuesta del servidor web.
+    /// Crea una notificación persistente en la base de datos para el usuario.
     /// </summary>
-    /// <param name="usuario">Usuario receptor del mensaje.</param>
-    /// <param name="prestamo">Referencia del préstamo involucrado.</param>
-    /// <param name="cuerpoPrincipal">Texto personalizado para la notificación.</param>
+    private async Task CrearNotificacionAsync(string userId, string titulo, string contenido, string tipo = "info")
+    {
+        var notif = new Notificacion
+        {
+            UsuarioId = userId,
+            Titulo = titulo,
+            Contenido = contenido,
+            Tipo = tipo,
+            FechaCreacion = DateTime.Now,
+            Leida = false
+        };
+        _context.Notificaciones.Add(notif);
+        await _context.SaveChangesAsync();
+    }
+
     private void NotificarUsuarioSmsAsync(ApplicationUser usuario, Prestamo prestamo, string cuerpoPrincipal)
     {
         if (usuario != null && !string.IsNullOrEmpty(usuario.PhoneNumber))
@@ -141,6 +152,9 @@ public class PrestamosController : Controller
 
             // 🚀 INTEGRACIÓN MUNDIAL TWILIO: Disparar el castigo al dispositivo celular
             NotificarUsuarioSmsAsync(usuarioInfractor, prestamo, $"Tu préstamo fue devuelto tarde. Se generó una multa de ${totalMulta}. Tu cuenta ha sido bloqueada hasta sanear tu deuda");
+
+            // 🔔 Notificación Interna
+            await CrearNotificacionAsync(usuarioId, "⚠️ Multa Generada", $"Se ha generado una multa de ${totalMulta} por retraso en el libro '{prestamo.Libro.Titulo}'.", "warning");
         }
 
         prestamo.Libro.Stock++;
@@ -248,6 +262,9 @@ public class PrestamosController : Controller
         // 🔥 Confirmación Inmediata al Usuario (SMS Vía Twilio)
         string fechaLim = prestamo.FechaDevolucionProgramada.ToShortDateString();
         NotificarUsuarioSmsAsync(usuarioDB, prestamo, $"Préstamo exitoso. Límite de devolución: {fechaLim}. Recuerda: Entregar tarde generará multas inmediatas y congelamiento de tu cuenta");
+
+        // 🔔 Notificación Interna
+        await CrearNotificacionAsync(usuarioId, "📖 Préstamo Confirmado", $"Has alquilado '{libro.Titulo}'. Fecha límite: {fechaLim}.", "success");
 
         TempData["Success"] = "Préstamo realizado correctamente.";
 

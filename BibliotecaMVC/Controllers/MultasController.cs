@@ -15,6 +15,24 @@ public class MultasController : Controller
     private readonly BibliotecaContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
 
+    /// <summary>
+    /// Crea una notificación persistente en la base de datos para el usuario.
+    /// </summary>
+    private async Task CrearNotificacionAsync(string userId, string titulo, string contenido, string tipo = "info")
+    {
+        var notif = new Notificacion
+        {
+            UsuarioId = userId,
+            Titulo = titulo,
+            Contenido = contenido,
+            Tipo = tipo,
+            FechaCreacion = DateTime.Now,
+            Leida = false
+        };
+        _context.Notificaciones.Add(notif);
+        await _context.SaveChangesAsync();
+    }
+
     public MultasController(BibliotecaContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
@@ -109,6 +127,9 @@ public class MultasController : Controller
         multa.FechaPago = DateTime.Now;
 
         await _context.SaveChangesAsync();
+
+        // 🔔 Notificación Interna
+        await CrearNotificacionAsync(usuarioId, "💰 Pago Aprobado", $"Tu pago de ${multa.Monto.ToString("N0")} ha sido procesado. La multa por el libro '{multa.Prestamo.Libro.Titulo}' ha sido saldada.", "success");
 
         TempData["Success"] = $"¡Pago de ${multa.Monto.ToString("N0")} aprobado exitosamente! Tu multa ha sido saldada.";
         
