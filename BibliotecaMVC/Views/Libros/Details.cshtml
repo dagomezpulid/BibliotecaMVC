@@ -331,21 +331,32 @@
 
 @section Scripts {
     <script>
-        // LUIS: Enriquecimiento dinámico con Google Books API
+        // LUIS: Enriquecimiento dinámico con Google Books API (MEJORADO)
         document.addEventListener("DOMContentLoaded", function() {
-            const isbn = "@Model.ISBN";
+            let isbnRaw = "@Model.ISBN";
+            // Limpiamos el ISBN: solo dejamos números y la letra X (para ISBN-10)
+            const isbn = isbnRaw.replace(/[^0-9X]/gi, '');
+            
             const descElement = document.getElementById("bookDescription");
             const badge = document.getElementById("externalBadge");
 
             if (isbn && isbn.length >= 10) {
+                // 1. Intentamos búsqueda específica por filtro de ISBN
                 fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
                     .then(response => response.json())
+                    .then(data => {
+                        // 2. Si no hay resultados por ISBN exacto, intentamos búsqueda general por el código
+                        if (!data.items || data.items.length === 0) {
+                            return fetch(`https://www.googleapis.com/books/v1/volumes?q=${isbn}`).then(res => res.json());
+                        }
+                        return data;
+                    })
                     .then(data => {
                         if (data.items && data.items.length > 0) {
                             const info = data.items[0].volumeInfo;
                             
-                            // Si la descripción actual es muy corta o genérica, usar la de Google
-                            if (descElement.innerText.length < 100 && info.description) {
+                            // Solo actualizamos si la descripción actual es muy corta y Google tiene una mejor
+                            if (descElement.innerText.length < 150 && info.description) {
                                 descElement.style.opacity = "0";
                                 setTimeout(() => {
                                     descElement.innerText = info.description;
