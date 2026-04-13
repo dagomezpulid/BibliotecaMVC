@@ -7,7 +7,7 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 ## 🚀 Tecnologías Principales
 - **Backend:** C# / .NET 10.0
 - **Frontend:** HTML5, CSS3, Razor Pages, Bootstrap 5 (UI enriquecida con Componentes de Tarjeta, Gradientes y Sombras).
-- **Base de Datos:** SQL Server / SQLite gestionado mediante **Entity Framework Core**.
+- **Base de Datos:** SQL Server gestionado mediante **Entity Framework Core**.
 - **Autenticación:** ASP.NET Core Identity (Autenticación por Cookies, Roles y Perfiles Extendidos).
 - **Notificaciones:** Integración con **Twilio API** (WhatsApp/SMS) y **SmtpClient** (Email).
 

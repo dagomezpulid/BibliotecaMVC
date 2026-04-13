@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CsvHelper;
+using System.Globalization;
+using System.IO;
 
 /// <summary>
 /// Gestiona la visualización, liquidación y auditoría de sanciones financieras.
@@ -191,24 +194,35 @@ public class MultasController : Controller
             .OrderByDescending(m => m.FechaGenerada)
             .ToListAsync();
 
-        var builder = new System.Text.StringBuilder();
-        builder.AppendLine("ID,Usuario,Libro,Monto,Fecha Emision,Estado,Fecha Pago");
-
-        foreach (var m in multas)
+        using (var memoryStream = new MemoryStream())
+        using (var writer = new StreamWriter(memoryStream))
+        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
         {
-            var estado = m.Pagada ? "Saldada" : "Pendiente";
-            var fechaPago = m.FechaPago?.ToShortDateString() ?? "-";
-            
-            // Escapar comas en campos de texto para evitar errores de formato CSV
-            var usuario = m.Prestamo?.Usuario?.NombreCompleto?.Replace(",", ";");
-            var libro = m.Prestamo?.Libro?.Titulo?.Replace(",", ";");
+            csv.WriteField("ID");
+            csv.WriteField("Usuario");
+            csv.WriteField("Libro");
+            csv.WriteField("Monto");
+            csv.WriteField("Fecha Emision");
+            csv.WriteField("Estado");
+            csv.WriteField("Fecha Pago");
+            csv.NextRecord();
 
-            builder.AppendLine($"{m.Id},{usuario},{libro},{m.Monto},{m.FechaGenerada.ToShortDateString()},{estado},{fechaPago}");
+            foreach (var m in multas)
+            {
+                csv.WriteField(m.Id);
+                csv.WriteField(m.Prestamo?.Usuario?.NombreCompleto ?? "Anónimo");
+                csv.WriteField(m.Prestamo?.Libro?.Titulo ?? "Sin Título");
+                csv.WriteField(m.Monto);
+                csv.WriteField(m.FechaGenerada.ToString("d"));
+                csv.WriteField(m.Pagada ? "Saldada" : "Pendiente");
+                csv.WriteField(m.FechaPago?.ToString("d") ?? "-");
+                csv.NextRecord();
+            }
+
+            writer.Flush();
+            var result = memoryStream.ToArray();
+            var fileName = $"Reporte_Multas_{DateTime.Now:yyyyMMdd}.csv";
+            return File(result, "text/csv", fileName);
         }
-
-        var csvContent = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
-        var fileName = $"Reporte_Multas_{DateTime.Now:yyyyMMdd}.csv";
-
-        return File(csvContent, "text/csv; charset=utf-8", fileName);
     }
 }

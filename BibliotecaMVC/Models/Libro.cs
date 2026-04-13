@@ -75,7 +75,17 @@ namespace BibliotecaMVC.Models
         /// Propiedad volatil para indicar si el usuario actual tiene este libro en favoritos.
         /// No se persiste en DB, se llena en tiempo de ejecución.
         /// </summary>
+        /// <summary>
+        /// Propiedad volatil para indicar si el usuario actual tiene este libro en favoritos.
+        /// No se persiste en DB, se llena en tiempo de ejecución.
+        /// </summary>
         [NotMapped]
         public bool EsFavorito { get; set; } = false;
+
+        /// <summary>
+        /// Token de concurrencia para evitar colisiones en el stock (Optimistic Concurrency).
+        /// </summary>
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
     }
 }

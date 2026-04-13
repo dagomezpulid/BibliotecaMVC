@@ -202,7 +202,10 @@ public class PrestamosController : Controller
         var libro = await _context.Libros.FindAsync(libroId);
 
         if (libro == null || libro.Stock <= 0)
-            return BadRequest("Libro no disponible");
+        {
+            TempData["Error"] = "Lo sentimos, el libro solicitado ya no tiene ejemplares disponibles.";
+            return RedirectToAction("Index", "Libros");
+        }
 
         if (diasPrestamo < 2 || diasPrestamo > 20)
         {
@@ -254,10 +257,17 @@ public class PrestamosController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        libro.Stock--;
-
-        _context.Prestamos.Add(prestamo);
-        await _context.SaveChangesAsync();
+        try 
+        {
+            libro.Stock--;
+            _context.Prestamos.Add(prestamo);
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            TempData["Error"] = "Hubo un conflicto al procesar el stock. Otro usuario pudo haber rentado el último ejemplar simultáneamente. Por favor, intenta de nuevo.";
+            return RedirectToAction("Index", "Libros");
+        }
 
         // 🔥 Confirmación Inmediata al Usuario (SMS Vía Twilio)
         string fechaLim = prestamo.FechaDevolucionProgramada.ToShortDateString();

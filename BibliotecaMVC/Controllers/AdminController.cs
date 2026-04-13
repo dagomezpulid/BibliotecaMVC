@@ -237,8 +237,18 @@ public class AdminController : Controller
             _context.Pagos.RemoveRange(pagos);
             _context.Multas.RemoveRange(multas);
             _context.Prestamos.RemoveRange(historialPrestamos);
-            await _context.SaveChangesAsync(); // Guardamos los cambios de eliminación en cascada
         }
+
+        // 🧹 Limpieza social y comunicaciones
+        var resenas = await _context.Resenas.Where(r => r.UsuarioId == usuario.Id).ToListAsync();
+        var favoritos = await _context.Favoritos.Where(f => f.UsuarioId == usuario.Id).ToListAsync();
+        var notificaciones = await _context.Notificaciones.Where(n => n.UsuarioId == usuario.Id).ToListAsync();
+
+        _context.Resenas.RemoveRange(resenas);
+        _context.Favoritos.RemoveRange(favoritos);
+        _context.Notificaciones.RemoveRange(notificaciones);
+
+        await _context.SaveChangesAsync();
 
         await _userManager.DeleteAsync(usuario);
 
