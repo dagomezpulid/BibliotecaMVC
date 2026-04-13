@@ -47,34 +47,62 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 
 ---
 
-## 💻 Instalación y Configuración Local
+## 💻 Instalación y Configuración Paso a Paso
 
-1. **Clonación:**
-   ```bash
-   git clone [URL-del-repositorio]
-   ```
-2. **Requisitos:** Asegúrate de tener **.NET 10.0 SDK** y **SQL Server** activos (LocalDB o Express).
-3. **Configuración de Secretos (CRÍTICO):** Configure sus credenciales locales para habilitar los servicios:
-   ```bash
-   dotnet user-secrets set "EmailSettings:Username" "tu_gmail@gmail.com"
-   dotnet user-secrets set "EmailSettings:Password" "tu_app_password"
-   dotnet user-secrets set "TwilioSettings:AccountSid" "tu_sid"
-   dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token"
-   dotnet user-secrets set "AdminSettings:Password" "TuPasswordAdmin123!"
-   ```
-4. **Base de Datos:** Aplica las migraciones:
-   ```bash
-   dotnet ef database update
-   ```
-5. **Ejecución:**
-   ```bash
-   dotnet run
-   ```
+Sigue este orden exacto para poner en marcha el proyecto en cualquier computador:
+
+### 1. Preparación de Archivos
+Clona el repositorio en tu máquina local:
+```bash
+git clone [URL-del-repositorio]
+```
+
+### 2. Acceso al Corazón del Proyecto (VITAL) 🚩
+La mayoría de los errores ocurren por intentar ejecutar comandos en la carpeta raíz. Antes de continuar, **debes situarte en la carpeta donde está el código fuente**:
+```bash
+cd BibliotecaMVC/BibliotecaMVC
+```
+> [!IMPORTANT]
+> Todos los comandos de los pasos 3, 4 y 5 deben ejecutarse **dentro** de esta carpeta. Si recibes el error *"Could not find a MSBuild project file"*, verifica que hiciste este `cd`.
+
+### 3. Configuración de Secretos (Identity & APIs)
+Los secretos (passwords y llaves) no se suben a GitHub por seguridad. Ejecuta estos comandos en orden:
+
+```bash
+# A. Inicializa el gestor de secretos (Solo se hace una vez)
+dotnet user-secrets init
+
+# B. Configura tu servidor de correo (SMTP)
+dotnet user-secrets set "EmailSettings:Username" "tu_correo@gmail.com"
+dotnet user-secrets set "EmailSettings:Password" "tu_app_password"
+
+# C. Configura las llaves de Twilio (WhatsApp/SMS)
+dotnet user-secrets set "TwilioSettings:AccountSid" "tu_sid"
+dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token"
+dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+1234567890"
+
+# D. Define la contraseña maestra del Administrador
+dotnet user-secrets set "AdminSettings:Password" "TuPasswordAdmin123!"
+```
+
+### 4. Preparación de la Base de Datos
+Asegúrate de tener **SQL Server** iniciado y ejecuta la migración para crear las tablas:
+```bash
+dotnet ef database update
+```
+
+### 5. Lanzamiento
+Inicia el servidor de desarrollo:
+```bash
+dotnet run
+```
+
+---
 
 ## 🔐 Acceso Administrativo
-El sistema crea automáticamente un administrador inicial:
+Una vez que la aplicación esté corriendo, el sistema crea automáticamente un administrador inicial con las credenciales que configuraste:
 - **Usuario:** `dgomezpulid@outlook.com`
-- **Contraseña:** Configurada en `AdminSettings:Password` durante el Paso 3.
+- **Contraseña:** La que definiste en el **Paso 3-D**.
 
 ---
 *Desarrollado con estándares de Clean Code, MVC Patterns y auditoría de seguridad preventiva.*
