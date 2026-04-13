@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class ="d-flex flex-column min-vh-100">
+    @Html.AntiForgeryToken()
 
     <header>
         <nav class="navbar navbar-expand-sm navbar-light shadow-sm mb-3 py-3">
@@ -181,7 +182,16 @@
             }
 
             async function markAsRead(id) {
-                await fetch(`/Notificaciones/MarcarLeida?id=${id}`, { method: 'POST' });
+                // Obtiene el token de seguridad inyectado por @Html.AntiForgeryToken()
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                await fetch(`/Notificaciones/MarcarLeida?id=${id}`, { 
+                    method: 'POST',
+                    headers: {
+                        // El header debe coincidir con la expectativa del servidor endurecido
+                        'RequestVerificationToken': token
+                    }
+                });
                 updateNotifications();
             }
 

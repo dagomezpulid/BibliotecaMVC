@@ -41,6 +41,7 @@ namespace BibliotecaMVC.Controllers
         /// Marca una notificación específica como leída.
         /// </summary>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarcarLeida(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

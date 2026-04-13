@@ -29,12 +29,12 @@ namespace BibliotecaMVC.Controllers
 
         /// <summary>
         /// Alterna el estado de favorito de un libro para el usuario actual.
-        /// Si el libro ya es favorito, se elimina; de lo contrario, se agrega.
-        /// Diseñado para interacción mediante AJAX.
+        /// Utiliza validación de token Antiforgery para prevenir ataques CSRF en acciones de estado.
         /// </summary>
         /// <param name="libroId">ID único del libro a procesar.</param>
         /// <returns>JSON indicando el éxito y el estado resultante (esFavorito).</returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Toggle(int libroId)
         {
             var userId = _userManager.GetUserId(User);

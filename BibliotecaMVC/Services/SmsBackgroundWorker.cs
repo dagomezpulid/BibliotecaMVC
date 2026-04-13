@@ -24,12 +24,21 @@ namespace BibliotecaMVC.Services
         {
             _logger.LogInformation("[CRON JOB EMPEZADO] Motor Automatico de SMS patrullando en 2do plano.");
 
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                await EnviarAlertasAutomaticas(stoppingToken);
-                
-                // El centinela se duerme por 24 horas y despierta mañana
-                await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    await EnviarAlertasAutomaticas(stoppingToken);
+                    
+                    // El centinela se duerme por 24 horas y despierta mañana
+                    // El uso del stoppingToken permite que el delay se interrumpa inmediatamente al apagar el servidor
+                    await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Captura el cierre normal de la aplicación para evitar reportes de errores en la consola/depurador
+                _logger.LogInformation("[CRON JOB FINALIZADO] El motor de SMS se ha detenido correctamente.");
             }
         }
 

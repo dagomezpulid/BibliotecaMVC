@@ -233,7 +233,7 @@ namespace BibliotecaMVC.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion")] Libro libro, int[] CategoriasSeleccionadas)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion,RowVersion")] Libro libro, int[] CategoriasSeleccionadas)
         {
             if (id != libro.Id) return NotFound();
 
@@ -253,6 +253,10 @@ namespace BibliotecaMVC.Controllers
                     libroToUpdate.ISBN = libro.ISBN;
                     libroToUpdate.ImagenUrl = libro.ImagenUrl;
                     libroToUpdate.Descripcion = libro.Descripcion;
+                    
+                    // Se asigna el RowVersion original enviado desde la vista. 
+                    // Si el valor en DB cambió mientras el usuario editaba, EF lanzará una DbUpdateConcurrencyException.
+                    libroToUpdate.RowVersion = libro.RowVersion;
 
                     // Actualizar categorías
                     libroToUpdate.Categorias.Clear();

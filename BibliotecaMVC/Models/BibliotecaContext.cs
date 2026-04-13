@@ -46,6 +46,14 @@ namespace BibliotecaMVC.Models
                 .WithOne(p => p.Multa)
                 .HasForeignKey<Multa>(m => m.PrestamoId);
 
+            modelBuilder.Entity<Multa>()
+                .Property(m => m.Monto)
+                .HasPrecision(18, 2); // Garantiza que no haya pérdida de decimales en montos de dinero (SQL Server decimal(18,2))
+
+            modelBuilder.Entity<Pago>()
+                .Property(p => p.Monto)
+                .HasPrecision(18, 2);
+
             // Seed Categorías
             modelBuilder.Entity<Categoria>().HasData(
                 new Categoria { Id = 1, Nombre = "Ficción" },
