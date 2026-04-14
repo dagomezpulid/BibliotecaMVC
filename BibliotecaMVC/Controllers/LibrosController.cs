@@ -229,21 +229,21 @@ namespace BibliotecaMVC.Controllers
                 
                 if (allowedExtensions.Contains(extension))
                 {
-                    var uploadsFolder = Path.Combine(_env.WebRootPath, "archivos_libros");
-                    if (!Directory.Exists(uploadsFolder))
+                    var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+                    if (!Directory.Exists(vaultFolder))
                     {
-                        Directory.CreateDirectory(uploadsFolder);
+                        Directory.CreateDirectory(vaultFolder);
                     }
                     
                     var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(archivoLibro.FileName);
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    var filePath = Path.Combine(vaultFolder, uniqueFileName);
                     
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await archivoLibro.CopyToAsync(stream);
                     }
                     
-                    libro.ArchivoRuta = "/archivos_libros/" + uniqueFileName;
+                    libro.ArchivoRuta = uniqueFileName;
                 }
                 else
                 {
@@ -324,19 +324,36 @@ namespace BibliotecaMVC.Controllers
                         
                         if (allowedExtensions.Contains(extension))
                         {
-                            var uploadsFolder = Path.Combine(_env.WebRootPath, "archivos_libros");
-                            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                            var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+                            if (!Directory.Exists(vaultFolder)) Directory.CreateDirectory(vaultFolder);
                             
                             var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(archivoLibro.FileName);
-                            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                            var filePath = Path.Combine(vaultFolder, uniqueFileName);
                             
+                            // Gbage Collection: Eliminar archivo viejo si existía
+                            if (!string.IsNullOrEmpty(libroToUpdate.ArchivoRuta))
+                            {
+                                var oldFilePath = Path.Combine(vaultFolder, libroToUpdate.ArchivoRuta);
+                                if (System.IO.File.Exists(oldFilePath))
+                                {
+                                    System.IO.File.Delete(oldFilePath);
+                                }
+                                
+                                // Clean up old legacy paths if they existed in wwwroot (for backwards compatibility just in case)
+                                if (libroToUpdate.ArchivoRuta.StartsWith("/archivos_libros/"))
+                                {
+                                    var legacyPath = Path.Combine(_env.WebRootPath, libroToUpdate.ArchivoRuta.TrimStart('/'));
+                                    if (System.IO.File.Exists(legacyPath)) System.IO.File.Delete(legacyPath);
+                                }
+                            }
+
                             using (var stream = new FileStream(filePath, FileMode.Create))
                             {
                                 await archivoLibro.CopyToAsync(stream);
                             }
                             
-                            // Reemplazar la ruta antigua por la nueva (en DB)
-                            libroToUpdate.ArchivoRuta = "/archivos_libros/" + uniqueFileName;
+                            // Reemplazar la ruta antigua por la nueva (en DB) guardando solo el nombre
+                            libroToUpdate.ArchivoRuta = uniqueFileName;
                         }
                         else
                         {

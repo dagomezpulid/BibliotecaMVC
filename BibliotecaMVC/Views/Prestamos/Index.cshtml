@@ -52,7 +52,13 @@
                                 <span class="badge bg-success bg-opacity-10 text-success border border-success">Activo (@diasRestantes días)</span>
                             }
                         </td>
-                        <td class="text-center">
+                        <td class="text-center d-flex justify-content-center gap-2">
+                            @if (!string.IsNullOrEmpty(p.Libro.ArchivoRuta))
+                            {
+                                <a asp-action="Leer" asp-route-id="@p.Id" class="btn btn-primary btn-sm shadow-sm" title="Leer / Descargar archivo">
+                                    <i class="bi bi-book-half"></i> Leer
+                                </a>
+                            }
                             <button class="btn btn-success btn-sm shadow-sm"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalDevolver"

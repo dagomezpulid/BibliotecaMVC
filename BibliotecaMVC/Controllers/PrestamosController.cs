@@ -16,6 +16,7 @@ public class PrestamosController : Controller
     private readonly BibliotecaContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ISmsSender _smsSender;
+    private readonly IWebHostEnvironment _env;
 
     /// <summary>
     /// Crea una notificación persistente en la base de datos para el usuario.
@@ -50,11 +51,13 @@ public class PrestamosController : Controller
     public PrestamosController(
         BibliotecaContext context,
         UserManager<ApplicationUser> userManager,
-        ISmsSender smsSender)
+        ISmsSender smsSender,
+        IWebHostEnvironment env)
     {
         _context = context;
         _userManager = userManager;
         _smsSender = smsSender;
+        _env = env;
     }
 
     private IQueryable<Prestamo> ObtenerPrestamosDetallados()
@@ -167,14 +170,17 @@ public class PrestamosController : Controller
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> ConfirmarPrestamo(int id)
     {
-        var libro = await _context.Libros.FindAsync(id);
+        var libro = await _context.Libros
+            .Include(l => l.Autor)
+            .Include(l => l.Categorias)
+            .FirstOrDefaultAsync(l => l.Id == id);
 
         if (libro == null)
             return NotFound();
 
         ViewBag.LibroTitulo = libro.Titulo;
 
-        return View("Prestar", libro.Id);
+        return View("Prestar", libro);
     }
 
     /// <summary>
@@ -290,6 +296,117 @@ public class PrestamosController : Controller
             .ToList();
 
         return View(prestamos);
+    }
+
+    /// <summary>
+    /// Motor de Consumo Web: Provee acceso al visor integrado para leer el libro.
+    /// Valida estrictamente que el usuario tenga un préstamo activo.
+    /// </summary>
+    [Authorize(Roles = "Usuario")]
+    public async Task<IActionResult> Leer(int id)
+    {
+        var usuarioId = _userManager.GetUserId(User);
+        
+        var prestamo = await _context.Prestamos
+            .Include(p => p.Libro)
+            .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId);
+
+        if (prestamo == null) return NotFound();
+
+        // DRM: Solo si el préstamo sigue activo
+        if (prestamo.FechaDevolucionReal != null || prestamo.Estado != "Activo")
+        {
+            TempData["Error"] = "Tu préstamo ha expirado o ya fue devuelto. No puedes leer este libro.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (string.IsNullOrEmpty(prestamo.Libro.ArchivoRuta))
+        {
+            TempData["Error"] = "Lamentablemente este libro aún no cuenta con una versión digital subida a la plataforma.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View("Leer", prestamo.Libro);
+    }
+
+    /// <summary>
+    /// Forzar la descarga del archivo original para formatos que no pueden leerse en web.
+    /// Mismos candados de seguridad.
+    /// </summary>
+    [Authorize(Roles = "Usuario")]
+    public async Task<IActionResult> DescargarLibro(int id)
+    {
+        var usuarioId = _userManager.GetUserId(User);
+        var prestamo = await _context.Prestamos
+            .Include(p => p.Libro)
+            .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId && p.Estado == "Activo" && p.FechaDevolucionReal == null);
+
+        if (prestamo == null || string.IsNullOrEmpty(prestamo.Libro?.ArchivoRuta))
+        {
+            return Forbid();
+        }
+
+        var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+        var filePath = Path.Combine(vaultFolder, prestamo.Libro.ArchivoRuta);
+        
+        // Fallback for legacy files
+        if (!System.IO.File.Exists(filePath) && prestamo.Libro.ArchivoRuta.StartsWith("/archivos_libros/"))
+        {
+            filePath = Path.Combine(_env.WebRootPath, prestamo.Libro.ArchivoRuta.TrimStart('/'));
+        }
+
+        if (!System.IO.File.Exists(filePath))
+        {
+            TempData["Error"] = "El archivo ya no existe en el servidor.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var fileName = Path.GetFileName(filePath);
+        var contentType = "application/octet-stream";
+        
+        return PhysicalFile(filePath, contentType, fileName);
+    }
+
+    /// <summary>
+    /// Túnel DRM: Sirve el archivo al visor web únicamente si el usuario está autorizado.
+    /// Evita fugas de URLs públicas desde el IFrame.
+    /// </summary>
+    [Authorize(Roles = "Usuario")]
+    public async Task<IActionResult> ArchivoLectura(int id)
+    {
+        var usuarioId = _userManager.GetUserId(User);
+        var prestamo = await _context.Prestamos
+            .Include(p => p.Libro)
+            .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId && p.Estado == "Activo" && p.FechaDevolucionReal == null);
+
+        if (prestamo == null || string.IsNullOrEmpty(prestamo.Libro?.ArchivoRuta))
+        {
+            return Forbid();
+        }
+
+        var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+        var filePath = Path.Combine(vaultFolder, prestamo.Libro.ArchivoRuta);
+        
+        // Fallback for legacy files
+        if (!System.IO.File.Exists(filePath) && prestamo.Libro.ArchivoRuta.StartsWith("/archivos_libros/"))
+        {
+            filePath = Path.Combine(_env.WebRootPath, prestamo.Libro.ArchivoRuta.TrimStart('/'));
+        }
+
+        if (!System.IO.File.Exists(filePath))
+        {
+            return NotFound();
+        }
+
+        // Determinar ContentType
+        string contentType = "application/octet-stream";
+        if (filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) contentType = "application/pdf";
+        else if (filePath.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)) contentType = "application/epub+zip";
+        else if (filePath.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)) contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        else if (filePath.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)) contentType = "application/msword";
+
+        // Retorna un stream del archivo sin descargarlo (inline)
+        return PhysicalFile(filePath, contentType, enableRangeProcessing: true);
     }
 }
 
