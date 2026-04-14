@@ -15,10 +15,12 @@ namespace BibliotecaMVC.Controllers
     public class LibrosController : Controller
     {
         private readonly BibliotecaContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public LibrosController(BibliotecaContext context)
+        public LibrosController(BibliotecaContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         /// <summary>
@@ -190,7 +192,7 @@ namespace BibliotecaMVC.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion")] Libro libro, int[] CategoriasSeleccionadas)
+        public async Task<IActionResult> Create([Bind("Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion")] Libro libro, int[] CategoriasSeleccionadas, IFormFile? archivoLibro)
         {
             if (!ModelState.IsValid)
             {
@@ -216,6 +218,39 @@ namespace BibliotecaMVC.Controllers
                 {
                     var categoria = await _context.Categorias.FindAsync(id);
                     if (categoria != null) libro.Categorias.Add(categoria);
+                }
+            }
+
+            // Procesamiento de Almacenamiento Digital
+            if (archivoLibro != null && archivoLibro.Length > 0)
+            {
+                var allowedExtensions = new[] { ".pdf", ".epub", ".doc", ".docx" };
+                var extension = Path.GetExtension(archivoLibro.FileName).ToLower();
+                
+                if (allowedExtensions.Contains(extension))
+                {
+                    var uploadsFolder = Path.Combine(_env.WebRootPath, "archivos_libros");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
+                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(archivoLibro.FileName);
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await archivoLibro.CopyToAsync(stream);
+                    }
+                    
+                    libro.ArchivoRuta = "/archivos_libros/" + uniqueFileName;
+                }
+                else
+                {
+                    ModelState.AddModelError("ArchivoRuta", "Formato no válido. Solo se permiten archivos PDF, EPUB, DOC o DOCX.");
+                    ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
+                    ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
+                    return View(libro);
                 }
             }
 
@@ -245,7 +280,7 @@ namespace BibliotecaMVC.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion,RowVersion")] Libro libro, int[] CategoriasSeleccionadas)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion,RowVersion")] Libro libro, int[] CategoriasSeleccionadas, IFormFile? archivoLibro)
         {
             if (id != libro.Id) return NotFound();
 
@@ -278,6 +313,37 @@ namespace BibliotecaMVC.Controllers
                         {
                             var cat = await _context.Categorias.FindAsync(catId);
                             if (cat != null) libroToUpdate.Categorias.Add(cat);
+                        }
+                    }
+
+                    // Procesamiento de Almacenamiento Digital
+                    if (archivoLibro != null && archivoLibro.Length > 0)
+                    {
+                        var allowedExtensions = new[] { ".pdf", ".epub", ".doc", ".docx" };
+                        var extension = Path.GetExtension(archivoLibro.FileName).ToLower();
+                        
+                        if (allowedExtensions.Contains(extension))
+                        {
+                            var uploadsFolder = Path.Combine(_env.WebRootPath, "archivos_libros");
+                            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                            
+                            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(archivoLibro.FileName);
+                            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                            
+                            using (var stream = new FileStream(filePath, FileMode.Create))
+                            {
+                                await archivoLibro.CopyToAsync(stream);
+                            }
+                            
+                            // Reemplazar la ruta antigua por la nueva (en DB)
+                            libroToUpdate.ArchivoRuta = "/archivos_libros/" + uniqueFileName;
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("ArchivoRuta", "Formato no válido. Solo se permiten archivos PDF, EPUB, DOC o DOCX.");
+                            ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
+                            ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
+                            return View(libro);
                         }
                     }
 

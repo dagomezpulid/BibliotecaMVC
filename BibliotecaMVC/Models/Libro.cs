@@ -85,6 +85,12 @@ namespace BibliotecaMVC.Models
         public bool EsFavorito { get; set; } = false;
 
         /// <summary>
+        /// Ruta física o URL local donde se encuentra el archivo principal del libro digital (PDF, EPUB, DOCX).
+        /// </summary>
+        [Display(Name = "Archivo del Libro")]
+        public string? ArchivoRuta { get; set; }
+
+        /// <summary>
         /// Token de concurrencia para evitar colisiones en el stock (Optimistic Concurrency).
         /// </summary>
         [Timestamp]

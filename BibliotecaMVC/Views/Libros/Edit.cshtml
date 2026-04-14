@@ -13,7 +13,7 @@
                     <p class="mb-0 text-white-50">Actualizando "@Model.Titulo"</p>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <form asp-action="Edit">
+                    <form asp-action="Edit" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-4"></div>
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="RowVersion" />
@@ -35,6 +35,33 @@
                                 <label asp-for="Stock" class="form-label fw-semibold text-dark">Stock</label>
                                 <input asp-for="Stock" class="form-control rounded-3" type="number" min="0" />
                                 <span asp-validation-for="Stock" class="text-danger small"></span>
+                            </div>
+
+                            <hr class="my-4 text-muted border-top border-opacity-10">
+
+                            <!-- Carga Digital del Libro -->
+                            <div class="col-12 bg-light p-4 rounded-3 border">
+                                <h5 class="fw-bold text-dark"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Archivo Digital</h5>
+                                
+                                @if (!string.IsNullOrEmpty(Model.ArchivoRuta))
+                                {
+                                    <div class="alert alert-success d-flex align-items-center mb-3 p-2">
+                                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                                        <div>
+                                            Este libro ya tiene un archivo digital asociado. <br />
+                                            <small class="text-muted">Si subes un nuevo archivo, el anterior será reemplazado.</small>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted small mb-2">Para una biblioteca 100% virtual, adjunta el contenido digital del libro.</p>
+                                }
+
+                                <label class="form-label fw-semibold text-dark">Subir Nuevo Archivo (.PDF, .EPUB, .DOC, .DOCX)</label>
+                                <input type="file" name="archivoLibro" class="form-control form-control-lg bg-white" accept=".pdf,.epub,.doc,.docx" />
+                                <span asp-validation-for="ArchivoRuta" class="text-danger small"></span>
+                                <input type="hidden" asp-for="ArchivoRuta" />
                             </div>
 
                             <hr class="my-4 text-muted border-top border-opacity-10">
