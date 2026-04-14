@@ -30,26 +30,26 @@ Plataforma de gestión de préstamos, inventario y usuarios construida bajo la a
 
 ### 3. 🔄 Motor Avanzado de Préstamos y Multas
 - **Gestión de Stock en Tiempo Real:** Validación estricta que impide préstamos sin existencias y restaura stock automáticamente en devoluciones.
-- **Duración Proactiva:** Selección de tiempo de préstamo (2 a 20 días) sincronizada mediante JavaScript.
+- **🛡️ Concurrencia Optimista:** Implementación de tokens de concurrencia (`RowVersion`) para evitar colisiones de datos y asegurar la integridad del inventario en accesos simultáneos.
+- **Paginación Dinámica:** Catálogo segmentado mediante AJAX para garantizar una carga ultrarrápida independientemente del tamaño de la colección.
 - **Límites de Uso:** Máximo 3 préstamos activos por usuario para garantizar la rotación del inventario.
-- **Calculadora de Mora:** Procesamiento automático de días de retraso y generación de recargos financieros.
-- **Checkout Seguro (Simulación):** Pasarela de pagos integrada para la liquidación de deudas y restablecimiento de estado de cuenta.
+- **Calculadora de Mora:** Procesamiento automático de días de retraso con generación de recargos financieros.
 
 ### 4. 📲 Infraestructura de Mensajería (WhatsApp/Cron Jobs)
-- **Motor Twilio WhatsApp:** Notificaciones inmediatas al rentar un libro o al generarse una multa, evadiendo mallas anti-spam internacionales.
-- **Vigilante Nocturno Automatizado (Cron Job):** `IHostedService` que patrulla la base de datos cada 24 horas detectando deudores y disparando alertas preventivas automáticas.
-- **Persistencia de Alertas:** Mecanismo `AlertaMoraEnviada` en la base de datos para evitar duplicidad de mensajes y garantizar una comunicación profesional.
+- **Motor Twilio WhatsApp:** Notificaciones inmediatas al rentar un libro o al generarse una multa.
+- **Vigilante Nocturno Automatizado (Cron Job):** `IHostedService` que patrulla la base de datos cada 24 horas detectando deudores y disparando alertas preventivas.
 
-### 5. 🛠️ Excelencia Técnica y Auditoría
-- **Hardening de Secretos:** Implementación de **User Secrets** para llaves de API y credenciales de servidor.
-- **Defensa Técnica:** Blindaje contra ataques IDOR, Double-Submit y CSRF mediante el uso estricto de tokens de verificación y validaciones de ID de usuario.
-- **Limpieza en Cascada:** Eliminación recursiva de datos sensibles para mantener la integridad referencial y cumplir con estándares de privacidad.
+### 5. 🛠️ Excelencia Técnica y Auditoría (Hardening)
+- **Hardening de Identidad:** Requisitos de contraseñas de alta complejidad (Símbolos obligatorios) y bloqueo agresivo de cuentas tras 5 intentos fallidos.
+- **Validación Universal (ISBN):** Motor de expresiones regulares (Regex) para garantizar que los metadatos bibliográficos cumplan los estándares internacionales.
+- **Blindaje de Secretos:** Implementación de **User Secrets** para llaves de API, credenciales de servidor y configuración administrativa raíz.
+- **Defensa CSRF/XSS:** Tokens de verificación sincronizados globalmente y sanitización automática de Razor.
 
 ---
 
 ## 💻 Instalación y Configuración Paso a Paso
 
-Sigue este orden exacto para poner en marcha el proyecto en cualquier computador:
+Sigue este orden exacto para poner en marcha el proyecto:
 
 ### 1. Preparación de Archivos
 Clona el repositorio en tu máquina local:
@@ -58,18 +58,16 @@ git clone [URL-del-repositorio]
 ```
 
 ### 2. Acceso al Corazón del Proyecto (VITAL) 🚩
-La mayoría de los errores ocurren por intentar ejecutar comandos en la carpeta raíz. Antes de continuar, **debes situarte en la carpeta donde está el código fuente**:
+Sitúate en la carpeta del código fuente para ejecutar los comandos:
 ```bash
 cd BibliotecaMVC/BibliotecaMVC
 ```
-> [!IMPORTANT]
-> Todos los comandos de los pasos 3, 4 y 5 deben ejecutarse **dentro** de esta carpeta. Si recibes el error *"Could not find a MSBuild project file"*, verifica que hiciste este `cd`.
 
 ### 3. Configuración de Secretos (Identity & APIs)
-Los secretos (passwords y llaves) no se suben a GitHub por seguridad. Ejecuta estos comandos en orden:
+Ejecuta estos comandos en la terminal para configurar tus credenciales privadas:
 
 ```bash
-# A. Inicializa el gestor de secretos (Solo se hace una vez)
+# A. Inicializa el gestor de secretos
 dotnet user-secrets init
 
 # B. Configura tu servidor de correo (SMTP)
@@ -81,18 +79,18 @@ dotnet user-secrets set "TwilioSettings:AccountSid" "tu_sid"
 dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token"
 dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+1234567890"
 
-# D. Define la contraseña maestra del Administrador
+# D. Configura la Identidad Maestra (Administrador Raíz)
+dotnet user-secrets set "AdminSettings:Email" "tu-admin@ejemplo.com"
 dotnet user-secrets set "AdminSettings:Password" "TuPasswordAdmin123!"
 ```
 
 ### 4. Preparación de la Base de Datos
-Asegúrate de tener **SQL Server** iniciado y ejecuta la migración para crear las tablas:
+Asegúrate de tener **SQL Server** iniciado y ejecuta las migraciones:
 ```bash
 dotnet ef database update
 ```
 
 ### 5. Lanzamiento
-Inicia el servidor de desarrollo:
 ```bash
 dotnet run
 ```
@@ -100,10 +98,10 @@ dotnet run
 ---
 
 ## 🔐 Acceso Administrativo
-Una vez que la aplicación esté corriendo, el sistema crea automáticamente un administrador inicial con las credenciales que configuraste:
-- **Usuario:** `dgomezpulid@outlook.com`
-- **Contraseña:** La que definiste en el **Paso 3-D**.
+El sistema crea automáticamente un administrador inicial basado en tus secretos del **Paso 3-D**:
+- **Usuario:** El configurado en `AdminSettings:Email` (Default: `dgomezpulid@outlook.com`)
+- **Contraseña:** La configurada en `AdminSettings:Password`.
 
 ---
-*Desarrollado con estándares de Clean Code, MVC Patterns y auditoría de seguridad preventiva.*
+*Desarrollado con estándares de Clean Code, MVC Patterns y auditoría de seguridad preventiva Fase 3.*
 
