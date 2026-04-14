@@ -4,6 +4,7 @@ using BibliotecaMVC.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BibliotecaMVC.Migrations
 {
     [DbContext(typeof(BibliotecaContext))]
-    partial class BibliotecaContextModelSnapshot : ModelSnapshot
+    [Migration("20260414134838_ExpandCategoriesFase4")]
+    partial class ExpandCategoriesFase4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -270,41 +273,6 @@ namespace BibliotecaMVC.Migrations
                         {
                             Id = 27,
                             Nombre = "Viajes y Guías"
-                        },
-                        new
-                        {
-                            Id = 28,
-                            Nombre = "Terror"
-                        },
-                        new
-                        {
-                            Id = 29,
-                            Nombre = "Novela Autobiográfica"
-                        },
-                        new
-                        {
-                            Id = 30,
-                            Nombre = "Relato de Memorias"
-                        },
-                        new
-                        {
-                            Id = 31,
-                            Nombre = "Novela Negra"
-                        },
-                        new
-                        {
-                            Id = 32,
-                            Nombre = "Novela Oratorio"
-                        },
-                        new
-                        {
-                            Id = 33,
-                            Nombre = "Crónica Documental"
-                        },
-                        new
-                        {
-                            Id = 34,
-                            Nombre = "Crónica"
                         });
                 });
 
