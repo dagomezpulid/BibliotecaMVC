@@ -20,13 +20,13 @@
                             <!-- Sección Principal -->
                             <div class="col-md-12">
                                 <label asp-for="Titulo" class="form-label fw-semibold text-dark">Título del Libro</label>
-                                <input asp-for="Titulo" class="form-control form-control-lg rounded-3" placeholder="Ej: Rayuela" />
+                                <input asp-for="Titulo" id="tituloInput" class="form-control form-control-lg rounded-3" placeholder="Ej: Rayuela" />
                                 <span asp-validation-for="Titulo" class="text-danger small"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label asp-for="AutorId" class="form-label fw-semibold text-dark">Autor</label>
-                                <select asp-for="AutorId" class="form-select rounded-3" asp-items="ViewBag.Autores">
+                                <select asp-for="AutorId" id="autorSelect" class="form-select rounded-3" asp-items="ViewBag.Autores">
                                     <option value="">-- Seleccionar Autor --</option>
                                 </select>
                                 <span asp-validation-for="AutorId" class="text-danger small"></span>
@@ -42,36 +42,34 @@
                             <hr class="my-4 text-muted border-top border-opacity-10">
                             
                             <div class="col-md-6">
-                                <label asp-for="ISBN" class="form-label fw-semibold text-dark">ISBN</label>
+                                <label asp-for="ISBN" class="form-label fw-semibold text-dark">ISBN (10 o 13 dígitos)</label>
                                 <div class="input-group">
-                                    <input asp-for="ISBN" id="isbnInput" class="form-control rounded-start-3" placeholder="978-XXXXXXXXXX" />
-                                    <button type="button" id="btnLookup" class="btn btn-dark rounded-end-3 px-3">
-                                        <span id="lookupSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                        <span id="lookupText">✨ Autocompletar</span>
+                                    <input asp-for="ISBN" id="isbnInput" class="form-control rounded-start-3" placeholder="Ej: 978..." />
+                                    <button type="button" id="btnAutocompletar" class="btn btn-dark rounded-end-3 px-3">
+                                        <span id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                        <span id="btnText">🪄 Autocompletar</span>
                                     </button>
                                 </div>
                                 <span asp-validation-for="ISBN" class="text-danger small"></span>
-                                <small class="text-muted d-block mt-1">Ingresa el ISBN para buscar datos en Google Books.</small>
+                                <div id="isbnFeedback" class="small mt-1 px-2 d-none"></div>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-dark">Categorías</label>
-                                <select name="CategoriasSeleccionadas" class="form-select rounded-3" multiple size="4" asp-items="ViewBag.Categorias">
+                                <select name="CategoriasSeleccionadas" id="categoriaSelect" class="form-select rounded-3" multiple size="4" asp-items="ViewBag.Categorias">
                                 </select>
-                                <p class="text-muted small mt-1"><i class="bi bi-info-circle me-1"></i>Manten presionado Ctrl para seleccionar varias.</p>
+                                <p class="text-muted small mt-1"><i class="bi bi-info-circle me-1"></i>Ctrl + Click para selección múltiple.</p>
                             </div>
 
                             <div class="col-12">
                                 <label asp-for="ImagenUrl" class="form-label fw-semibold text-dark">URL de la Portada</label>
-                                <div class="input-group">
-                                    <input asp-for="ImagenUrl" id="imageUrlInput" class="form-control rounded-3" placeholder="https://ejemplo.com/portada.jpg" />
-                                </div>
+                                <input asp-for="ImagenUrl" id="imagenInput" class="form-control rounded-3" placeholder="https://ejemplo.com/portada.jpg" />
                                 <span asp-validation-for="ImagenUrl" class="text-danger small"></span>
                             </div>
 
                             <div class="col-12">
                                 <label asp-for="Descripcion" class="form-label fw-semibold text-dark">Descripción / Sinopsis</label>
-                                <textarea asp-for="Descripcion" id="descriptionInput" class="form-control rounded-3" rows="4" placeholder="Breve resumen del libro..."></textarea>
+                                <textarea asp-for="Descripcion" id="descripcionInput" class="form-control rounded-3" rows="4" placeholder="Breve resumen del libro..."></textarea>
                                 <span asp-validation-for="Descripcion" class="text-danger small"></span>
                             </div>
                         </div>
@@ -91,52 +89,114 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
-        document.getElementById('btnLookup').addEventListener('click', function() {
+        document.getElementById('btnAutocompletar').addEventListener('click', async function() {
             const isbn = document.getElementById('isbnInput').value.replace(/-/g, '').trim();
-            if (!isbn) {
-                alert('Por favor ingress un ISBN válido.');
+            const btn = this;
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const feedback = document.getElementById('isbnFeedback');
+
+            if (!isbn || isbn.length < 10) {
+                showFeedback("⚠️ Ingresa un ISBN válido para buscar.", "text-danger");
                 return;
             }
 
-            const btn = this;
-            const spinner = document.getElementById('lookupSpinner');
-            const text = document.getElementById('lookupText');
-
+            // Estados de UI
             btn.disabled = true;
-            spinner.classList.remove('d-none');
-            text.textContent = ' Buscando...';
+            btnText.innerText = "Buscando...";
+            btnSpinner.classList.remove('d-none');
+            feedback.classList.add('d-none');
 
-            fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.totalItems > 0) {
-                        const info = data.items[0].volumeInfo;
-                        
-                        // Autocompletar campos
-                        document.querySelector('input[name="Titulo"]').value = info.title || '';
-                        document.getElementById('descriptionInput').value = info.description || '';
-                        
-                        if (info.imageLinks && info.imageLinks.thumbnail) {
-                            // Usamos HTTPS y evitamos la versión pequeña si es posible
-                            let url = info.imageLinks.thumbnail.replace('http:', 'https:');
-                            document.getElementById('imageUrlInput').value = url;
-                        }
+            try {
+                // 1. Estrategia de Búsqueda Dual
+                let response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+                let data = await response.json();
 
-                        // Notificación visual de éxito (Toast o Alerta simple)
-                        alert('✨ ¡Datos encontrados! El formulario se ha completado automáticamente.');
-                    } else {
-                        alert('❌ No se encontró información para este ISBN en Google Books.');
+                if (data.totalItems === 0) {
+                    response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${isbn}`);
+                    data = await response.json();
+                }
+
+                if (data.totalItems > 0) {
+                    const item = data.items[0];
+                    const info = item.volumeInfo;
+                    
+                    // A. LLENADO CONDICIONAL
+                    fillIfEmpty('tituloInput', info.title);
+                    
+                    let rawDesc = info.description || (item.searchInfo ? item.searchInfo.textSnippet : "");
+                    if (rawDesc) {
+                        const cleanDesc = rawDesc.replace(/<\/?[^>]+(>|$)/g, "");
+                        fillIfEmpty('descripcionInput', cleanDesc);
                     }
-                })
-                .catch(error => {
-                    console.error('Error fetching Google Books:', error);
-                    alert('⚠️ Error al conectar con Google Books.');
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    spinner.classList.add('d-none');
-                    text.textContent = ' Autocompletar';
-                });
+
+                    // B. IMAGEN JERÁRQUICA
+                    if (info.imageLinks) {
+                        const sizes = ['extraLarge', 'large', 'medium', 'small', 'thumbnail', 'smallThumbnail'];
+                        let bestUrl = null;
+                        for (const size of sizes) {
+                            if (info.imageLinks[size]) {
+                                bestUrl = info.imageLinks[size].replace("http://", "https://");
+                                break;
+                            }
+                        }
+                        if (bestUrl) fillIfEmpty('imagenInput', bestUrl);
+                    }
+
+                    // C. AUTOR
+                    if (info.authors && info.authors.length > 0) {
+                        matchInSelect('autorSelect', info.authors[0]);
+                    }
+
+                    // D. CATEGORÍAS
+                    if (info.categories && info.categories.length > 0) {
+                        info.categories.forEach(cat => matchInSelect('categoriaSelect', cat, true));
+                    }
+
+                    showFeedback("✨ Datos recuperados con éxito.", "text-success");
+                } else {
+                    showFeedback("❌ No se encontraron datos para este ISBN.", "text-warning");
+                }
+            } catch (error) {
+                console.error("Error AI Search:", error);
+                showFeedback("⚠️ Error al conectar con Google Books.", "text-danger");
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = "🪄 Autocompletar";
+                btnSpinner.classList.add('d-none');
+            }
         });
+
+        function fillIfEmpty(elementId, value) {
+            const el = document.getElementById(elementId);
+            if (el && value && (!el.value || el.value.trim() === "")) {
+                el.value = value;
+            }
+        }
+
+        function matchInSelect(selectId, searchText, isMultiple = false) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            const search = searchText.toLowerCase();
+            let found = false;
+            for (let i = 0; i < select.options.length; i++) {
+                const optText = select.options[i].text.toLowerCase();
+                if (optText.includes(search) || search.includes(optText)) {
+                    if (isMultiple) {
+                        select.options[i].selected = true;
+                    } else if (!found) {
+                        select.selectedIndex = i;
+                        found = true;
+                    }
+                }
+            }
+        }
+
+        function showFeedback(message, cssClass) {
+            const feedback = document.getElementById('isbnFeedback');
+            feedback.innerText = message;
+            feedback.className = `small mt-1 px-2 ${cssClass}`;
+            feedback.classList.remove('d-none');
+        }
     </script>
 }
