@@ -103,6 +103,23 @@
     }
 </div>
 
+@if (ViewBag.TotalPages > 1)
+{
+    <nav class="mt-5 pb-3">
+        <ul class="pagination justify-content-center gap-2">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <button class="page-link rounded-pill px-4 shadow-sm border-0 fw-bold @(i == ViewBag.CurrentPage ? "bg-primary text-white" : "bg-white text-primary")" 
+                            onclick="changePage(@i)">
+                        @i
+                    </button>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
 <script>
     // Delegación de eventos para los botones de favoritos (funciona tras refrescos AJAX)
     if (typeof initFavoritesSet === 'undefined') {

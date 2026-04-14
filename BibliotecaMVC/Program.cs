@@ -20,12 +20,12 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireNonAlphanumeric = true; // Hardening inicial: Obligatorio el uso de símbolos
     options.Password.RequiredLength = 8;
     
-    // Configuración de Lockout
+    // Configuración de Lockout - Mitigación de Fuerza Bruta
     options.Lockout.AllowedForNewUsers = true;
-    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.MaxFailedAccessAttempts = 5; // El sistema bloquea al usuario tras 5 intentos fallidos
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
 })
 .AddRoles<IdentityRole>()

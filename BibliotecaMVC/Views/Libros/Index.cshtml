@@ -81,39 +81,54 @@
 </div>
 
 @section Scripts {
-    <script>
-        const searchInput = document.getElementById('searchInput');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const spinner = document.getElementById('searchSpinner');
-        let timeout = null;
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const spinner = document.getElementById('searchSpinner');
+    let timeout = null;
 
-        searchInput.addEventListener('input', function() {
-            clearTimeout(timeout);
-            spinner.classList.remove('d-none');
+    // Función unificada para búsqueda y paginación asíncrona (AJAX)
+    async function updateGrid(query = '', page = 1) {
+        spinner.classList.remove('d-none');
+        try {
+            // Construye la URL con los parámetros de filtro y página
+            const url = `/Libros/Index?query=${encodeURIComponent(query)}&page=${page}`;
+            const response = await fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const html = await response.text();
             
-            timeout = setTimeout(() => {
-                const query = searchInput.value;
-                
-                fetch(`/Libros/Index?query=${encodeURIComponent(query)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    resultsContainer.innerHTML = html;
-                    spinner.classList.add('d-none');
-                })
-                .catch(err => {
-                    console.error('Error en búsqueda:', err);
-                    spinner.classList.add('d-none');
-                });
-            }, 500); // 500ms debounce
-        });
-
-        function resetSearch() {
-            searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input'));
+            // Reemplaza el contenido de la grilla por los nuevos resultados segmentados
+            resultsContainer.innerHTML = html;
+            
+            // UX: Hacer scroll suave hacia arriba al cambiar de página para que el usuario 
+            // no pierda el contexto de los nuevos resultados.
+            if(page > 1 || query) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        } catch (err) {
+            console.error('Error al actualizar grilla:', err);
+        } finally {
+            spinner.classList.add('d-none');
         }
-    </script>
+    }
+
+    // Listener para búsqueda en tiempo real (Debounce de 500ms)
+    searchInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            updateGrid(searchInput.value, 1);
+        }, 500); 
+    });
+
+    // Cambia de página manteniendo el filtro de búsqueda actual
+    function changePage(page) {
+        updateGrid(searchInput.value, page);
+    }
+
+    function resetSearch() {
+        searchInput.value = '';
+        updateGrid('', 1);
+    }
+</script>
 }

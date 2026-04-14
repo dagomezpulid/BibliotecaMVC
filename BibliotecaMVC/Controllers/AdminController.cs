@@ -15,16 +15,13 @@ public class AdminController : Controller
 {
     private readonly BibliotecaContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IConfiguration _configuration; // Almacena la configuración (User Secrets/appsettings)
 
-    /// <summary>
-    /// Inicializa una nueva instancia del Panel Administrativo con los servicios necesarios.
-    /// </summary>
-    /// <param name="context">Acceso al motor de persistencia de la biblioteca.</param>
-    /// <param name="userManager">Servicio para la gestión avanzada de identidades y roles.</param>
-    public AdminController(BibliotecaContext context, UserManager<ApplicationUser> userManager)
+    public AdminController(BibliotecaContext context, UserManager<ApplicationUser> userManager, IConfiguration configuration)
     {
         _context = context;
         _userManager = userManager;
+        _configuration = configuration;
     }
     /// <summary>
     /// Genera la vista principal del Dashboard con estadísticas consolidadas.
@@ -203,9 +200,12 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        if (usuario.Email == "admin@biblioteca.com")
+        // Protección dinámica: Evita eliminar al administrador principal configurado en appsettings/Secrets
+        // Esto previene que se bloquee el acceso raíz al sistema.
+        string masterAdminEmail = _configuration["AdminSettings:Email"] ?? "dgomezpulid@outlook.com";
+        if (usuario.Email == masterAdminEmail)
         {
-            TempData["Error"] = "No se puede eliminar el administrador principal.";
+            TempData["Error"] = "No se puede eliminar el administrador principal configurado en el sistema.";
             return RedirectToAction(nameof(Index));
         }
 

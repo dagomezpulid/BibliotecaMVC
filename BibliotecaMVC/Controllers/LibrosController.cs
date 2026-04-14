@@ -27,8 +27,10 @@ namespace BibliotecaMVC.Controllers
         /// <param name="query">Término de búsqueda opcional (Título, Autor, Categoría o ISBN).</param>
         /// <returns>Vista con listado de libros filtrados.</returns>
         [Authorize]
-        public async Task<IActionResult> Index(string? query)
+        public async Task<IActionResult> Index(string? query, int page = 1)
         {
+            int pageSize = 8; // Cantidad de libros por página (Escalabilidad)
+            
             var librosQuery = _context.Libros
                 .Include(l => l.Autor)
                 .Include(l => l.Categorias)
@@ -37,16 +39,26 @@ namespace BibliotecaMVC.Controllers
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                query = query.ToLower();
+                var lowerQuery = query.ToLower();
                 librosQuery = librosQuery.Where(l => 
-                    l.Titulo.ToLower().Contains(query) || 
-                    l.Autor.Nombre.ToLower().Contains(query) ||
-                    l.Categorias.Any(c => c.Nombre.ToLower().Contains(query)) ||
-                    l.ISBN.Contains(query)
+                    l.Titulo.ToLower().Contains(lowerQuery) || 
+                    l.Autor.Nombre.ToLower().Contains(lowerQuery) ||
+                    l.Categorias.Any(c => c.Nombre.ToLower().Contains(lowerQuery)) ||
+                    l.ISBN.Contains(lowerQuery)
                 );
             }
 
-            var libros = await librosQuery.ToListAsync();
+            // Paginación segmentada para evitar cargar miles de registros en memoria
+            int totalLibros = await librosQuery.CountAsync();
+            var libros = await librosQuery
+                .Skip((page - 1) * pageSize) // Saltear registros de páginas anteriores
+                .Take(pageSize)              // Tomar solo la "rebanada" necesaria
+                .ToListAsync();
+
+            // Metadatos para la navegación en la vista
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalLibros / (double)pageSize);
+            ViewBag.Query = query;
 
             // Lógica de Favoritos: Marcar los libros que ya tiene el usuario
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
