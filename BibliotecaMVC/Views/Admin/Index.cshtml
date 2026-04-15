@@ -117,15 +117,15 @@
 <h4 id="seccion-usuarios" class="fw-bold mb-3 mt-4">⚙️ Gestión de Usuarios</h4>
 <p class="text-muted">Administra roles, bloqueos y accesos desde aquí.</p>
 
-<div class="table-responsive card p-2 rounded-4 shadow-sm border-0 bg-white">
+<div class="table-responsive card p-2 rounded-4 shadow-sm border-0 bg-transparent">
     <table class="table table-hover align-middle mb-0">
-        <thead class="bg-light">
+        <thead class="bg-primary bg-opacity-10">
             <tr>
-                <th class="border-0 ps-3">Usuario</th>
-                <th class="border-0">Email</th>
-                <th class="border-0">Roles</th>
-                <th class="border-0 text-center">Estado</th>
-                <th class="border-0 text-center">Acciones Centralizadas</th>
+                <th class="border-0 ps-3 text-primary">Usuario</th>
+                <th class="border-0 text-primary">Email</th>
+                <th class="border-0 text-primary">Roles</th>
+                <th class="border-0 text-center text-primary">Estado</th>
+                <th class="border-0 text-center text-primary">Acciones Centralizadas</th>
             </tr>
         </thead>
         <tbody>
@@ -138,7 +138,7 @@
                                 <span class="fs-5 fw-bold">@user.NombreCompleto.Substring(0, 1).ToUpper()</span>
                             </div>
                             <div>
-                                <div class="fw-bold text-dark">@user.NombreCompleto</div>
+                                <div class="fw-bold">@user.NombreCompleto</div>
                                 <small class="text-muted">ID: #@user.Id.Substring(0, 8)...</small>
                             </div>
                         </div>
