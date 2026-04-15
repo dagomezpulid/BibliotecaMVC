@@ -4,7 +4,7 @@
 [![Entity Framework Core](https://img.shields.io/badge/EF%20Core-10.0-512BD4)](https://docs.microsoft.com/ef/)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](file:///c:/Repos/BibliotecaMVC)
 
-**BibliotecaMVC** no es solo un gestor de préstamos; es un ecosistema digital diseñado bajo estándares industriales de **Clean Code**, **Seguridad Ofensiva** y **Arquitectura de Micro-servicios Simulada**. Proporciona una solución integral para la digitalización de bibliotecas, integrando mensajería omnicanal y gestión segura de activos.
+**BibliotecaMVC** no es solo un gestor de préstamos; es un ecosistema de **Biblioteca 100% Digital** diseñado bajo estándares industriales de **Clean Code**, **Seguridad Ofensiva** y **Arquitectura Multi-formato**. Proporciona una solución integral para la gestión de activos virtuales, integrando mensajería omnicanal y un repositorio seguro de archivos (Vault).
 
 ---
 
@@ -26,7 +26,7 @@ graph TD
         Services -->|REST| Twilio[Twilio WhatsApp/SMS]
     end
     subgraph "Security & Assets"
-        Controllers -->|Access Control| Vault[Digital Vault /Vault/ - No Public]
+        Controllers -->|Access Control| Vault[Digital Vault /Vault/ - Multi-Archivo]
         WebServer -->|Auth| Identity[ASP.NET Identity Hardened]
     end
     CronWorker[SmsBackgroundWorker] -->|IHostedService| Services
@@ -40,11 +40,11 @@ graph TD
 - **Framework**: .NET 10.0 con C# 12+.
 - **ORM**: Entity Framework Core 10 con **Fluent API** para relaciones complejas.
 - **Base de Datos**: SQL Server (optimizado con índices y claves foráneas).
-- **Control de Concurrencia**: Implementación de **Tokens de Transacción (`RowVersion`)** para evitar la sobreventa de stock en accesos simultáneos.
+- **Arquitectura de Activos**: Relación 1:N entre el título original y sus representaciones digitales (`LibroArchivo`), permitiendo múltiples formatos por obra.
 
 ### **Seguridad y DRM**
-- **Protocolo Identity**: Autenticación reforzada con política de **Lockout** (bloqueo tras 5 intentos fallidos) y requerimientos de complejidad de contraseña (Non-Alphanumeric).
-- **Vault System**: Los libros digitales se almacenan en una carpeta física fuera del directorio público (`wwwroot`). El acceso solo es posible a través de un controlador que verifica los derechos de préstamo en tiempo real.
+- **Protocolo Identity**: Autenticación reforzada con política de **Lockout** (bloqueo tras 5 intentos fallidos).
+- **Vault System**: Los archivos (PDF, EPUB, Word) se almacenan en una infraestructura física fuera del directorio público. El acceso se gestiona mediante streaming seguro que valida los derechos de préstamo en tiempo real para prevenir descargas no autorizadas.
 
 ### **Comunicación & Automatización**
 - **Omnicanalidad**: Despacho de notificaciones vía **WhatsApp Business API** (mediante Twilio) y **SMTP Transaccional**.
@@ -59,13 +59,14 @@ graph TD
 - **Protección de Cuenta Raíz**: El sistema impide la eliminación del administrador principal configurado en los secretos del servidor.
 
 ### 2. 📖 Motor Digital Evolucionado
-- **Visor Inmersivo**: Renderizado de documentos PDF y EPUB directamente en el navegador con túneles de lectura seguros.
-- **Motor de Recomendaciones**: Algoritmo que analiza categorías y autores para sugerir lecturas relacionadas (Fase 4).
+- **Visor Multi-formato**: Renderizado nativo de PDF y soporte para descarga controlada de otros activos (EPUB, Word) bajo licencia de préstamo.
+- **Gestión de Versiones**: Un mismo libro puede tener múltiples archivos asociados, permitiendo diferentes ediciones o calidades en un solo registro.
 - **Búsqueda Segmentada**: Filtrado dinámico por ISBN, Autor o Categoría con paginación en servidor para escalabilidad masiva.
 
-### 3. 🔄 Ciclo de Préstamo Inteligente
-- **Cálculo Automático de Mora**: Peritaje en tiempo real de los días de retraso y generación inmediata de multas financieras.
-- **Validación Multicapa**: Control de stock, deudas pendientes y límites de préstamos activos (Máx. 3) antes de confirmar la renta.
+### 3. 🔄 Ciclo de Licenciamiento Digital
+- **Préstamo de Acceso**: El usuario adquiere el derecho de lectura/descarga por un tiempo limitado. No hay límites de "stock" físico, permitiendo escalabilidad infinita.
+- **Cálculo Automático de Mora**: Peritaje en tiempo real de los días de retraso y generación inmediata de multas financieras para incentivar la liberación de la licencia.
+- **Validación Multicapa**: Control de deudas pendientes y límites de préstamos activos (Máx. 3) antes de confirmar el acceso.
 
 ---
 

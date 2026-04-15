@@ -26,12 +26,17 @@
                         <dt class="col-sm-4">ISBN:</dt>
                         <dd class="col-sm-8">@Model.ISBN</dd>
 
-                        <dt class="col-sm-4">Archivo Vault:</dt>
+                        <dt class="col-sm-4">Archivos Digitales:</dt>
                         <dd class="col-sm-8">
-                            @if(!string.IsNullOrEmpty(Model.ArchivoRuta)) {
-                                <span class="badge bg-danger">Sí (Será borrado físicamente)</span>
+                            @if(Model.Archivos != null && Model.Archivos.Any()) {
+                                <span class="badge bg-danger">@Model.Archivos.Count versión(es) (Serán borradas físicamente)</span>
+                                <ul class="small text-muted mt-1 ps-3">
+                                    @foreach(var arc in Model.Archivos) {
+                                        <li>Formato @arc.Formato?.ToUpper()</li>
+                                    }
+                                </ul>
                             } else {
-                                <span class="badge bg-secondary">No tiene archivo digital</span>
+                                <span class="badge bg-secondary">Sin archivos asociados</span>
                             }
                         </dd>
                     </dl>

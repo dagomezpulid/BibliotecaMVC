@@ -57,13 +57,13 @@
 
                         <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
                             <div class="small">
-                                @if(item.Stock > 0)
+                                @if(item.Archivos != null && item.Archivos.Any())
                                 {
-                                    <span class="text-success fw-semibold">● @item.Stock Disp.</span>
+                                    <span class="text-success fw-semibold"><i class="bi bi-cloud-check-fill me-1"></i> Disponible Digital</span>
                                 }
                                 else
                                 {
-                                    <span class="text-danger fw-semibold">○ Agotado</span>
+                                    <span class="text-danger fw-semibold"><i class="bi bi-cloud-slash-fill me-1"></i> Sin Copia Digital</span>
                                 }
                             </div>
                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-dark rounded-pill px-3">Ver detalles</a>
@@ -80,7 +80,7 @@
                             else
                             {
                                 <a asp-controller="Prestamos" asp-action="ConfirmarPrestamo" asp-route-id="@item.Id" 
-                                   class="btn btn-primary w-100 rounded-pill shadow-sm py-2 @(item.Stock <= 0 ? "disabled" : "")">
+                                   class="btn btn-primary w-100 rounded-pill shadow-sm py-2 @(!(item.Archivos?.Any() ?? false) ? "disabled" : "")">
                                     📖 Solicitar Préstamo
                                 </a>
                             }

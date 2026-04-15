@@ -24,6 +24,7 @@ namespace BibliotecaMVC.Models
         public DbSet<Resena> Resenas { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
         public DbSet<Favorito> Favoritos { get; set; }
+        public DbSet<LibroArchivo> LibroArchivos { get; set; }
 
         /// <summary>
         /// Configuración avanzada del modelo de datos mediante Fluent API.

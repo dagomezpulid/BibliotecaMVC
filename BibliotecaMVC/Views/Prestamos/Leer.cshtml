@@ -3,7 +3,8 @@
 @{
     ViewData["Title"] = "Leer Libro";
     
-    var isPdf = Model.ArchivoRuta?.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ?? false;
+    var primerArchivo = Model.Archivos?.FirstOrDefault();
+    var isPdf = primerArchivo?.Formato?.EndsWith("pdf", StringComparison.OrdinalIgnoreCase) ?? false;
     // Extraer el PrestamoId de la URL
     var prestamoId = ViewContext.RouteData.Values["id"];
 }

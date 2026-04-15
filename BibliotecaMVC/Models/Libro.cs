@@ -27,18 +27,10 @@ namespace BibliotecaMVC.Models
         public Autor? Autor { get; set; }
 
         /// <summary>
-        /// Cantidad física o digital disponible de copias para préstamo.
-        /// </summary>
-        [Required(ErrorMessage = "La cantidad (stock) es obligatoria.")]
-        [Range(0, int.MaxValue, ErrorMessage = "El stock no puede ser negativo")]
-        public int? Stock { get; set; }
-
-        /// <summary>
         /// Identificador universal de edición. Ayuda a evitar duplicados y automatizar metadata.
         /// </summary>
         [StringLength(20)]
         [RegularExpression(@"^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$", ErrorMessage = "El formato del ISBN no es válido. Use 10 o 13 dígitos.")]
-        // El Regex anterior permite guiones y valida que existan exactamente 10 o 13 dígitos numéricos
         public string? ISBN { get; set; }
 
         /// <summary>
@@ -75,15 +67,6 @@ namespace BibliotecaMVC.Models
         public double RatingPromedio => RatingCalculadoEager ?? (Resenas.Any() ? Math.Round(Resenas.Average(r => r.Puntuacion), 1) : 0);
 
         /// <summary>
-        /// Propiedad calculada que determina si existen unidades disponibles para prestar.
-        /// </summary>
-        public bool TieneStock => Stock > 0;
-
-        /// <summary>
-        /// Propiedad volatil para indicar si el usuario actual tiene este libro en favoritos.
-        /// No se persiste en DB, se llena en tiempo de ejecución.
-        /// </summary>
-        /// <summary>
         /// Propiedad volatil para indicar si el usuario actual tiene este libro en favoritos.
         /// No se persiste en DB, se llena en tiempo de ejecución.
         /// </summary>
@@ -91,15 +74,8 @@ namespace BibliotecaMVC.Models
         public bool EsFavorito { get; set; } = false;
 
         /// <summary>
-        /// Ruta física o URL local donde se encuentra el archivo principal del libro digital (PDF, EPUB, DOCX).
+        /// Colección de archivos digitales asociados al libro (PDF, EPUB, etc).
         /// </summary>
-        [Display(Name = "Archivo del Libro")]
-        public string? ArchivoRuta { get; set; }
-
-        /// <summary>
-        /// Token de concurrencia para evitar colisiones en el stock (Optimistic Concurrency).
-        /// </summary>
-        [Timestamp]
-        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
+        public ICollection<LibroArchivo> Archivos { get; set; } = new List<LibroArchivo>();
     }
 }

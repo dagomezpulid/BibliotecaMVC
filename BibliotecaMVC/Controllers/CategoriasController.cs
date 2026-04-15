@@ -5,11 +5,18 @@ using BibliotecaMVC.Models;
 
 namespace BibliotecaMVC.Controllers
 {
+    /// <summary>
+    /// Gestiona la clasificación temática de los libros en el catálogo.
+    /// Acceso restringido a administradores para mantener la taxonomía del sistema.
+    /// </summary>
     [Authorize(Roles = "Admin")]
     public class CategoriasController : Controller
     {
         private readonly BibliotecaContext _context;
 
+        /// <summary>
+        /// Inicializa el controlador con el contexto de datos.
+        /// </summary>
         public CategoriasController(BibliotecaContext context)
         {
             _context = context;
@@ -21,8 +28,14 @@ namespace BibliotecaMVC.Controllers
             return View(await _context.Categorias.ToListAsync());
         }
 
+        /// <summary>
+        /// Muestra el formulario para crear una nueva categoría.
+        /// </summary>
         public IActionResult Create() => View();
 
+        /// <summary>
+        /// Procesa la creación de una categoría, validando que no exista una con el mismo nombre.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Nombre")] Categoria categoria)
@@ -42,6 +55,9 @@ namespace BibliotecaMVC.Controllers
             return View(categoria);
         }
 
+        /// <summary>
+        /// Muestra el formulario para editar una categoría existente.
+        /// </summary>
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -50,6 +66,9 @@ namespace BibliotecaMVC.Controllers
             return View(categoria);
         }
 
+        /// <summary>
+        /// Procesa la edición de una categoría con validación de duplicados.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre")] Categoria categoria)
@@ -79,6 +98,9 @@ namespace BibliotecaMVC.Controllers
             return View(categoria);
         }
 
+        /// <summary>
+        /// Muestra el formulario de confirmación para eliminar una categoría.
+        /// </summary>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -87,6 +109,10 @@ namespace BibliotecaMVC.Controllers
             return View(categoria);
         }
 
+        /// <summary>
+        /// Procesa la eliminación de una categoría. 
+        /// Valida la integridad referencial para no borrar categorías que aún tengan libros asociados.
+        /// </summary>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

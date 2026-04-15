@@ -9,8 +9,8 @@ using System.Security.Claims;
 namespace BibliotecaMVC.Controllers
 {
     /// <summary>
-    /// Gestiona el catálogo de libros, incluyendo visualización premium, 
-    /// creación con metadatos (ISBN, Portadas) y edición de categorías.
+    /// Gestiona el catálogo de libros, incluyendo visualización premium y
+    /// gestión de múltiples archivos digitales por título.
     /// </summary>
     public class LibrosController : Controller
     {
@@ -26,16 +26,15 @@ namespace BibliotecaMVC.Controllers
         /// <summary>
         /// Muestra el catálogo de libros con soporte para búsqueda dinámica y marcado de favoritos.
         /// </summary>
-        /// <param name="query">Término de búsqueda opcional (Título, Autor, Categoría o ISBN).</param>
-        /// <returns>Vista con listado de libros filtrados.</returns>
         [Authorize]
         public async Task<IActionResult> Index(string? query, int page = 1)
         {
-            int pageSize = 8; // Cantidad de libros por página (Escalabilidad)
+            int pageSize = 8;
             
             var librosQuery = _context.Libros
                 .Include(l => l.Autor)
                 .Include(l => l.Categorias)
+                .Include(l => l.Archivos)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
@@ -49,14 +48,12 @@ namespace BibliotecaMVC.Controllers
                 );
             }
 
-            // Paginación segmentada para evitar cargar miles de registros en memoria
             int totalLibros = await librosQuery.CountAsync();
             var libros = await librosQuery
-                .Skip((page - 1) * pageSize) // Saltear registros de páginas anteriores
-                .Take(pageSize)              // Tomar solo la "rebanada" necesaria
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            // Optimización: Extraer los ratings solo para la página actual (Evita N+1 y Bomba de Memoria)
             var libroIds = libros.Select(l => l.Id).ToList();
             var ratings = await _context.Resenas
                 .Where(r => libroIds.Contains(r.LibroId))
@@ -69,12 +66,10 @@ namespace BibliotecaMVC.Controllers
                 l.RatingCalculadoEager = ratings.ContainsKey(l.Id) ? Math.Round(ratings[l.Id], 1) : 0;
             }
 
-            // Metadatos para la navegación en la vista
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalLibros / (double)pageSize);
             ViewBag.Query = query;
 
-            // Lógica de Favoritos: Marcar los libros que ya tiene el usuario
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!string.IsNullOrEmpty(userId))
             {
@@ -98,7 +93,7 @@ namespace BibliotecaMVC.Controllers
         }
 
         /// <summary>
-        /// Muestra la información técnica completa y la sección de reseñas del libro.
+        /// Muestra la información técnica completa y la sección de archivos para descarga.
         /// </summary>
         [Authorize]
         public async Task<IActionResult> Details(int? id)
@@ -108,46 +103,30 @@ namespace BibliotecaMVC.Controllers
             var libro = await _context.Libros
                 .Include(l => l.Autor)
                 .Include(l => l.Categorias)
-                .Include(l => l.Resenas)
-                    .ThenInclude(r => r.Usuario)
+                .Include(l => l.Resenas).ThenInclude(r => r.Usuario)
+                .Include(l => l.Archivos)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (libro == null) return NotFound();
 
-            // --- MOTOR DE RECOMENDACIONES (Fase 4) ---
-            var categoriaIds = libro.Categorias.Select(c => c.Id).ToList();
-            
-            // 1. Recomendaciones por Categoría (50%)
-            var recomendadosPorCategoria = await _context.Libros
+            var recomendados = await _context.Libros
                 .Include(l => l.Autor)
-                .Where(l => l.Id != id && l.Categorias.Any(c => categoriaIds.Contains(c.Id)))
+                .Where(l => l.Id != id && (l.AutorId == libro.AutorId || l.Categorias.Any(c => libro.Categorias.Select(lc => lc.Id).Contains(c.Id))))
                 .OrderByDescending(l => l.Resenas.Average(r => (double?)r.Puntuacion) ?? 0)
-                .Take(4)
-                .ToListAsync();
-
-            // 2. Recomendaciones por Autor (50%)
-            var recomendadosPorAutor = await _context.Libros
-                .Include(l => l.Autor)
-                .Where(l => l.Id != id && l.AutorId == libro.AutorId)
-                .OrderByDescending(l => l.Resenas.Average(r => (double?)r.Puntuacion) ?? 0)
-                .Take(4)
-                .ToListAsync();
-
-            // 3. Combinar y limpiar duplicados
-            var recomendadosDocs = recomendadosPorCategoria
-                .Union(recomendadosPorAutor)
-                .DistinctBy(l => l.Id)
                 .Take(8)
-                .ToList();
+                .ToListAsync();
 
-            ViewBag.Recomendados = recomendadosDocs;
-
+            ViewBag.Recomendados = recomendados;
             return View(libro);
         }
 
         /// <summary>
-        /// Registra una nueva reseña y calificación en el sistema.
+        /// Procesa la publicación de una nueva reseña de usuario.
+        /// Valida que el usuario no haya calificado el mismo libro anteriormente.
         /// </summary>
+        /// <param name="LibroId">ID del libro a calificar.</param>
+        /// <param name="Puntuacion">Valor numérico de 1 a 5.</param>
+        /// <param name="Comentario">Texto opcional de la reseña.</param>
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -156,39 +135,25 @@ namespace BibliotecaMVC.Controllers
             var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(usuarioId)) return Unauthorized();
 
-            // Validar si el usuario ya dejó una reseña para este libro (Antispam)
-            var yaReseno = await _context.Resenas.AnyAsync(r => r.LibroId == LibroId && r.UsuarioId == usuarioId);
-            if (yaReseno)
+            if (await _context.Resenas.AnyAsync(r => r.LibroId == LibroId && r.UsuarioId == usuarioId))
             {
-                TempData["Error"] = "Ya has calificado este libro anteriormente.";
+                TempData["Error"] = "Ya has calificado este libro.";
                 return RedirectToAction(nameof(Details), new { id = LibroId });
             }
 
-            var resena = new Resena
-            {
-                LibroId = LibroId,
-                UsuarioId = usuarioId,
-                Puntuacion = Puntuacion,
-                Comentario = Comentario,
-                FechaPublicacion = DateTime.Now
-            };
-
+            var resena = new Resena { LibroId = LibroId, UsuarioId = usuarioId, Puntuacion = Puntuacion, Comentario = Comentario, FechaPublicacion = DateTime.Now };
             if (ModelState.IsValid)
             {
                 _context.Resenas.Add(resena);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "¡Gracias por tu opinión! Tu reseña ha sido publicada.";
+                TempData["Success"] = "¡Reseña publicada!";
             }
-            else
-            {
-                TempData["Error"] = "Hubo un error al procesar tu reseña. Por favor intenta de nuevo.";
-            }
-
             return RedirectToAction(nameof(Details), new { id = LibroId });
         }
 
         /// <summary>
-        /// Muestra el formulario de alta para un nuevo libro con los selectores de autor y categorías.
+        /// Muestra el formulario de creación para nuevos libros.
+        /// Prepara las listas desplegables de autores y categorías.
         /// </summary>
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
@@ -199,15 +164,16 @@ namespace BibliotecaMVC.Controllers
         }
 
         /// <summary>
-        /// Procesa la creación de un nuevo libro.
-        /// Realiza validaciones de duplicidad por título y asocia metadatos extendidos.
+        /// Procesa la creación de un libro y su carga inicial de archivos digitales.
+        /// Los archivos se almacenan de forma segura en el Vault con nombres únicos (GUID).
         /// </summary>
-        /// <param name="libro">Modelo del libro a crear (ISBN, ImagenUrl, etc).</param>
-        /// <param name="CategoriasSeleccionadas">Array de IDs de las categorías seleccionadas.</param>
+        /// <param name="libro">Entidad básica del libro.</param>
+        /// <param name="CategoriasSeleccionadas">IDs de las categorías a asociar.</param>
+        /// <param name="archivosLibro">Colección de archivos físicos subidos desde el formulario.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion")] Libro libro, int[] CategoriasSeleccionadas, IFormFile? archivoLibro)
+        public async Task<IActionResult> Create([Bind("Titulo,AutorId,ISBN,ImagenUrl,Descripcion")] Libro libro, int[] CategoriasSeleccionadas, IFormFileCollection archivosLibro)
         {
             if (!ModelState.IsValid)
             {
@@ -216,12 +182,9 @@ namespace BibliotecaMVC.Controllers
                 return View(libro);
             }
 
-            bool existeLibro = await _context.Libros.AnyAsync(l => 
-                l.Titulo.ToLower() == libro.Titulo.ToLower());
-
-            if (existeLibro)
+            if (await _context.Libros.AnyAsync(l => l.Titulo.ToLower() == libro.Titulo.ToLower()))
             {
-                ModelState.AddModelError("Titulo", "Ya existe un libro registrado con este mismo título.");
+                ModelState.AddModelError("Titulo", "Ya existe un libro con este título.");
                 ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
                 ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
                 return View(libro);
@@ -231,264 +194,165 @@ namespace BibliotecaMVC.Controllers
             {
                 foreach (var id in CategoriasSeleccionadas)
                 {
-                    var categoria = await _context.Categorias.FindAsync(id);
-                    if (categoria != null) libro.Categorias.Add(categoria);
+                    var cat = await _context.Categorias.FindAsync(id);
+                    if (cat != null) libro.Categorias.Add(cat);
                 }
             }
 
-            // Procesamiento de Almacenamiento Digital
-            if (archivoLibro != null && archivoLibro.Length > 0)
+            // Procesamiento de múltiples archivos
+            if (archivosLibro != null && archivosLibro.Count > 0)
             {
-                var allowedExtensions = new[] { ".pdf", ".epub", ".doc", ".docx" };
-                var extension = Path.GetExtension(archivoLibro.FileName).ToLower();
-                
-                if (allowedExtensions.Contains(extension))
+                var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+                if (!Directory.Exists(vaultFolder)) Directory.CreateDirectory(vaultFolder);
+
+                foreach (var file in archivosLibro)
                 {
-                    var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
-                    if (!Directory.Exists(vaultFolder))
-                    {
-                        Directory.CreateDirectory(vaultFolder);
-                    }
-                    
-                    var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(archivoLibro.FileName);
-                    var filePath = Path.Combine(vaultFolder, uniqueFileName);
-                    
+                    var extension = Path.GetExtension(file.FileName).ToLower();
+                    var uniqueName = Guid.NewGuid().ToString() + extension;
+                    var filePath = Path.Combine(vaultFolder, uniqueName);
+
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        await archivoLibro.CopyToAsync(stream);
+                        await file.CopyToAsync(stream);
                     }
-                    
-                    libro.ArchivoRuta = uniqueFileName;
-                }
-                else
-                {
-                    ModelState.AddModelError("ArchivoRuta", "Formato no válido. Solo se permiten archivos PDF, EPUB, DOC o DOCX.");
-                    ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
-                    ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
-                    return View(libro);
+
+                    libro.Archivos.Add(new LibroArchivo { Ruta = uniqueName, Formato = extension });
                 }
             }
 
             _context.Libros.Add(libro);
             await _context.SaveChangesAsync();
-
             return RedirectToAction(nameof(Index));
         }
 
         /// <summary>
-        /// Muestra el formulario de edición precargado con los datos actuales del libro.
+        /// Muestra el formulario para editar datos de un libro y gestionar sus archivos.
         /// </summary>
         /// <param name="id">ID del libro a editar.</param>
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-
-            var libro = await _context.Libros
-                .Include(l => l.Categorias)
-                .FirstOrDefaultAsync(l => l.Id == id);
-
+            var libro = await _context.Libros.Include(l => l.Categorias).Include(l => l.Archivos).FirstOrDefaultAsync(l => l.Id == id);
             if (libro == null) return NotFound();
 
             ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
             ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", libro.Categorias.Select(c => c.Id));
-            
             return View(libro);
         }
 
         /// <summary>
-        /// Persiste los cambios de edición de un libro, incluyendo la gestión de archivos digitales.
-        /// Implementa control de concurrencia optimista mediante RowVersion para prevenir colisiones en el stock.
+        /// Procesa la actualización de un libro y la adición de nuevos archivos digitales.
         /// </summary>
-        /// <param name="id">ID del libro que se está actualizando.</param>
-        /// <param name="libro">Modelo con los datos actualizados (viene del formulario).</param>
-        /// <param name="CategoriasSeleccionadas">Array de IDs de las nuevas categorías seleccionadas.</param>
-        /// <param name="archivoLibro">Archivo digital opcional (PDF, EPUB, DOC, DOCX) para reemplazar el anterior.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AutorId,Stock,ISBN,ImagenUrl,Descripcion,RowVersion")] Libro libro, int[] CategoriasSeleccionadas, IFormFile? archivoLibro)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Titulo,AutorId,ISBN,ImagenUrl,Descripcion")] Libro libro, int[] CategoriasSeleccionadas, IFormFileCollection nuevosArchivos)
         {
             if (id != libro.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                try
+                var libroToUpdate = await _context.Libros.Include(l => l.Categorias).Include(l => l.Archivos).FirstOrDefaultAsync(l => l.Id == id);
+                if (libroToUpdate == null) return NotFound();
+
+                libroToUpdate.Titulo = libro.Titulo;
+                libroToUpdate.AutorId = libro.AutorId;
+                libroToUpdate.ISBN = libro.ISBN;
+                libroToUpdate.ImagenUrl = libro.ImagenUrl;
+                libroToUpdate.Descripcion = libro.Descripcion;
+
+                libroToUpdate.Categorias.Clear();
+                if (CategoriasSeleccionadas != null)
                 {
-                    var libroToUpdate = await _context.Libros
-                        .Include(l => l.Categorias)
-                        .FirstOrDefaultAsync(l => l.Id == id);
-
-                    if (libroToUpdate == null) return NotFound();
-
-                    libroToUpdate.Titulo = libro.Titulo;
-                    libroToUpdate.AutorId = libro.AutorId;
-                    libroToUpdate.Stock = libro.Stock;
-                    libroToUpdate.ISBN = libro.ISBN;
-                    libroToUpdate.ImagenUrl = libro.ImagenUrl;
-                    libroToUpdate.Descripcion = libro.Descripcion;
-                    
-                    // Se asigna el RowVersion original enviado desde la vista. 
-                    // Si el valor en DB cambió mientras el usuario editaba, EF lanzará una DbUpdateConcurrencyException.
-                    libroToUpdate.RowVersion = libro.RowVersion;
-
-                    // Actualizar categorías
-                    libroToUpdate.Categorias.Clear();
-                    if (CategoriasSeleccionadas != null)
+                    foreach (var catId in CategoriasSeleccionadas)
                     {
-                        foreach (var catId in CategoriasSeleccionadas)
-                        {
-                            var cat = await _context.Categorias.FindAsync(catId);
-                            if (cat != null) libroToUpdate.Categorias.Add(cat);
-                        }
+                        var cat = await _context.Categorias.FindAsync(catId);
+                        if (cat != null) libroToUpdate.Categorias.Add(cat);
                     }
-
-                    // Procesamiento de Almacenamiento Digital
-                    if (archivoLibro != null && archivoLibro.Length > 0)
-                    {
-                        var allowedExtensions = new[] { ".pdf", ".epub", ".doc", ".docx" };
-                        var extension = Path.GetExtension(archivoLibro.FileName).ToLower();
-                        
-                        if (allowedExtensions.Contains(extension))
-                        {
-                            var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
-                            if (!Directory.Exists(vaultFolder)) Directory.CreateDirectory(vaultFolder);
-                            
-                            var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(archivoLibro.FileName);
-                            var filePath = Path.Combine(vaultFolder, uniqueFileName);
-                            
-                            // Gbage Collection: Eliminar archivo viejo si existía
-                            if (!string.IsNullOrEmpty(libroToUpdate.ArchivoRuta))
-                            {
-                                var oldFilePath = Path.Combine(vaultFolder, libroToUpdate.ArchivoRuta);
-                                if (System.IO.File.Exists(oldFilePath))
-                                {
-                                    System.IO.File.Delete(oldFilePath);
-                                }
-                                
-                                // Clean up old legacy paths if they existed in wwwroot (for backwards compatibility just in case)
-                                if (libroToUpdate.ArchivoRuta.StartsWith("/archivos_libros/"))
-                                {
-                                    var legacyPath = Path.Combine(_env.WebRootPath, libroToUpdate.ArchivoRuta.TrimStart('/'));
-                                    if (System.IO.File.Exists(legacyPath)) System.IO.File.Delete(legacyPath);
-                                }
-                            }
-
-                            using (var stream = new FileStream(filePath, FileMode.Create))
-                            {
-                                await archivoLibro.CopyToAsync(stream);
-                            }
-                            
-                            // Reemplazar la ruta antigua por la nueva (en DB) guardando solo el nombre
-                            libroToUpdate.ArchivoRuta = uniqueFileName;
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("ArchivoRuta", "Formato no válido. Solo se permiten archivos PDF, EPUB, DOC o DOCX.");
-                            ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
-                            ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
-                            return View(libro);
-                        }
-                    }
-
-                    _context.Update(libroToUpdate);
-                    await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+
+                if (nuevosArchivos != null && nuevosArchivos.Count > 0)
                 {
-                    if (!LibroExists(libro.Id)) return NotFound();
-                    else throw;
+                    var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+                    if (!Directory.Exists(vaultFolder)) Directory.CreateDirectory(vaultFolder);
+
+                    foreach (var file in nuevosArchivos)
+                    {
+                        var extension = Path.GetExtension(file.FileName).ToLower();
+                        var uniqueName = Guid.NewGuid().ToString() + extension;
+                        var filePath = Path.Combine(vaultFolder, uniqueName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create)) { await file.CopyToAsync(stream); }
+                        libroToUpdate.Archivos.Add(new LibroArchivo { Ruta = uniqueName, Formato = extension });
+                    }
                 }
+
+                _context.Update(libroToUpdate);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
             ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
             ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
             return View(libro);
         }
 
         /// <summary>
-        /// Muestra la vista de confirmación para eliminar un libro de la base de datos.
+        /// Muestra la confirmación de eliminación de un libro.
         /// </summary>
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
-
-            var libro = await _context.Libros
-                .Include(l => l.Autor)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            
+            var libro = await _context.Libros.Include(l => l.Autor).FirstOrDefaultAsync(m => m.Id == id);
             if (libro == null) return NotFound();
-
             return View(libro);
         }
 
         /// <summary>
-        /// Procesa la eliminación física del libro y su archivo digital en la bóveda, si existe.
+        /// Realiza la eliminación física de un libro y todos sus archivos digitales en el Vault.
         /// </summary>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var libro = await _context.Libros.FindAsync(id);
+            var libro = await _context.Libros.Include(l => l.Archivos).FirstOrDefaultAsync(l => l.Id == id);
             if (libro != null)
             {
-                // Limpieza del Vault: Si el libro tiene archivo, lo borramos de disco también
-                if (!string.IsNullOrEmpty(libro.ArchivoRuta))
+                var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+                foreach (var archivo in libro.Archivos)
                 {
-                    var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
-                    var filePath = Path.Combine(vaultFolder, libro.ArchivoRuta);
-                    
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
+                    var filePath = Path.Combine(vaultFolder, archivo.Ruta);
+                    if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
                 }
-                
                 _context.Libros.Remove(libro);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Libro y sus archivos asociados eliminados correctamente.";
+                TempData["Success"] = "Libro y archivos eliminados.";
             }
             return RedirectToAction(nameof(Index));
         }
 
         /// <summary>
-        /// Verifica si existe un libro con el ID dado. Usado internamente en el flujo de edición.
+        /// Acceso directo a la pasarela de préstamo desde el catálogo detallado.
         /// </summary>
-        /// <param name="id">ID del libro a comprobar.</param>
-        /// <returns>True si el libro existe en la base de datos.</returns>
-        private bool LibroExists(int id)
-        {
-            return _context.Libros.Any(e => e.Id == id);
-        }
-
-        /// <summary>
-        /// Muestra la vista de confirmación del préstamo para un libro específico.
-        /// Verifica que el libro exista y tenga stock antes de mostrar el formulario.
-        /// </summary>
-        /// <param name="id">ID del libro a prestar.</param>
         [Authorize]
         public IActionResult Prestar(int id)
         {
-            var libro = _context.Libros.Find(id);
-
-            if (libro == null)
-                return NotFound();
-
-            if (libro.Stock <= 0)
+            var libro = _context.Libros.Include(l => l.Archivos).FirstOrDefault(l => l.Id == id);
+            if (libro == null) return NotFound();
+            if (!libro.Archivos.Any())
             {
-                TempData["Error"] = "No hay stock disponible para este libro.";
+                TempData["Error"] = "Libro sin archivos digitales.";
                 return RedirectToAction("Index", "Home");
             }
-
             ViewBag.LibroTitulo = libro.Titulo;
-
-            return View(new Prestamo
-            {
-                LibroId = id
-            });
+            return View(new Prestamo { LibroId = id });
         }
+        
+        /// <summary>
+        /// Valida la existencia de un libro por ID.
+        /// </summary>
+        private bool LibroExists(int id) => _context.Libros.Any(e => e.Id == id);
     }
 }

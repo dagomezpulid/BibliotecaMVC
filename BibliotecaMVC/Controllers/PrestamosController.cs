@@ -40,28 +40,16 @@ public class PrestamosController : Controller
     /// Envía una notificación SMS al usuario de forma fire-and-forget.
     /// Solo se ejecuta si el usuario tiene número de teléfono registrado.
     /// </summary>
-    /// <param name="usuario">Entidad del usuario receptor.</param>
-    /// <param name="prestamo">Préstamo al que refiere el mensaje.</param>
-    /// <param name="cuerpoPrincipal">Texto descriptivo del evento (ej: multa generada).</param>
     private void NotificarUsuarioSmsAsync(ApplicationUser usuario, Prestamo prestamo, string cuerpoPrincipal)
     {
         if (usuario != null && !string.IsNullOrEmpty(usuario.PhoneNumber))
         {
             string tituloLegible = prestamo.Libro?.Titulo ?? "solicitado";
             string smsBody = $"BibliotecaMVC: {cuerpoPrincipal} (Libro: '{tituloLegible}').";
-            
-            // Fire and forget descartable
             _ = _smsSender.SendSmsAsync(usuario.PhoneNumber, smsBody);
         }
     }
 
-    /// <summary>
-    /// Inicializa el controlador con todos los servicios requeridos.
-    /// </summary>
-    /// <param name="context">Contexto de datos de Entity Framework.</param>
-    /// <param name="userManager">Gestor de identidades de ASP.NET Core Identity.</param>
-    /// <param name="smsSender">Servicio de mensajería SMS (Twilio).</param>
-    /// <param name="env">Entorno de ejecución para acceso al sistema de archivos.</param>
     public PrestamosController(
         BibliotecaContext context,
         UserManager<ApplicationUser> userManager,
@@ -74,57 +62,44 @@ public class PrestamosController : Controller
         _env = env;
     }
 
-    /// <summary>
-    /// Método auxiliar reutilizable: construye una consulta de préstamos con Libro, Usuario y Multa cargados.
-    /// </summary>
-    /// <returns>IQueryable preconfigurado con las relaciones necesarias.</returns>
     private IQueryable<Prestamo> ObtenerPrestamosDetallados()
     {
         return _context.Prestamos
             .Include(p => p.Libro)
+                .ThenInclude(l => l.Archivos)
             .Include(p => p.Usuario)
             .Include(p => p.Multa);
     }
 
     /// <summary>
-    /// Lista los préstamos activos del usuario autenticado (sin fecha de devolución real).
+    /// Muestra los préstamos activos del usuario autenticado.
     /// </summary>
-    /// <returns>Vista con préstamos en curso del usuario actual.</returns>
-    // Préstamos activos
     public IActionResult Index()
     {
         var usuarioId = _userManager.GetUserId(User);
-
         var prestamos = ObtenerPrestamosDetallados()
             .Where(p => p.UsuarioId == usuarioId && p.FechaDevolucionReal == null)
             .ToList();
-
         return View(prestamos);
     }
 
     /// <summary>
-    /// Muestra el historial completo de préstamos (activos y devueltos) del usuario.
-    /// Ordenados de más reciente a más antiguo.
+    /// Muestra el histórico completo de préstamos (devueltos y activos) del usuario.
     /// </summary>
-    /// <returns>Vista con el historial de préstamos del usuario autenticado.</returns>
-    // Historial
     public IActionResult Historial()
     {
         var usuarioId = _userManager.GetUserId(User);
-
         var historial = _context.Prestamos
             .Include(p => p.Libro)
             .Where(p => p.UsuarioId == usuarioId)
             .OrderByDescending(p => p.FechaPrestamo)
             .ToList();
-
         return View(historial);
     }
 
     /// <summary>
-    /// Procesa la devolución de un libro.
-    /// Ejecuta el peritaje de mora, genera multas si aplica, restaura el stock 
-    /// y bloquea la cuenta del usuario si el entrega es tardía.
+    /// Procesa la devolución de un libro digital.
+    /// Si hay mora, bloquea al usuario y genera una multa financiera.
     /// </summary>
     /// <param name="id">ID del préstamo a devolver.</param>
     [HttpPost]
@@ -133,38 +108,30 @@ public class PrestamosController : Controller
     public async Task<IActionResult> Devolver(int id)
     {
         var usuarioId = _userManager.GetUserId(User);
-
         var prestamo = await _context.Prestamos
             .Include(p => p.Libro)
             .FirstOrDefaultAsync(p => p.Id == id);
 
-        if (prestamo == null)
-            return NotFound();
+        if (prestamo == null) return NotFound();
+        if (prestamo.UsuarioId != usuarioId) return Forbid();
 
-        // BUG: IDOR (Insecure Direct Object Reference). Impedir gestionar libros de otros.
-        if (prestamo.UsuarioId != usuarioId)
-            return Forbid();
-
-        // BUG: Ataque de Doble Petición (Inflación del Stock)
         if (prestamo.FechaDevolucionReal != null)
         {
-            TempData["Error"] = "Vulnerabilidad prevenida: El préstamo ya ha sido devuelto y el stock procesado.";
+            TempData["Error"] = "El préstamo ya ha sido devuelto.";
             return RedirectToAction(nameof(Index));
         }
 
         prestamo.FechaDevolucionReal = DateTime.Now;
         prestamo.Estado = "Devuelto";
 
-        // Generar multa si aplica a nivel modelo
         if (prestamo.DiasMora > 0)
         {
-            // CASTIGO AUTOMÁTICO: Bloquear cuenta del usuario local
             var usuarioInfractor = await _userManager.FindByIdAsync(usuarioId);
             if (usuarioInfractor != null)
             {
                 usuarioInfractor.BloqueadoParaPrestamos = true;
                 await _userManager.UpdateAsync(usuarioInfractor);
-                TempData["Error"] += "Has devuelto el libro con retraso. Tu cuenta ha sido SUSPENDIDA temporalmente.";
+                TempData["Error"] = "Has devuelto el libro con retraso. Tu cuenta ha sido SUSPENDIDA temporalmente.";
             }
 
             decimal valorPorDia = 1000;
@@ -179,89 +146,98 @@ public class PrestamosController : Controller
             };
 
             _context.Multas.Add(multa);
-
-            // 🚀 INTEGRACIÓN MUNDIAL TWILIO: Disparar el castigo al dispositivo celular
-            NotificarUsuarioSmsAsync(usuarioInfractor, prestamo, $"Tu préstamo fue devuelto tarde. Se generó una multa de ${totalMulta}. Tu cuenta ha sido bloqueada hasta sanear tu deuda");
-
-            // 🔔 Notificación Interna
-            await CrearNotificacionAsync(usuarioId, "⚠️ Multa Generada", $"Se ha generado una multa de ${totalMulta} por retraso en el libro '{prestamo.Libro.Titulo}'.", "warning");
+            NotificarUsuarioSmsAsync(usuarioInfractor, prestamo, $"Tu préstamo fue devuelto tarde. Multa: ${totalMulta}. Cuenta bloqueada.");
+            await CrearNotificacionAsync(usuarioId, "⚠️ Multa Generada", $"Se ha generado una multa de ${totalMulta} por retraso.", "warning");
         }
 
-        prestamo.Libro.Stock++;
-
+        // Ya no existe préstamo.Libro.Stock++
         await _context.SaveChangesAsync();
-
         return RedirectToAction(nameof(Index));
     }
 
     /// <summary>
-    /// Muestra la vista de confirmación del préstamo con todos los detalles del libro seleccionado.
+    /// Paso previo al préstamo: Muestra la pasarela de selección de días.
+    /// Valida que el libro cuente con copias digitales cargadas.
     /// </summary>
-    /// <param name="id">ID del libro a rentar.</param>
+    /// <param name="id">ID del libro a solicitar.</param>
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> ConfirmarPrestamo(int id)
     {
         var libro = await _context.Libros
             .Include(l => l.Autor)
             .Include(l => l.Categorias)
+            .Include(l => l.Archivos)
             .FirstOrDefaultAsync(l => l.Id == id);
 
-        if (libro == null)
-            return NotFound();
+        if (libro == null) return NotFound();
+
+        // Si el libro no tiene archivos, informamos al usuario
+        if (!libro.Archivos.Any())
+        {
+            TempData["Error"] = "Este libro aún no tiene una versión digital disponible para lectura.";
+            return RedirectToAction("Index", "Libros");
+        }
 
         ViewBag.LibroTitulo = libro.Titulo;
-
         return View("Prestar", libro);
     }
 
     /// <summary>
-    /// Crea un nuevo registro de préstamo en la base de datos.
-    /// Valida: Suspensión de cuenta, Stock disponible, Rango de días (2-20),
-    /// Deudas pendientes y Límite de 3 préstamos activos.
+    /// Ejecuta la transacción de préstamo digital.
+    /// Verifica: Usuario no bloqueado, sin multas pendientes, límite de 3 préstamos y libro disponible.
     /// </summary>
-    /// <param name="libroId">ID del libro a rentar.</param>
-    /// <param name="diasPrestamo">Duración elegida por el usuario.</param>
+    /// <param name="libroId">ID del libro.</param>
+    /// <param name="diasPrestamo">Días solicitados por el usuario (2-20).</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Prestar(int libroId, int diasPrestamo)
     {
         var usuarioId = _userManager.GetUserId(User);
-
-        // Candado Fuerte: Bloqueo Administrativo
         var usuarioDB = await _userManager.FindByIdAsync(usuarioId);
+        
         if (usuarioDB != null && usuarioDB.BloqueadoParaPrestamos)
         {
-            TempData["Error"] = "¡Cuenta Suspendida! Tuviste un retraso anterior. Un administrador debe evaluar tu caso para restablecer tu acceso.";
+            TempData["Error"] = "Cuenta Suspendida por morosidad.";
             return RedirectToAction("Index", "Libros");
         }
 
-        var libro = await _context.Libros.FindAsync(libroId);
+        var libro = await _context.Libros.Include(l => l.Archivos).FirstOrDefaultAsync(l => l.Id == libroId);
+        if (libro == null) return NotFound();
 
-        if (libro == null || libro.Stock <= 0)
+        // Eliminado chequeo de Stock físico
+        if (!libro.Archivos.Any())
         {
-            TempData["Error"] = "Lo sentimos, el libro solicitado ya no tiene ejemplares disponibles.";
+            TempData["Error"] = "El libro no tiene archivos digitales disponibles.";
             return RedirectToAction("Index", "Libros");
         }
 
         if (diasPrestamo < 2 || diasPrestamo > 20)
         {
-            TempData["Error"] = "Cantidad de días inválida. La biblioteca solo permite préstamos entre 2 y 20 días.";
+            TempData["Error"] = "Días inválidos (2-20).";
             return RedirectToAction("ConfirmarPrestamo", new { id = libroId });
         }
 
-        // Validar multas pendientes
         var tieneMultaPendiente = await _context.Multas
             .Include(m => m.Prestamo)
-            .AnyAsync(m =>
-                m.Prestamo.UsuarioId == usuarioId &&
-                !m.Pagada);
+            .AnyAsync(m => m.Prestamo.UsuarioId == usuarioId && !m.Pagada);
 
         if (tieneMultaPendiente)
         {
-            TempData["Error"] =
-                "No puedes realizar préstamos mientras tengas multas pendientes.";
+            TempData["Error"] = "Tienes multas pendientes.";
             return RedirectToAction("Index", "Libros");
+        }
+
+        if (await _context.Prestamos.CountAsync(p => p.UsuarioId == usuarioId && p.FechaDevolucionReal == null) >= 3)
+        {
+            TempData["Error"] = "Límite de 3 préstamos activos alcanzado.";
+            return RedirectToAction("Index", "Home");
+        }
+
+        if (await _context.Prestamos.AnyAsync(p => p.UsuarioId == usuarioId && p.LibroId == libroId && p.FechaDevolucionReal == null))
+        {
+            TempData["Error"] = "Ya tienes este libro prestado.";
+            return RedirectToAction("Index", "Home");
         }
 
         var prestamo = new Prestamo
@@ -273,92 +249,51 @@ public class PrestamosController : Controller
             Estado = "Activo"
         };
 
-        var prestamosActivos = await _context.Prestamos
-            .CountAsync(p => p.UsuarioId == usuarioId && p.FechaDevolucionReal == null);
+        _context.Prestamos.Add(prestamo);
+        await _context.SaveChangesAsync();
 
-        if (prestamosActivos >= 3)
-        {
-            TempData["Error"] = "Solo puedes tener máximo 3 préstamos activos.";
-            return RedirectToAction("Index", "Home");
-        }
-
-        var yaTieneLibro = await _context.Prestamos
-            .AnyAsync(p =>
-                p.UsuarioId == usuarioId &&
-                p.LibroId == libroId &&
-                p.FechaDevolucionReal == null);
-
-        if (yaTieneLibro)
-        {
-            TempData["Error"] = "Ya tienes este libro prestado.";
-            return RedirectToAction("Index", "Home");
-        }
-
-        try 
-        {
-            libro.Stock = (libro.Stock ?? 0) - 1;
-            _context.Prestamos.Add(prestamo);
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            TempData["Error"] = "Hubo un conflicto al procesar el stock. Otro usuario pudo haber rentado el último ejemplar simultáneamente. Por favor, intenta de nuevo.";
-            return RedirectToAction("Index", "Libros");
-        }
-
-        // 🔥 Confirmación Inmediata al Usuario (SMS Vía Twilio)
         string fechaLim = prestamo.FechaDevolucionProgramada.ToShortDateString();
-        NotificarUsuarioSmsAsync(usuarioDB, prestamo, $"Préstamo exitoso. Límite de devolución: {fechaLim}. Recuerda: Entregar tarde generará multas inmediatas y congelamiento de tu cuenta");
-
-        // 🔔 Notificación Interna
-        await CrearNotificacionAsync(usuarioId, "📖 Préstamo Confirmado", $"Has alquilado '{libro.Titulo}'. Fecha límite: {fechaLim}.", "success");
+        NotificarUsuarioSmsAsync(usuarioDB, prestamo, $"Préstamo exitoso. Límite: {fechaLim}.");
+        await CrearNotificacionAsync(usuarioId, "📖 Préstamo Confirmado", $"Has alquilado '{libro.Titulo}'.", "success");
 
         TempData["Success"] = "Préstamo realizado correctamente.";
-
         return RedirectToAction(nameof(Index));
     }
 
     /// <summary>
-    /// Vista administrativa: Retorna todos los préstamos del sistema sin importar el usuario,
-    /// ordenados por fecha de creación descendente.
+    /// Vista administrativa para supervisar todos los préstamos globales.
     /// </summary>
-    /// <returns>Vista con la lista global de préstamos para supervisión del admin.</returns>
-    // Vista admin
     [Authorize(Roles = "Admin")]
     public IActionResult Todos()
     {
-        var prestamos = ObtenerPrestamosDetallados()
-            .OrderByDescending(p => p.FechaPrestamo)
-            .ToList();
-
+        var prestamos = ObtenerPrestamosDetallados().OrderByDescending(p => p.FechaPrestamo).ToList();
         return View(prestamos);
     }
 
     /// <summary>
-    /// Motor de Consumo Web: Provee acceso al visor integrado para leer el libro.
-    /// Valida estrictamente que el usuario tenga un préstamo activo.
+    /// Muestra el visor de lectura inmersiva para un libro prestado.
+    /// Solo accesible si el préstamo está activo y pertenece al usuario.
     /// </summary>
+    /// <param name="id">ID del préstamo.</param>
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Leer(int id)
     {
         var usuarioId = _userManager.GetUserId(User);
-        
         var prestamo = await _context.Prestamos
             .Include(p => p.Libro)
+            .ThenInclude(l => l.Archivos)
             .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId);
 
         if (prestamo == null) return NotFound();
-
-        // DRM: Solo si el préstamo sigue activo
         if (prestamo.FechaDevolucionReal != null || prestamo.Estado != "Activo")
         {
-            TempData["Error"] = "Tu préstamo ha expirado o ya fue devuelto. No puedes leer este libro.";
+            TempData["Error"] = "Préstamo inactivo.";
             return RedirectToAction(nameof(Index));
         }
 
-        if (string.IsNullOrEmpty(prestamo.Libro.ArchivoRuta))
+        if (!prestamo.Libro.Archivos.Any())
         {
-            TempData["Error"] = "Lamentablemente este libro aún no cuenta con una versión digital subida a la plataforma.";
+            TempData["Error"] = "No hay archivos digitales.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -366,84 +301,63 @@ public class PrestamosController : Controller
     }
 
     /// <summary>
-    /// Forzar la descarga del archivo original para formatos que no pueden leerse en web.
-    /// Mismos candados de seguridad.
+    /// Permite la descarga física de uno de los archivos del libro asociado al préstamo.
+    /// Implementa seguridad mediante PhysicalFile para no exponer rutas del servidor.
     /// </summary>
+    /// <param name="id">ID del préstamo.</param>
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> DescargarLibro(int id)
     {
         var usuarioId = _userManager.GetUserId(User);
         var prestamo = await _context.Prestamos
             .Include(p => p.Libro)
+            .ThenInclude(l => l.Archivos)
             .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId && p.Estado == "Activo" && p.FechaDevolucionReal == null);
 
-        if (prestamo == null || string.IsNullOrEmpty(prestamo.Libro?.ArchivoRuta))
-        {
-            return Forbid();
-        }
+        if (prestamo == null || !prestamo.Libro.Archivos.Any()) return Forbid();
 
+        // Por ahora descargamos el primer archivo disponible (Modelo simple)
+        var archivo = prestamo.Libro.Archivos.First();
         var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
-        var filePath = Path.Combine(vaultFolder, prestamo.Libro.ArchivoRuta);
-        
-        // Fallback for legacy files
-        if (!System.IO.File.Exists(filePath) && prestamo.Libro.ArchivoRuta.StartsWith("/archivos_libros/"))
-        {
-            filePath = Path.Combine(_env.WebRootPath, prestamo.Libro.ArchivoRuta.TrimStart('/'));
-        }
+        var filePath = Path.Combine(vaultFolder, archivo.Ruta);
 
         if (!System.IO.File.Exists(filePath))
         {
-            TempData["Error"] = "El archivo ya no existe en el servidor.";
+            TempData["Error"] = "El archivo no existe en el servidor.";
             return RedirectToAction(nameof(Index));
         }
 
-        var fileName = Path.GetFileName(filePath);
-        var contentType = "application/octet-stream";
-        
-        return PhysicalFile(filePath, contentType, fileName);
+        return PhysicalFile(filePath, "application/octet-stream", archivo.Ruta);
     }
 
     /// <summary>
-    /// Túnel DRM: Sirve el archivo al visor web únicamente si el usuario está autorizado.
-    /// Evita fugas de URLs públicas desde el IFrame.
+    /// Endpoint para el visor (Iframe) que sirve el contenido del archivo con el Content-Type correcto.
+    /// Soporta PDF, EPUB y DOCX mediante streaming seguro.
     /// </summary>
+    /// <param name="id">ID del préstamo.</param>
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> ArchivoLectura(int id)
     {
         var usuarioId = _userManager.GetUserId(User);
         var prestamo = await _context.Prestamos
             .Include(p => p.Libro)
+            .ThenInclude(l => l.Archivos)
             .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId && p.Estado == "Activo" && p.FechaDevolucionReal == null);
 
-        if (prestamo == null || string.IsNullOrEmpty(prestamo.Libro?.ArchivoRuta))
-        {
-            return Forbid();
-        }
+        if (prestamo == null || !prestamo.Libro.Archivos.Any()) return Forbid();
 
+        var archivo = prestamo.Libro.Archivos.First();
         var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
-        var filePath = Path.Combine(vaultFolder, prestamo.Libro.ArchivoRuta);
-        
-        // Fallback for legacy files
-        if (!System.IO.File.Exists(filePath) && prestamo.Libro.ArchivoRuta.StartsWith("/archivos_libros/"))
-        {
-            filePath = Path.Combine(_env.WebRootPath, prestamo.Libro.ArchivoRuta.TrimStart('/'));
-        }
+        var filePath = Path.Combine(vaultFolder, archivo.Ruta);
 
-        if (!System.IO.File.Exists(filePath))
-        {
-            return NotFound();
-        }
+        if (!System.IO.File.Exists(filePath)) return NotFound();
 
-        // Determinar ContentType
         string contentType = "application/octet-stream";
-        if (filePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) contentType = "application/pdf";
-        else if (filePath.EndsWith(".epub", StringComparison.OrdinalIgnoreCase)) contentType = "application/epub+zip";
-        else if (filePath.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)) contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        else if (filePath.EndsWith(".doc", StringComparison.OrdinalIgnoreCase)) contentType = "application/msword";
+        string ext = Path.GetExtension(filePath).ToLower();
+        if (ext == ".pdf") contentType = "application/pdf";
+        else if (ext == ".epub") contentType = "application/epub+zip";
+        else if (ext == ".docx") contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-        // Retorna un stream del archivo sin descargarlo (inline)
         return PhysicalFile(filePath, contentType, enableRangeProcessing: true);
     }
 }
-
-
