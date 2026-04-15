@@ -1,0 +1,54 @@
+@model BibliotecaMVC.Models.Libro
+
+@{
+    ViewData["Title"] = "Eliminar Libro";
+}
+
+<div class="container mt-5 pt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>¡Atención Administrator!</strong> Está a punto de borrar definitivamente el libro <b>@Model.Titulo</b> del sistema. Esta acción eliminará permanentemente los archivos digitales asociados en la bóveda, si los tuviera.
+                    </div>
+
+                    <dl class="row mt-4">
+                        <dt class="col-sm-4">Título:</dt>
+                        <dd class="col-sm-8">@Model.Titulo</dd>
+
+                        <dt class="col-sm-4">Autor:</dt>
+                        <dd class="col-sm-8">@Model.Autor?.Nombre</dd>
+
+                        <dt class="col-sm-4">ISBN:</dt>
+                        <dd class="col-sm-8">@Model.ISBN</dd>
+
+                        <dt class="col-sm-4">Archivo Vault:</dt>
+                        <dd class="col-sm-8">
+                            @if(!string.IsNullOrEmpty(Model.ArchivoRuta)) {
+                                <span class="badge bg-danger">Sí (Será borrado físicamente)</span>
+                            } else {
+                                <span class="badge bg-secondary">No tiene archivo digital</span>
+                            }
+                        </dd>
+                    </dl>
+
+                    <form asp-action="Delete" class="mt-4">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Cancelar y Volver
+                            </a>
+                            <button type="submit" class="btn btn-danger text-white fw-bold shadow-sm">
+                                <i class="bi bi-trash-fill me-1"></i> Sí, Eliminar Permanentemente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

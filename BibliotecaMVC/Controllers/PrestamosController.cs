@@ -296,7 +296,7 @@ public class PrestamosController : Controller
 
         try 
         {
-            libro.Stock--;
+            libro.Stock = (libro.Stock ?? 0) - 1;
             _context.Prestamos.Add(prestamo);
             await _context.SaveChangesAsync();
         }

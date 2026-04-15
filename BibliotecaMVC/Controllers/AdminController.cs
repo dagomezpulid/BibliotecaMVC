@@ -221,34 +221,32 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // Eliminar dependencias primero (Historial de préstamos inactivos y sus multas)
-        var historialPrestamos = await _context.Prestamos
-                                    .Where(p => p.UsuarioId == usuario.Id)
-                                    .ToListAsync();
-
-        if (historialPrestamos.Any())
+        // 👻 MIGRACIÓN A USUARIO FANTASMA PARA PROTEGER ANALÍTICAS
+        // En lugar de borrar préstamos y reseñas, las asignamos a un perfil anónimo 
+        // conservando las estadísticas mensuales y de popularidad.
+        var ghostUser = await _userManager.FindByEmailAsync("fantasma@biblioteca.net");
+        if (ghostUser == null)
         {
-            var prestamosIds = historialPrestamos.Select(p => p.Id).ToList();
-            var multas = await _context.Multas
-                            .Where(m => prestamosIds.Contains(m.PrestamoId))
-                            .ToListAsync();
-
-            var multasIds = multas.Select(m => m.Id).ToList();
-            var pagos = await _context.Pagos
-                            .Where(p => multasIds.Contains(p.MultaId))
-                            .ToListAsync();
-
-            _context.Pagos.RemoveRange(pagos);
-            _context.Multas.RemoveRange(multas);
-            _context.Prestamos.RemoveRange(historialPrestamos);
+            ghostUser = new ApplicationUser
+            {
+                UserName = "fantasma@biblioteca.net",
+                Email = "fantasma@biblioteca.net",
+                Nombre = "Usuario",
+                Apellido = "Eliminado",
+                EmailConfirmed = true
+            };
+            await _userManager.CreateAsync(ghostUser, "G0st!_B0y99z");
         }
 
-        // 🧹 Limpieza social y comunicaciones
-        var resenas = await _context.Resenas.Where(r => r.UsuarioId == usuario.Id).ToListAsync();
+        var historialPrestamos = await _context.Prestamos.Where(p => p.UsuarioId == usuario.Id).ToListAsync();
+        foreach (var p in historialPrestamos) p.UsuarioId = ghostUser.Id;
+
+        // Limpieza de datos estrictamente personales (Favoritos y Alertas internas)
         var favoritos = await _context.Favoritos.Where(f => f.UsuarioId == usuario.Id).ToListAsync();
         var notificaciones = await _context.Notificaciones.Where(n => n.UsuarioId == usuario.Id).ToListAsync();
+        var resenas = await _context.Resenas.Where(r => r.UsuarioId == usuario.Id).ToListAsync();
+        foreach (var r in resenas) r.UsuarioId = ghostUser.Id;
 
-        _context.Resenas.RemoveRange(resenas);
         _context.Favoritos.RemoveRange(favoritos);
         _context.Notificaciones.RemoveRange(notificaciones);
 

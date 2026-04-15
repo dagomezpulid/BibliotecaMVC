@@ -36,7 +36,6 @@ namespace BibliotecaMVC.Controllers
             var librosQuery = _context.Libros
                 .Include(l => l.Autor)
                 .Include(l => l.Categorias)
-                .Include(l => l.Resenas)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(query))
@@ -56,6 +55,19 @@ namespace BibliotecaMVC.Controllers
                 .Skip((page - 1) * pageSize) // Saltear registros de páginas anteriores
                 .Take(pageSize)              // Tomar solo la "rebanada" necesaria
                 .ToListAsync();
+
+            // Optimización: Extraer los ratings solo para la página actual (Evita N+1 y Bomba de Memoria)
+            var libroIds = libros.Select(l => l.Id).ToList();
+            var ratings = await _context.Resenas
+                .Where(r => libroIds.Contains(r.LibroId))
+                .GroupBy(r => r.LibroId)
+                .Select(g => new { LibroId = g.Key, Avg = g.Average(r => r.Puntuacion) })
+                .ToDictionaryAsync(x => x.LibroId, x => x.Avg);
+
+            foreach (var l in libros)
+            {
+                l.RatingCalculadoEager = ratings.ContainsKey(l.Id) ? Math.Round(ratings[l.Id], 1) : 0;
+            }
 
             // Metadatos para la navegación en la vista
             ViewBag.CurrentPage = page;
@@ -393,6 +405,53 @@ namespace BibliotecaMVC.Controllers
             ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
             ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
             return View(libro);
+        }
+
+        /// <summary>
+        /// Muestra la vista de confirmación para eliminar un libro de la base de datos.
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var libro = await _context.Libros
+                .Include(l => l.Autor)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            
+            if (libro == null) return NotFound();
+
+            return View(libro);
+        }
+
+        /// <summary>
+        /// Procesa la eliminación física del libro y su archivo digital en la bóveda, si existe.
+        /// </summary>
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var libro = await _context.Libros.FindAsync(id);
+            if (libro != null)
+            {
+                // Limpieza del Vault: Si el libro tiene archivo, lo borramos de disco también
+                if (!string.IsNullOrEmpty(libro.ArchivoRuta))
+                {
+                    var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");
+                    var filePath = Path.Combine(vaultFolder, libro.ArchivoRuta);
+                    
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+                
+                _context.Libros.Remove(libro);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Libro y sus archivos asociados eliminados correctamente.";
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         /// <summary>

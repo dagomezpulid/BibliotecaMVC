@@ -61,7 +61,92 @@ namespace BibliotecaMVC.Controllers
             _context.Autores.Add(autor);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index");
+        }
+
+        // --- MÉTODOS CRUD FALTANTES AÑADIDOS --- //
+
+        /// <summary>
+        /// Muestra el formulario para editar un autor existente.
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+            var autor = await _context.Autores.FindAsync(id);
+            if (autor == null) return NotFound();
+            return View(autor);
+        }
+
+        /// <summary>
+        /// Procesa la modificación de datos de un autor.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre")] Autor autor)
+        {
+            if (id != autor.Id) return NotFound();
+            if (!ModelState.IsValid) return View(autor);
+
+            bool existeDuplicado = await _context.Autores.AnyAsync(a => 
+                a.Id != autor.Id && a.Nombre.ToLower() == autor.Nombre.ToLower());
+            if (existeDuplicado)
+            {
+                ModelState.AddModelError("Nombre", "El nombre ingresado pertenece a otro autor.");
+                return View(autor);
+            }
+
+            try
+            {
+                _context.Update(autor);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Autor modificado con éxito.";
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Autores.Any(e => e.Id == autor.Id)) return NotFound();
+                else throw;
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Muestra la vista de confirmación para eliminar un autor.
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+            var autor = await _context.Autores.FirstOrDefaultAsync(m => m.Id == id);
+            if (autor == null) return NotFound();
+            return View(autor);
+        }
+
+        /// <summary>
+        /// Procesa la baja de un autor. Verifica que no tenga libros para mantener la integridad.
+        /// </summary>
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var autor = await _context.Autores.FindAsync(id);
+            if (autor != null)
+            {
+                // Validación de integridad relacional
+                var tieneLibros = await _context.Libros.AnyAsync(l => l.AutorId == autor.Id);
+                if (tieneLibros)
+                {
+                    TempData["Error"] = "Para borrar al autor, primero debe eliminar todos sus libros o reasignarlos.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                _context.Autores.Remove(autor);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Autor eliminado correctamente.";
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

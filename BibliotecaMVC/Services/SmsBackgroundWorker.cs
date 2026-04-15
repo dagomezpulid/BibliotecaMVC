@@ -42,9 +42,16 @@ namespace BibliotecaMVC.Services
                 {
                     await EnviarAlertasAutomaticas(stoppingToken);
                     
-                    // El centinela se duerme por 24 horas y despierta mañana
-                    // El uso del stoppingToken permite que el delay se interrumpa inmediatamente al apagar el servidor
-                    await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
+                    var now = DateTime.Now;
+                    var target = new DateTime(now.Year, now.Month, now.Day, 8, 0, 0); // 8:00 AM
+                    if (now >= target)
+                    {
+                        target = target.AddDays(1);
+                    }
+                    var delay = target - now;
+                    _logger.LogInformation($"[CRON JOB] Vigilante en reposo. Próximo escaneo a las {target:g} (en {delay.TotalHours:N1} horas).");
+
+                    await Task.Delay(delay, stoppingToken);
                 }
             }
             catch (OperationCanceledException)

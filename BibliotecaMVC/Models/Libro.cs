@@ -64,9 +64,15 @@ namespace BibliotecaMVC.Models
         public ICollection<Resena> Resenas { get; set; } = new List<Resena>();
 
         /// <summary>
-        /// Calcula el promedio de estrellas redondeado a un decimal.
+        /// Soporta la inyección manual del rating promedio en consultas complejas.
         /// </summary>
-        public double RatingPromedio => Resenas.Any() ? Math.Round(Resenas.Average(r => r.Puntuacion), 1) : 0;
+        [NotMapped]
+        public double? RatingCalculadoEager { get; set; }
+
+        /// <summary>
+        /// Calcula el promedio de estrellas redondeado a un decimal o devuelve el Eager si se inyectó desde el controlador.
+        /// </summary>
+        public double RatingPromedio => RatingCalculadoEager ?? (Resenas.Any() ? Math.Round(Resenas.Average(r => r.Puntuacion), 1) : 0);
 
         /// <summary>
         /// Propiedad calculada que determina si existen unidades disponibles para prestar.
