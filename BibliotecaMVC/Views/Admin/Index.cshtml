@@ -188,81 +188,110 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Configuración Global de Chart.js para que respete el modo oscuro si es posible
-            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-            const colorText = isDark ? '#f1f5f9' : '#212529';
-            const colorGrid = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            const ctxTendencia = document.getElementById('tendenciaChart').getContext('2d');
+            const ctxLibros = document.getElementById('librosChart').getContext('2d');
+            const ctxMorosos = document.getElementById('morososChart').getContext('2d');
 
-            Chart.defaults.color = colorText;
-            Chart.defaults.borderColor = colorGrid;
+            // --- PALETA DE COLORES VIBRANTE ---
+            const palette = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+                '#FF9F40', '#E7E9ED', '#76D7C4', '#F7DC6F', '#AF7AC5'
+            ];
 
-            // 1. Gráfico de Tendencia (Línea)
-            new Chart(document.getElementById('tendenciaChart'), {
+            // Gradiente para Tendencia
+            const gradientBlue = ctxTendencia.createLinearGradient(0, 0, 0, 300);
+            gradientBlue.addColorStop(0, 'rgba(54, 162, 235, 0.5)');
+            gradientBlue.addColorStop(1, 'rgba(54, 162, 235, 0.0)');
+
+            // 1. Gráfico de Tendencia (Línea con Gradiente y Glow)
+            new Chart(ctxTendencia, {
                 type: 'line',
                 data: {
                     labels: @Html.Raw(Json.Serialize(Model.LabelsTendencia)),
                     datasets: [{
                         label: 'Préstamos Mensuales',
                         data: @Html.Raw(Json.Serialize(Model.ValoresTendencia)),
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderColor: '#36A2EB',
+                        backgroundColor: gradientBlue,
                         fill: true,
                         tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: colorGrid } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // 2. Gráfico de Libros Populares (Doughnut)
-            new Chart(document.getElementById('librosChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: @Html.Raw(Json.Serialize(Model.LabelsLibrosPopulares)),
-                    datasets: [{
-                        data: @Html.Raw(Json.Serialize(Model.ValoresLibrosPopulares)),
-                        backgroundColor: [
-                            '#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#dc3545'
-                        ],
-                        borderWidth: 0
+                        borderWidth: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#36A2EB',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(54, 162, 235, 0.3)'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom' }
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { font: { weight: 'bold' } }
+                        },
+                        x: { grid: { display: false } }
                     }
                 }
             });
 
-            // 3. Gráfico de Morosos (Barras Horizontales con DOBLE EJE para legibilidad)
-            new Chart(document.getElementById('morososChart'), {
+            // 2. Gráfico de Libros Populares (Doughnut con Paleta Variada)
+            new Chart(ctxLibros, {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(Model.LabelsLibrosPopulares)),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.ValoresLibrosPopulares)),
+                        backgroundColor: palette.slice(0, 5),
+                        hoverOffset: 15,
+                        borderColor: '#fff',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 20 }
+                        }
+                    }
+                }
+            });
+
+            // 3. Gráfico de Morosos (Barras con Colores Contrastantes)
+            new Chart(ctxMorosos, {
                 type: 'bar',
                 data: {
                     labels: @Html.Raw(Json.Serialize(Model.LabelsMorosos)),
                     datasets: [
                         {
-                            label: 'Monto Total en Mora ($)',
+                            label: 'Monto en Mora ($)',
                             data: @Html.Raw(Json.Serialize(Model.ValoresMorosos)),
-                            backgroundColor: '#dc3545',
-                            borderRadius: 5,
-                            xAxisID: 'x-monto'
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                            borderColor: '#FF6384',
+                            borderWidth: 1,
+                            borderRadius: 10,
+                            xAxisID: 'x-monto',
+                            barThickness: 25
                         },
                         {
-                            label: 'Días de Mora Acumulados',
+                            label: 'Días de Retraso',
                             data: @Html.Raw(Json.Serialize(Model.ValoresDiasMora)),
-                            backgroundColor: '#fd7e14',
-                            borderRadius: 5,
-                            xAxisID: 'x-dias'
+                            backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                            borderColor: '#FF9F40',
+                            borderWidth: 1,
+                            borderRadius: 10,
+                            xAxisID: 'x-dias',
+                            barThickness: 25
                         }
                     ]
                 },
@@ -270,38 +299,39 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: { padding: { left: 10, right: 10 } },
                     scales: {
                         'x-monto': { 
                             type: 'linear',
                             position: 'bottom',
                             beginAtZero: true, 
-                            grid: { color: colorGrid },
-                            title: { display: true, text: 'Monto en Deuda ($)', color: '#dc3545' },
-                            ticks: { color: '#dc3545' }
+                            grid: { color: 'rgba(255, 99, 132, 0.1)' },
+                            title: { display: true, text: 'Monto ($)', color: '#FF6384', font: { weight: 'bold' } },
+                            ticks: { color: '#FF6384' }
                         },
                         'x-dias': { 
                             type: 'linear',
                             position: 'top',
                             beginAtZero: true, 
-                            grid: { display: false }, // Evitar ruidos visuales
-                            title: { display: true, text: 'Días de Retraso', color: '#fd7e14' },
-                            ticks: { color: '#fd7e14' }
+                            grid: { display: false },
+                            title: { display: true, text: 'Días de Mora', color: '#FF9F40', font: { weight: 'bold' } },
+                            ticks: { color: '#FF9F40' }
                         },
-                        y: { grid: { display: false } }
+                        y: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
                     },
                     plugins: {
                         legend: { position: 'bottom' },
                         tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            padding: 12,
+                            cornerRadius: 10,
                             callbacks: {
                                 label: function(context) {
                                     let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
                                     if (context.datasetIndex === 0) {
-                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.x);
+                                        label += ': $' + context.parsed.x.toLocaleString();
                                     } else {
-                                        label += context.parsed.x + ' días';
+                                        label += ': ' + context.parsed.x + ' días';
                                     }
                                     return label;
                                 }

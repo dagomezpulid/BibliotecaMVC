@@ -280,6 +280,7 @@ public class PrestamosController : Controller
     /// <summary>
     /// Muestra el visor de lectura inmersiva para un libro prestado.
     /// Solo accesible si el préstamo está activo y pertenece al usuario.
+    /// Recupera el progreso de lectura guardado anteriormente.
     /// </summary>
     /// <param name="id">ID del préstamo.</param>
     [Authorize(Roles = "Usuario")]
@@ -304,7 +305,49 @@ public class PrestamosController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        // Recuperar progreso de lectura
+        var progreso = await _context.ProgresosLectura
+            .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId && p.LibroId == prestamo.LibroId);
+
+        ViewBag.PaginaGuardada = progreso?.PaginaActual ?? 1;
+        ViewBag.PrestamoId = id;
+
         return View("Leer", prestamo.Libro);
+    }
+
+    /// <summary>
+    /// Guarda el progreso actual de lectura del usuario (página).
+    /// Endpoint consumido vía AJAX desde el visor inmersivo.
+    /// </summary>
+    [HttpPost]
+    [Authorize(Roles = "Usuario")]
+    public async Task<IActionResult> GuardarProgreso(int libroId, int pagina)
+    {
+        var usuarioId = _userManager.GetUserId(User);
+        if (string.IsNullOrEmpty(usuarioId)) return Unauthorized();
+
+        var progreso = await _context.ProgresosLectura
+            .FirstOrDefaultAsync(p => p.UsuarioId == usuarioId && p.LibroId == libroId);
+
+        if (progreso == null)
+        {
+            progreso = new ProgresoLectura
+            {
+                UsuarioId = usuarioId,
+                LibroId = libroId,
+                PaginaActual = pagina,
+                UltimoAcceso = DateTime.Now
+            };
+            _context.ProgresosLectura.Add(progreso);
+        }
+        else
+        {
+            progreso.PaginaActual = pagina;
+            progreso.UltimoAcceso = DateTime.Now;
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { success = true, pagina = progreso.PaginaActual });
     }
 
     /// <summary>

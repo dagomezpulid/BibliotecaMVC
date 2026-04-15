@@ -1,11 +1,10 @@
-@model BibliotecaMVC.Models.Libro
-
 @{
     ViewData["Title"] = "Leer Libro";
     
     var primerArchivo = Model.Archivos?.FirstOrDefault();
     var isPdf = primerArchivo?.Formato?.EndsWith("pdf", StringComparison.OrdinalIgnoreCase) ?? false;
-    var prestamoId = ViewContext.RouteData.Values["id"];
+    var prestamoId = ViewBag.PrestamoId;
+    var paginaInicial = ViewBag.PaginaGuardada ?? 1;
 }
 
 <!-- Contenedor inmersivo fijado al viewport para evitar desplazamientos por el Layout -->
@@ -17,16 +16,31 @@
             <a asp-controller="Prestamos" asp-action="Index" class="btn btn-info btn-sm fw-bold px-3 py-2 rounded-pill shadow-sm me-3">
                 <i class="bi bi-arrow-left"></i> Volver a Mis Préstamos
             </a>
-            <h5 class="mb-0 fw-bold border-start ps-3 py-1 border-secondary d-none d-md-block">
+            <h5 class="mb-0 fw-bold border-start ps-3 py-1 border-secondary d-none d-md-block text-truncate" style="max-width: 300px;">
                 <i class="bi bi-book me-2 text-warning"></i>@Model.Titulo
             </h5>
         </div>
+
+        <!-- CONTROLES DE PROGRESO DE LECTURA (Fase Premium) -->
+        <div class="d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 shadow-inner">
+            <span class="small text-white-50 me-2 d-none d-sm-inline">Vas en la página:</span>
+            <input type="number" id="inputPagina" class="form-control form-control-sm border-0 bg-transparent text-white fw-bold text-center" 
+                   style="width: 60px;" value="@paginaInicial" min="1" />
+            <button id="btnGuardarProgreso" class="btn btn-sm btn-outline-light border-0 rounded-circle ms-1 p-1" title="Guardar Progreso">
+                <i class="bi bi-bookmark-star-fill fs-5"></i>
+            </button>
+            <div id="saveIndicator" class="ms-2 small text-success d-none">
+                <i class="bi bi-check-circle-fill"></i> <span class="d-none d-md-inline">Guardado</span>
+            </div>
+        </div>
         
         <div class="d-flex align-items-center">
-            <span class="badge bg-secondary me-3 d-none d-lg-inline-block">Modo Lectura Activo</span>
-            <a asp-action="DescargarLibro" asp-route-id="@prestamoId" class="btn btn-warning btn-sm shadow-sm fw-bold px-4 rounded-pill">
-                <i class="bi bi-download me-2"></i>Descargar Copia
+            <a asp-action="DescargarLibro" asp-route-id="@prestamoId" class="btn btn-warning btn-sm shadow-sm fw-bold px-4 rounded-pill d-none d-lg-inline-block">
+                <i class="bi bi-download me-2"></i>Descargar
             </a>
+            <button class="btn btn-dark btn-sm rounded-circle ms-2" onclick="toggleFullScreen()" title="Pantalla Completa">
+                <i class="bi bi-arrows-fullscreen"></i>
+            </button>
         </div>
     </div>
 
@@ -34,7 +48,8 @@
     <div class="flex-grow-1 bg-secondary position-relative w-100" style="height: calc(100vh - 65px);">
         @if (isPdf)
         {
-            <iframe src="/Prestamos/ArchivoLectura/@prestamoId#toolbar=0" 
+            <iframe id="readerIframe" 
+                    src="/Prestamos/ArchivoLectura/@prestamoId#page=@paginaInicial&toolbar=0" 
                     title="Visor de PDF de @Model.Titulo"
                     class="w-100 h-100 border-0" 
                     style="display: block; background-color: #525659;"
@@ -50,7 +65,7 @@
                     </span>
                     <h3 class="fw-bold text-dark">Formato Externo Detectado</h3>
                     <p class="text-muted fs-6 mt-3 mb-4">
-                        El libro "<strong>@Model.Titulo</strong>" requiere una aplicación externa.
+                        El libro "<strong>@Model.Titulo</strong>" requiere una aplicación externa para lectura fluida.
                     </p>
                     <a asp-action="DescargarLibro" asp-route-id="@prestamoId" class="btn btn-primary btn-lg fw-bold px-5 py-3 rounded-pill shadow">
                         <i class="bi bi-download me-2"></i>Descargar para Leer
@@ -62,35 +77,90 @@
 </div>
 
 <style>
-    /* Forzar el contenedor a ignorar el padding/margin del layout base */
     #immersive-reader {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        z-index: 1050; /* Por encima de la navbar estándar */
+        z-index: 2000;
     }
 
-    /* Ocultar elementos globales */
-    header, footer {
-        display: none !important;
+    header, footer, nav { display: none !important; }
+    body { overflow: hidden !important; background-color: #000 !important; }
+
+    .shadow-inner {
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     }
 
-    body {
-        overflow: hidden !important;
-        background-color: #000 !important;
+    #inputPagina:focus {
+        outline: none;
+        box-shadow: none;
     }
 
-    /* Animación suave para el botón info */
-    .btn-info {
-        background-color: #0dcaf0;
-        border: none;
-        transition: all 0.3s ease;
+    /* Animación de guardado */
+    @@keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
     }
-    .btn-info:hover {
-        background-color: #0baccc;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(13, 202, 240, 0.4);
+    .fade-out {
+        animation: fadeOut 2s forwards;
     }
 </style>
+
+@section Scripts {
+    <script>
+        const btnGuardar = document.getElementById('btnGuardarProgreso');
+        const inputPagina = document.getElementById('inputPagina');
+        const indicator = document.getElementById('saveIndicator');
+        const libroId = @Model.Id;
+
+        // Función para guardar progreso vía AJAX
+        async function saveProgress() {
+            const pagina = parseInt(inputPagina.value);
+            if (isNaN(pagina) || pagina < 1) return;
+
+            indicator.classList.remove('d-none', 'fade-out');
+
+            try {
+                const response = await fetch('/Prestamos/GuardarProgreso', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || document.cookie.split(';').find(c => c.trim().startsWith('__RequestVerificationToken='))?.split('=')[1]
+                    },
+                    body: `libroId=${libroId}&pagina=${pagina}`
+                });
+
+                if (response.ok) {
+                    setTimeout(() => indicator.classList.add('fade-out'), 1000);
+                }
+            } catch (err) {
+                console.error("Error al guardar progreso:", err);
+            }
+        }
+
+        btnGuardar.addEventListener('click', saveProgress);
+
+        // Autoguardado al cambiar el input (cuando el usuario marca manualmente donde va)
+        inputPagina.addEventListener('change', saveProgress);
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                saveProgress();
+            }
+        });
+    </script>
+}
