@@ -169,13 +169,13 @@
                         }
                     </td>
                     <td class="text-center">
-                        <div class="d-flex justify-content-center gap-1">
+                        <div class="d-flex justify-content-center gap-2">
                             @if (user.EstaBloqueado)
                             {
                                 <form asp-action="DesbloquearUsuario" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@user.Id" />
-                                    <button class="btn btn-sm btn-outline-success rounded-pill px-3" title="Rehabilitar Cuenta">
-                                        <i class="bi bi-unlock-fill"></i> Perdonar
+                                    <button class="btn btn-sm btn-success rounded-3 px-3 shadow-sm" title="Rehabilitar Cuenta">
+                                        <i class="bi bi-unlock-fill me-1"></i> Perdonar
                                     </button>
                                 </form>
                             }
@@ -184,8 +184,8 @@
                             {
                                 <form asp-action="QuitarAdmin" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@user.Id" />
-                                    <button class="btn btn-sm btn-outline-warning rounded-pill px-3" title="Degradar a Usuario">
-                                        <i class="bi bi-person-down"></i> Bajar
+                                    <button class="btn btn-sm btn-warning rounded-3 px-3 shadow-sm" title="Degradar a Usuario">
+                                        <i class="bi bi-person-down me-1"></i> Bajar
                                     </button>
                                 </form>
                             }
@@ -193,16 +193,16 @@
                             {
                                 <form asp-action="HacerAdmin" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@user.Id" />
-                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Promover a Admin">
-                                        <i class="bi bi-person-up"></i> Ascender
+                                    <button class="btn btn-sm btn-primary rounded-3 px-3 shadow-sm" title="Promover a Admin">
+                                        <i class="bi bi-person-up me-1"></i> Ascender
                                     </button>
                                 </form>
                             }
                             <form asp-action="EliminarUsuario" method="post" class="d-inline">
                                 <input type="hidden" name="id" value="@user.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                <button type="submit" class="btn btn-sm btn-danger rounded-3 px-3 shadow-sm"
                                         onclick="return confirm('¿Estás SEGURO de eliminar al usuario? También borrará todo su historial.')">
-                                    <i class="bi bi-trash3-fill"></i>
+                                    <i class="bi bi-trash3-fill me-1"></i> Eliminar
                                 </button>
                             </form>
                         </div>
@@ -221,18 +221,21 @@
             const ctxLibros = document.getElementById('librosChart').getContext('2d');
             const ctxMorosos = document.getElementById('morososChart').getContext('2d');
 
-            // --- PALETA DE COLORES VIBRANTE ---
+            // --- DETECCION DE TEMA PARA COLORES ---
+            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const labelColor = isDarkMode ? '#adb5bd' : '#6c757d';
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+
             const palette = [
                 '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
-                '#FF9F40', '#E7E9ED', '#76D7C4', '#F7DC6F', '#AF7AC5'
+                '#FF9F40', '#76D7C4', '#F7DC6F', '#AF7AC5', '#E7E9ED'
             ];
 
-            // Gradiente para Tendencia
             const gradientBlue = ctxTendencia.createLinearGradient(0, 0, 0, 300);
             gradientBlue.addColorStop(0, 'rgba(54, 162, 235, 0.5)');
             gradientBlue.addColorStop(1, 'rgba(54, 162, 235, 0.0)');
 
-            // 1. Gráfico de Tendencia (Línea con Gradiente y Glow)
+            // 1. Gráfico de Tendencia
             new Chart(ctxTendencia, {
                 type: 'line',
                 data: {
@@ -248,9 +251,7 @@
                         pointBackgroundColor: '#fff',
                         pointBorderColor: '#36A2EB',
                         pointRadius: 6,
-                        pointHoverRadius: 8,
-                        shadowBlur: 10,
-                        shadowColor: 'rgba(54, 162, 235, 0.3)'
+                        pointHoverRadius: 8
                     }]
                 },
                 options: {
@@ -262,15 +263,18 @@
                     scales: {
                         y: { 
                             beginAtZero: true, 
-                            grid: { color: 'rgba(0,0,0,0.05)' },
-                            ticks: { font: { weight: 'bold' } }
+                            grid: { color: gridColor },
+                            ticks: { color: labelColor, font: { weight: 'bold' } }
                         },
-                        x: { grid: { display: false } }
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: labelColor }
+                        }
                     }
                 }
             });
 
-            // 2. Gráfico de Libros Populares (Doughnut con Paleta Variada)
+            // 2. Gráfico de Libros Populares
             new Chart(ctxLibros, {
                 type: 'doughnut',
                 data: {
@@ -279,7 +283,7 @@
                         data: @Html.Raw(Json.Serialize(Model.ValoresLibrosPopulares)),
                         backgroundColor: palette.slice(0, 5),
                         hoverOffset: 15,
-                        borderColor: '#fff',
+                        borderColor: isDarkMode ? '#1e293b' : '#fff',
                         borderWidth: 3
                     }]
                 },
@@ -290,13 +294,17 @@
                     plugins: {
                         legend: { 
                             position: 'bottom',
-                            labels: { usePointStyle: true, padding: 20 }
+                            labels: { 
+                                color: labelColor,
+                                usePointStyle: true, 
+                                padding: 20 
+                            }
                         }
                     }
                 }
             });
 
-            // 3. Gráfico de Morosos (Barras con Colores Contrastantes)
+            // 3. Gráfico de Morosos
             new Chart(ctxMorosos, {
                 type: 'bar',
                 data: {
@@ -334,37 +342,32 @@
                             type: 'linear',
                             position: 'bottom',
                             beginAtZero: true, 
-                            grid: { color: 'rgba(255, 99, 132, 0.1)' },
-                            title: { display: true, text: 'Monto ($)', color: '#FF6384', font: { weight: 'bold' } },
-                            ticks: { color: '#FF6384' }
+                            grid: { color: gridColor },
+                            title: { display: true, text: 'Monto ($)', color: isDarkMode ? '#FF6384' : '#FF6384', font: { weight: 'bold' } },
+                            ticks: { color: labelColor }
                         },
                         'x-dias': { 
                             type: 'linear',
                             position: 'top',
                             beginAtZero: true, 
                             grid: { display: false },
-                            title: { display: true, text: 'Días de Mora', color: '#FF9F40', font: { weight: 'bold' } },
-                            ticks: { color: '#FF9F40' }
+                            title: { display: true, text: 'Días de Mora', color: isDarkMode ? '#FF9F40' : '#FF9F40', font: { weight: 'bold' } },
+                            ticks: { color: labelColor }
                         },
-                        y: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { color: labelColor, font: { weight: 'bold' } } 
+                        }
                     },
                     plugins: {
-                        legend: { position: 'bottom' },
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: labelColor }
+                        },
                         tooltip: {
                             backgroundColor: 'rgba(0,0,0,0.8)',
                             padding: 12,
-                            cornerRadius: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (context.datasetIndex === 0) {
-                                        label += ': $' + context.parsed.x.toLocaleString();
-                                    } else {
-                                        label += ': ' + context.parsed.x + ' días';
-                                    }
-                                    return label;
-                                }
-                            }
+                            cornerRadius: 10
                         }
                     }
                 }

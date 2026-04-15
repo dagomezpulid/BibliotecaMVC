@@ -74,11 +74,11 @@
                             <div class="d-flex justify-content-center gap-2">
                                 @if (p.Libro?.Archivos != null && p.Libro.Archivos.Any())
                                 {
-                                    <a asp-action="Leer" asp-route-id="@p.Id" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" title="Abrir Visor">
+                                    <a asp-action="Leer" asp-route-id="@p.Id" class="btn btn-primary btn-sm rounded-3 px-3 shadow-sm" title="Abrir Visor">
                                         <i class="bi bi-book-half me-1"></i> Leer
                                     </a>
                                 }
-                                <button class="btn btn-outline-success btn-sm rounded-pill px-3 border-0 shadow-sm"
+                                <button class="btn btn-success btn-sm rounded-3 px-3 shadow-sm"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalDevolver"
                                         data-id="@p.Id"
