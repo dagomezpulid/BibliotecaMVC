@@ -217,172 +217,179 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const ctxTendencia = document.getElementById('tendenciaChart').getContext('2d');
-            const ctxLibros = document.getElementById('librosChart').getContext('2d');
-            const ctxMorosos = document.getElementById('morososChart').getContext('2d');
+            let tendenciaChart, librosChart, morososChart;
 
-            // --- DETECCION DE TEMA PARA COLORES (INTEGRADO CON BOOTSTRAP 5) ---
+            // --- DETECCION DE TEMA PARA COLORES (CONTRASTE MÁXIMO) ---
             const getChartColors = () => {
                 const htmlTheme = document.documentElement.getAttribute('data-bs-theme');
                 const isDark = htmlTheme === 'dark' || (htmlTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
                 
                 return {
-                    label: isDark ? '#adb5bd' : '#343a40', // Gris grafito en modo claro para máxima legibilidad
-                    grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.08)',
+                    isDark: isDark,
+                    label: isDark ? '#ffffff' : '#000000', // Blanco puro vs Negro puro
+                    grid: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
                     border: isDark ? '#1e293b' : '#ffffff'
                 };
             };
 
-            const themeColors = getChartColors();
-            const labelColor = themeColors.label;
-            const gridColor = themeColors.grid;
+            const renderCharts = () => {
+                // Destruir si ya existen para evitar duplicados al re-renderizar
+                if(tendenciaChart) tendenciaChart.destroy();
+                if(librosChart) librosChart.destroy();
+                if(morososChart) morososChart.destroy();
 
-            const palette = [
-                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
-                '#FF9F40', '#76D7C4', '#F7DC6F', '#AF7AC5', '#E7E9ED'
-            ];
+                const ctxTendencia = document.getElementById('tendenciaChart').getContext('2d');
+                const ctxLibros = document.getElementById('librosChart').getContext('2d');
+                const ctxMorosos = document.getElementById('morososChart').getContext('2d');
 
-            const gradientBlue = ctxTendencia.createLinearGradient(0, 0, 0, 300);
-            gradientBlue.addColorStop(0, 'rgba(54, 162, 235, 0.5)');
-            gradientBlue.addColorStop(1, 'rgba(54, 162, 235, 0.0)');
+                const themeColors = getChartColors();
+                const labelColor = themeColors.label;
+                const gridColor = themeColors.grid;
 
-            // 1. Gráfico de Tendencia
-            new Chart(ctxTendencia, {
-                type: 'line',
-                data: {
-                    labels: @Html.Raw(Json.Serialize(Model.LabelsTendencia)),
-                    datasets: [{
-                        label: 'Préstamos Mensuales',
-                        data: @Html.Raw(Json.Serialize(Model.ValoresTendencia)),
-                        borderColor: '#36A2EB',
-                        backgroundColor: gradientBlue,
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#36A2EB',
-                        pointRadius: 6,
-                        pointHoverRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
+                const palette = [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+                    '#FF9F40', '#76D7C4', '#F7DC6F', '#AF7AC5', '#E7E9ED'
+                ];
+
+                const gradientBlue = ctxTendencia.createLinearGradient(0, 0, 0, 300);
+                gradientBlue.addColorStop(0, 'rgba(54, 162, 235, 0.5)');
+                gradientBlue.addColorStop(1, 'rgba(54, 162, 235, 0.0)');
+
+                // 1. Gráfico de Tendencia
+                tendenciaChart = new Chart(ctxTendencia, {
+                    type: 'line',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(Model.LabelsTendencia)),
+                        datasets: [{
+                            label: 'Préstamos Mensuales',
+                            data: @Html.Raw(Json.Serialize(Model.ValoresTendencia)),
+                            borderColor: '#36A2EB',
+                            backgroundColor: gradientBlue,
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#36A2EB',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }]
                     },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: gridColor },
-                            ticks: { color: labelColor, font: { weight: 'bold' } }
-                        },
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: labelColor }
-                        }
-                    }
-                }
-            });
-
-            // 2. Gráfico de Libros Populares
-            new Chart(ctxLibros, {
-                type: 'doughnut',
-                data: {
-                    labels: @Html.Raw(Json.Serialize(Model.LabelsLibrosPopulares)),
-                    datasets: [{
-                        data: @Html.Raw(Json.Serialize(Model.ValoresLibrosPopulares)),
-                        backgroundColor: palette.slice(0, 5),
-                        hoverOffset: 15,
-                        borderColor: themeColors.border,
-                        borderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: { 
-                            position: 'bottom',
-                            labels: { 
-                                color: labelColor,
-                                usePointStyle: true, 
-                                padding: 20 
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: gridColor },
+                                ticks: { color: labelColor, font: { weight: 'bold' } }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                ticks: { color: labelColor }
                             }
                         }
                     }
-                }
-            });
+                });
 
-            // 3. Gráfico de Morosos
-            new Chart(ctxMorosos, {
-                type: 'bar',
-                data: {
-                    labels: @Html.Raw(Json.Serialize(Model.LabelsMorosos)),
-                    datasets: [
-                        {
-                            label: 'Monto en Mora ($)',
-                            data: @Html.Raw(Json.Serialize(Model.ValoresMorosos)),
-                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                            borderColor: '#FF6384',
-                            borderWidth: 1,
-                            borderRadius: 10,
-                            xAxisID: 'x-monto',
-                            barThickness: 25
-                        },
-                        {
-                            label: 'Días de Retraso',
-                            data: @Html.Raw(Json.Serialize(Model.ValoresDiasMora)),
-                            backgroundColor: 'rgba(255, 159, 64, 0.8)',
-                            borderColor: '#FF9F40',
-                            borderWidth: 1,
-                            borderRadius: 10,
-                            xAxisID: 'x-dias',
-                            barThickness: 25
-                        }
-                    ]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: { padding: { left: 10, right: 10 } },
-                    scales: {
-                        'x-monto': { 
-                            type: 'linear',
-                            position: 'bottom',
-                            beginAtZero: true, 
-                            grid: { color: gridColor },
-                            title: { display: true, text: 'Monto ($)', color: isDarkMode ? '#FF6384' : '#FF6384', font: { weight: 'bold' } },
-                            ticks: { color: labelColor }
-                        },
-                        'x-dias': { 
-                            type: 'linear',
-                            position: 'top',
-                            beginAtZero: true, 
-                            grid: { display: false },
-                            title: { display: true, text: 'Días de Mora', color: isDarkMode ? '#FF9F40' : '#FF9F40', font: { weight: 'bold' } },
-                            ticks: { color: labelColor }
-                        },
-                        y: { 
-                            grid: { display: false }, 
-                            ticks: { color: labelColor, font: { weight: 'bold' } } 
-                        }
+                // 2. Gráfico de Libros Populares
+                librosChart = new Chart(ctxLibros, {
+                    type: 'doughnut',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(Model.LabelsLibrosPopulares)),
+                        datasets: [{
+                            data: @Html.Raw(Json.Serialize(Model.ValoresLibrosPopulares)),
+                            backgroundColor: palette.slice(0, 5),
+                            hoverOffset: 15,
+                            borderColor: themeColors.border,
+                            borderWidth: 3
+                        }]
                     },
-                    plugins: {
-                        legend: { 
-                            position: 'bottom',
-                            labels: { color: labelColor }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            padding: 12,
-                            cornerRadius: 10
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: { 
+                                position: 'bottom',
+                                labels: { 
+                                    color: labelColor,
+                                    usePointStyle: true, 
+                                    padding: 20,
+                                    font: { weight: 'bold', size: 12 }
+                                }
+                            }
                         }
                     }
-                }
-            });
+                });
+
+                // 3. Gráfico de Morosos
+                morososChart = new Chart(ctxMorosos, {
+                    type: 'bar',
+                    data: {
+                        labels: @Html.Raw(Json.Serialize(Model.LabelsMorosos)),
+                        datasets: [
+                            {
+                                label: 'Monto en Mora ($)',
+                                data: @Html.Raw(Json.Serialize(Model.ValoresMorosos)),
+                                backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                                borderColor: '#FF6384',
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                xAxisID: 'x-monto',
+                                barThickness: 25
+                            },
+                            {
+                                label: 'Días de Retraso',
+                                data: @Html.Raw(Json.Serialize(Model.ValoresDiasMora)),
+                                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                                borderColor: '#FF9F40',
+                                borderWidth: 1,
+                                borderRadius: 10,
+                                xAxisID: 'x-dias',
+                                barThickness: 25
+                            }
+                        ]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: { padding: { left: 10, right: 10 } },
+                        scales: {
+                            'x-monto': { 
+                                type: 'linear', position: 'bottom', beginAtZero: true, 
+                                grid: { color: gridColor },
+                                title: { display: true, text: 'Monto ($)', color: '#FF6384', font: { weight: 'bold' } },
+                                ticks: { color: labelColor }
+                            },
+                            'x-dias': { 
+                                type: 'linear', position: 'top', beginAtZero: true, 
+                                grid: { display: false },
+                                title: { display: true, text: 'Días de Mora', color: '#FF9F40', font: { weight: 'bold' } },
+                                ticks: { color: labelColor }
+                            },
+                            y: { 
+                                grid: { display: false }, 
+                                ticks: { color: labelColor, font: { weight: 'bold' } } 
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                position: 'bottom',
+                                labels: { color: labelColor, font: { weight: 'bold' } }
+                            },
+                            tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 12, cornerRadius: 10 }
+                        }
+                    }
+                });
+            };
+
+            // Renderizado inicial
+            renderCharts();
+
+            // Reactividad: Escuchar cuando el Layout cambie el tema
+            window.addEventListener('themeChanged', renderCharts);
         });
     </script>
 }

@@ -137,6 +137,8 @@
             html.setAttribute('data-bs-theme', theme);
             localStorage.setItem('theme', theme);
             themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+            // Disparar evento para que las gráficas y otros componentes se enteren
+            window.dispatchEvent(new Event('themeChanged'));
         }
 
         // --- GESTIÓN DE NOTIFICACIONES ---
