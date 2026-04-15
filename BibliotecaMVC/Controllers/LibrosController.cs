@@ -17,6 +17,11 @@ namespace BibliotecaMVC.Controllers
         private readonly BibliotecaContext _context;
         private readonly IWebHostEnvironment _env;
 
+        /// <summary>
+        /// Inicializa el controlador con los servicios de persistencia y entorno.
+        /// </summary>
+        /// <param name="context">Contexto de datos de la biblioteca.</param>
+        /// <param name="env">Entorno de host para acceso a archivos en el Vault.</param>
         public LibrosController(BibliotecaContext context, IWebHostEnvironment env)
         {
             _context = context;
@@ -24,8 +29,11 @@ namespace BibliotecaMVC.Controllers
         }
 
         /// <summary>
-        /// Muestra el catálogo de libros con soporte para búsqueda dinámica y marcado de favoritos.
+        /// Muestra el catálogo de libros con capacidades de búsqueda asíncrona y paginación rápida.
         /// </summary>
+        /// <param name="query">Cadena de búsqueda para filtrar por título, autor o ISBN.</param>
+        /// <param name="page">Número de página actual para la segmentación de resultados.</param>
+        /// <returns>Vista completa o PartialView si se solicita vía AJAX para la búsqueda en tiempo real.</returns>
         [Authorize]
         public async Task<IActionResult> Index(string? query, int page = 1)
         {
@@ -344,7 +352,7 @@ namespace BibliotecaMVC.Controllers
             if (!libro.Archivos.Any())
             {
                 TempData["Error"] = "Libro sin archivos digitales.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Libros");
             }
             ViewBag.LibroTitulo = libro.Titulo;
             return View(new Prestamo { LibroId = id });

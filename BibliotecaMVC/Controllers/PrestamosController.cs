@@ -50,6 +50,13 @@ public class PrestamosController : Controller
         }
     }
 
+    /// <summary>
+    /// Inicializa el controlador con los servicios de contexto, seguridad y mensajería.
+    /// </summary>
+    /// <param name="context">Contexto EF Core.</param>
+    /// <param name="userManager">Gestor de usuarios para validación de roles y estados.</param>
+    /// <param name="smsSender">Servicio de despacho de mensajes vía Twilio.</param>
+    /// <param name="env">Hosting Environment para acceso a recursos protegidos.</param>
     public PrestamosController(
         BibliotecaContext context,
         UserManager<ApplicationUser> userManager,
@@ -184,11 +191,12 @@ public class PrestamosController : Controller
     }
 
     /// <summary>
-    /// Ejecuta la transacción de préstamo digital.
-    /// Verifica: Usuario no bloqueado, sin multas pendientes, límite de 3 préstamos y libro disponible.
+    /// Transacción de solicitud de préstamo digital.
+    /// Valida: cuota de préstamos, morosidad previa, disponibilidad y límites de tiempo.
     /// </summary>
-    /// <param name="libroId">ID del libro.</param>
-    /// <param name="diasPrestamo">Días solicitados por el usuario (2-20).</param>
+    /// <param name="libroId">ID del libro solicitado.</param>
+    /// <param name="diasPrestamo">Rango de días seleccionado (2-20).</param>
+    /// <returns>Redirección al índice de préstamos en éxito o al catálogo con error detallado.</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Usuario")]
@@ -235,13 +243,13 @@ public class PrestamosController : Controller
         if (await _context.Prestamos.CountAsync(p => p.UsuarioId == usuarioId && p.FechaDevolucionReal == null) >= 3)
         {
             TempData["Error"] = "Límite de 3 préstamos activos alcanzado.";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Libros");
         }
 
         if (await _context.Prestamos.AnyAsync(p => p.UsuarioId == usuarioId && p.LibroId == libroId && p.FechaDevolucionReal == null))
         {
             TempData["Error"] = "Ya tienes este libro prestado.";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Libros");
         }
 
         var prestamo = new Prestamo

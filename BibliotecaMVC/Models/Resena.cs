@@ -6,6 +6,10 @@ namespace BibliotecaMVC.Models
     /// Representa una calificación y comentario realizado por un lector sobre un libro.
     /// Permite cuantificar la satisfacción del usuario mediante un sistema de 1 a 5 estrellas.
     /// </summary>
+    /// <summary>
+    /// Representa la opinión y calificación numérica de un usuario sobre un libro.
+    /// Ayuda a generar el rating promedio del catálogo.
+    /// </summary>
     public class Resena
     {
         public int Id { get; set; }

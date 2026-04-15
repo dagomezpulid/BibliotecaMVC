@@ -4,18 +4,12 @@ using System.ComponentModel.DataAnnotations;
 namespace BibliotecaMVC.Models
 {
     /// <summary>
-    /// Registro de una transacción económica para liquidar una multa.
-    /// Almacena información de auditoría del pago realizado.
+    /// Representa una transacción financiera de pago de multa.
+    /// Almacena datos para auditoría y validación del método de pago.
     /// </summary>
     public class Pago
     {
         public int Id { get; set; }
-
-        /// <summary>
-        /// ID del usuario que realizó el pago.
-        /// </summary>
-        public string UsuarioId { get; set; } = string.Empty;
-        public ApplicationUser? Usuario { get; set; }
 
         /// <summary>
         /// ID de la multa que se está liquidando.
@@ -24,12 +18,18 @@ namespace BibliotecaMVC.Models
         public Multa? Multa { get; set; }
 
         /// <summary>
-        /// Cantidad de dinero procesada en la transacción.
+        /// ID del usuario que realizó la transacción.
+        /// </summary>
+        public string? UsuarioId { get; set; }
+        public ApplicationUser? Usuario { get; set; }
+
+        /// <summary>
+        /// Cantidad exacta pagada en el momento de la transacción.
         /// </summary>
         public decimal Monto { get; set; }
 
         /// <summary>
-        /// Fecha y hora exacta del procesamiento del pago.
+        /// Timestamp exacto de la aprobación del pago.
         /// </summary>
         public DateTime FechaPago { get; set; } = DateTime.Now;
 
