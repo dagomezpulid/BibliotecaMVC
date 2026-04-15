@@ -8,8 +8,11 @@ namespace BibliotecaMVC.Models.ViewModels
     /// </summary>
     public class UserViewModel
     {
+        /// <summary>Identificador único de Identity del usuario.</summary>
         public string Id { get; set; } = string.Empty;
+        /// <summary>Nombre completo concatenado (Nombre + Apellido).</summary>
         public string NombreCompleto { get; set; } = string.Empty;
+        /// <summary>Correo electrónico de la cuenta del usuario.</summary>
         public string Email { get; set; } = string.Empty;
         
         /// <summary>

@@ -19,6 +19,11 @@ namespace BibliotecaMVC.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Página de bienvenida pública. Carga el catálogo completo con sus autores
+        /// para que los visitantes puedan explorar los títulos disponibles.
+        /// </summary>
+        /// <returns>Vista con la lista de libros e información de sus autores.</returns>
         public IActionResult Index()
         {
             var libros = _context.Libros

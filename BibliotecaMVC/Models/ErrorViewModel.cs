@@ -11,6 +11,9 @@ namespace BibliotecaMVC.Models
         /// </summary>
         public string? RequestId { get; set; }
 
+        /// <summary>
+        /// True si el RequestId tiene valor y por lo tanto es útil mostrarlo en la interfaz de error.
+        /// </summary>
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
     }
 }

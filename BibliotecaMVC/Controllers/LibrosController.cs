@@ -175,6 +175,9 @@ namespace BibliotecaMVC.Controllers
             return RedirectToAction(nameof(Details), new { id = LibroId });
         }
 
+        /// <summary>
+        /// Muestra el formulario de alta para un nuevo libro con los selectores de autor y categorías.
+        /// </summary>
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
@@ -260,6 +263,10 @@ namespace BibliotecaMVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Muestra el formulario de edición precargado con los datos actuales del libro.
+        /// </summary>
+        /// <param name="id">ID del libro a editar.</param>
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -277,6 +284,14 @@ namespace BibliotecaMVC.Controllers
             return View(libro);
         }
 
+        /// <summary>
+        /// Persiste los cambios de edición de un libro, incluyendo la gestión de archivos digitales.
+        /// Implementa control de concurrencia optimista mediante RowVersion para prevenir colisiones en el stock.
+        /// </summary>
+        /// <param name="id">ID del libro que se está actualizando.</param>
+        /// <param name="libro">Modelo con los datos actualizados (viene del formulario).</param>
+        /// <param name="CategoriasSeleccionadas">Array de IDs de las nuevas categorías seleccionadas.</param>
+        /// <param name="archivoLibro">Archivo digital opcional (PDF, EPUB, DOC, DOCX) para reemplazar el anterior.</param>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -380,11 +395,21 @@ namespace BibliotecaMVC.Controllers
             return View(libro);
         }
 
+        /// <summary>
+        /// Verifica si existe un libro con el ID dado. Usado internamente en el flujo de edición.
+        /// </summary>
+        /// <param name="id">ID del libro a comprobar.</param>
+        /// <returns>True si el libro existe en la base de datos.</returns>
         private bool LibroExists(int id)
         {
             return _context.Libros.Any(e => e.Id == id);
         }
 
+        /// <summary>
+        /// Muestra la vista de confirmación del préstamo para un libro específico.
+        /// Verifica que el libro exista y tenga stock antes de mostrar el formulario.
+        /// </summary>
+        /// <param name="id">ID del libro a prestar.</param>
         [Authorize]
         public IActionResult Prestar(int id)
         {

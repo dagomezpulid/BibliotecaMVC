@@ -12,6 +12,13 @@ namespace BibliotecaMVC.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<SmsBackgroundWorker> _logger;
 
+        /// <summary>
+        /// Inicializa el worker con el proveedor de servicios y el logger.
+        /// Se usa IServiceProvider (en vez de inyección directa) porque BackgroundService
+        /// tiene ciclo de vida Singleton y necesita crear scopes transitorios para acceder al contexto.
+        /// </summary>
+        /// <param name="serviceProvider">Fábrica de scopes de DI.</param>
+        /// <param name="logger">Logger para diagnóstico de la tarea en segundo plano.</param>
         public SmsBackgroundWorker(
             IServiceProvider serviceProvider,
             ILogger<SmsBackgroundWorker> logger)
@@ -20,6 +27,11 @@ namespace BibliotecaMVC.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Ciclo principal del worker. Se ejecuta de forma continua mientras la aplicación esté activa,
+        /// disparando el escaneo de mora cada 24 horas.
+        /// </summary>
+        /// <param name="stoppingToken">Token de cancelación que permite terminar el ciclo de limpiamente al apagar el servidor.</param>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("[CRON JOB EMPEZADO] Motor Automatico de SMS patrullando en 2do plano.");
@@ -42,6 +54,12 @@ namespace BibliotecaMVC.Services
             }
         }
 
+        /// <summary>
+        /// Escanea la base de datos buscando préstamos vencidos sin notificar
+        /// y envía un SMS de alerta urgente a cada usuario infractor.
+        /// Marca la bandera AlertaMoraEnviada para evitar mensajes repetidos.
+        /// </summary>
+        /// <param name="stoppingToken">Token para interrumpir la operación si el servidor se está apagando.</param>
         private async Task EnviarAlertasAutomaticas(CancellationToken stoppingToken)
         {
             try

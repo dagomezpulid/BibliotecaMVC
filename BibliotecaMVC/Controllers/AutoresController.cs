@@ -29,6 +29,9 @@ namespace BibliotecaMVC.Controllers
             return View(autores);
         }
 
+        /// <summary>
+        /// Muestra el formulario para registrar un nuevo autor.
+        /// </summary>
         public IActionResult Create()
         {
             return View();

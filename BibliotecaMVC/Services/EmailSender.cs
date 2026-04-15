@@ -13,11 +13,21 @@ namespace BibliotecaMVC.Services
     {
         private readonly IConfiguration _configuration;
 
+        /// <summary>
+        /// Inicializa el servicio de email inyectando la configuración de la aplicación.
+        /// </summary>
+        /// <param name="configuration">Acceso a appsettings y User Secrets (EmailSettings section).</param>
         public EmailSender(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Envía un correo electrónico usando el servidor SMTP configurado en appsettings/User Secrets.
+        /// </summary>
+        /// <param name="email">Dirección de destino.</param>
+        /// <param name="subject">Asunto del correo.</param>
+        /// <param name="htmlMessage">Cuerpo del correo en formato HTML.</param>
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             // Extraer las configuraciones secretas

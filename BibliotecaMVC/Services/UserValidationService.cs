@@ -5,9 +5,19 @@ using System.Threading.Tasks;
 
 namespace BibliotecaMVC.Services
 {
+    /// <summary>
+    /// Contrato para el servicio de validación de credenciales de usuario.
+    /// </summary>
     public interface IUserValidationService
     {
+        /// <summary>Verifica si el email ya está registrado en el sistema.</summary>
+        /// <param name="email">Correo electrónico a comprobar.</param>
+        /// <returns>Mensaje de error si existe, null si es válido.</returns>
         Task<string> CheckDuplicateEmailAsync(string email);
+
+        /// <summary>Verifica si el teléfono ya está en uso por otra cuenta.</summary>
+        /// <param name="phoneNumber">Número de teléfono a comprobar.</param>
+        /// <returns>Mensaje de error si existe, null si es válido.</returns>
         string CheckDuplicatePhone(string phoneNumber);
     }
 
@@ -24,6 +34,11 @@ namespace BibliotecaMVC.Services
             _userManager = userManager;
         }
 
+        /// <summary>
+        /// Verifica si el email ya está registrado en el sistema.
+        /// </summary>
+        /// <param name="email">Correo electrónico a verificar.</param>
+        /// <returns>Mensaje de error localizado si existe un duplicado, null si el email está disponible.</returns>
         public async Task<string> CheckDuplicateEmailAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return null;
@@ -36,6 +51,11 @@ namespace BibliotecaMVC.Services
             return null;
         }
 
+        /// <summary>
+        /// Verifica si el número de teléfono ya está en uso dentro del sistema.
+        /// </summary>
+        /// <param name="phoneNumber">Número de teléfono a verificar.</param>
+        /// <returns>Mensaje de error localizado si existe un duplicado, null si el teléfono está disponible.</returns>
         public string CheckDuplicatePhone(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber)) return null;

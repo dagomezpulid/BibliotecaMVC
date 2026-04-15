@@ -36,6 +36,13 @@ public class PrestamosController : Controller
         await _context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Envía una notificación SMS al usuario de forma fire-and-forget.
+    /// Solo se ejecuta si el usuario tiene número de teléfono registrado.
+    /// </summary>
+    /// <param name="usuario">Entidad del usuario receptor.</param>
+    /// <param name="prestamo">Préstamo al que refiere el mensaje.</param>
+    /// <param name="cuerpoPrincipal">Texto descriptivo del evento (ej: multa generada).</param>
     private void NotificarUsuarioSmsAsync(ApplicationUser usuario, Prestamo prestamo, string cuerpoPrincipal)
     {
         if (usuario != null && !string.IsNullOrEmpty(usuario.PhoneNumber))
@@ -48,6 +55,13 @@ public class PrestamosController : Controller
         }
     }
 
+    /// <summary>
+    /// Inicializa el controlador con todos los servicios requeridos.
+    /// </summary>
+    /// <param name="context">Contexto de datos de Entity Framework.</param>
+    /// <param name="userManager">Gestor de identidades de ASP.NET Core Identity.</param>
+    /// <param name="smsSender">Servicio de mensajería SMS (Twilio).</param>
+    /// <param name="env">Entorno de ejecución para acceso al sistema de archivos.</param>
     public PrestamosController(
         BibliotecaContext context,
         UserManager<ApplicationUser> userManager,
@@ -60,6 +74,10 @@ public class PrestamosController : Controller
         _env = env;
     }
 
+    /// <summary>
+    /// Método auxiliar reutilizable: construye una consulta de préstamos con Libro, Usuario y Multa cargados.
+    /// </summary>
+    /// <returns>IQueryable preconfigurado con las relaciones necesarias.</returns>
     private IQueryable<Prestamo> ObtenerPrestamosDetallados()
     {
         return _context.Prestamos
@@ -68,6 +86,10 @@ public class PrestamosController : Controller
             .Include(p => p.Multa);
     }
 
+    /// <summary>
+    /// Lista los préstamos activos del usuario autenticado (sin fecha de devolución real).
+    /// </summary>
+    /// <returns>Vista con préstamos en curso del usuario actual.</returns>
     // Préstamos activos
     public IActionResult Index()
     {
@@ -80,6 +102,11 @@ public class PrestamosController : Controller
         return View(prestamos);
     }
 
+    /// <summary>
+    /// Muestra el historial completo de préstamos (activos y devueltos) del usuario.
+    /// Ordenados de más reciente a más antiguo.
+    /// </summary>
+    /// <returns>Vista con el historial de préstamos del usuario autenticado.</returns>
     // Historial
     public IActionResult Historial()
     {
@@ -167,6 +194,10 @@ public class PrestamosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Muestra la vista de confirmación del préstamo con todos los detalles del libro seleccionado.
+    /// </summary>
+    /// <param name="id">ID del libro a rentar.</param>
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> ConfirmarPrestamo(int id)
     {
@@ -287,6 +318,11 @@ public class PrestamosController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Vista administrativa: Retorna todos los préstamos del sistema sin importar el usuario,
+    /// ordenados por fecha de creación descendente.
+    /// </summary>
+    /// <returns>Vista con la lista global de préstamos para supervisión del admin.</returns>
     // Vista admin
     [Authorize(Roles = "Admin")]
     public IActionResult Todos()

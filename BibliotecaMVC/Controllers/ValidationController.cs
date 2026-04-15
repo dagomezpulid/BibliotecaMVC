@@ -17,6 +17,10 @@ namespace BibliotecaMVC.Controllers
     {
         private readonly IUserValidationService _validationService;
 
+        /// <summary>
+        /// Inicializa el controlador inyectando el servicio de validaciones de usuario.
+        /// </summary>
+        /// <param name="validationService">Servicio que verifica unicidad de email y teléfono.</param>
         public ValidationController(IUserValidationService validationService)
         {
             _validationService = validationService;
@@ -41,6 +45,11 @@ namespace BibliotecaMVC.Controllers
             return error != null ? Json(error) : Json(true);
         }
 
+        /// <summary>
+        /// Valida si un número de teléfono ya está en uso por otra cuenta.
+        /// </summary>
+        /// <param name="phoneNumber">Número de teléfono a verificar.</param>
+        /// <returns>JSON con el mensaje de error o true si es válido.</returns>
         [AcceptVerbs("GET", "POST")]
         [Route("VerifyPhone")]
         public IActionResult VerifyPhone([FromQuery(Name = "Input.PhoneNumber")] string phoneNumber)

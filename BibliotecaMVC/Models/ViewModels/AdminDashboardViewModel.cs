@@ -8,10 +8,15 @@ namespace BibliotecaMVC.Models.ViewModels
     /// </summary>
     public class AdminDashboardViewModel
     {
+        /// <summary>Número total de usuarios registrados en el sistema.</summary>
         public int TotalUsuarios { get; set; }
+        /// <summary>Número total de libros catalogados.</summary>
         public int TotalLibros { get; set; }
+        /// <summary>Número total de autores registrados.</summary>
         public int TotalAutores { get; set; }
+        /// <summary>Cantidad de préstamos activos en este momento.</summary>
         public int PrestamosActivos { get; set; }
+        /// <summary>Suma de los montos de todas las multas sin pagar a nivel global.</summary>
         public decimal TotalMultasPendientes { get; set; }
 
         /// <summary>

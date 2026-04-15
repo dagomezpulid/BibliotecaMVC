@@ -47,6 +47,11 @@ public class MultasController : Controller
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// Método privado reutilizable: carga una multa con sus relaciones de préstamo y libro.
+    /// </summary>
+    /// <param name="multaId">ID de la multa a recuperar.</param>
+    /// <returns>Entidad Multa con relaciones cargadas o null si no existe.</returns>
     private async Task<Multa> ObtenerMultaDetalladaAsync(int multaId)
     {
         return await _context.Multas
@@ -74,6 +79,11 @@ public class MultasController : Controller
         return View(multas);
     }
 
+    /// <summary>
+    /// Muestra el resumen de la multa y el formulario de pago seguro para el usuario.
+    /// Verifica que la multa pertenezca al usuario antes de mostrarse.
+    /// </summary>
+    /// <param name="id">ID de la multa a pagar.</param>
     [Authorize(Roles = "Usuario")]
     public async Task<IActionResult> Checkout(int id)
     {
@@ -144,6 +154,10 @@ public class MultasController : Controller
         return RedirectToAction(nameof(MisMultas));
     }
 
+    /// <summary>
+    /// Vista administrativa: Lista todas las multas del sistema con su estado y usuarios asociados.
+    /// </summary>
+    /// <returns>Vista con el histórico de multas para gestión administrativa.</returns>
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Index()
     {
@@ -158,6 +172,11 @@ public class MultasController : Controller
         return View(multas);
     }
 
+    /// <summary>
+    /// Permite al administrador marcar manualmente una multa como pagada.
+    /// Útil para conciliaciones en efectivo o correcciones manuales.
+    /// </summary>
+    /// <param name="id">ID de la multa a marcar como pagada.</param>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     [ValidateAntiForgeryToken]

@@ -7,12 +7,21 @@ using System.Security.Claims;
 
 namespace BibliotecaMVC.Controllers
 {
+    /// <summary>
+    /// Gestiona el sistema de alertas internas de la plataforma.
+    /// Permite obtener, contabilizar y marcar notificaciones del usuario autenticado.
+    /// </summary>
     [Authorize]
     public class NotificacionesController : Controller
     {
         private readonly BibliotecaContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
+        /// <summary>
+        /// Inicializa el controlador con el contexto de datos y el gestor de usuarios.
+        /// </summary>
+        /// <param name="context">Contexto de datos de la biblioteca.</param>
+        /// <param name="userManager">Gestor de identidades de ASP.NET Core Identity.</param>
         public NotificacionesController(BibliotecaContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;

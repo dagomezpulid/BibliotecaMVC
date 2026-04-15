@@ -144,6 +144,10 @@ public class AdminController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Revoca el rol de Administrador a un usuario existente.
+    /// </summary>
+    /// <param name="id">ID de Identity del usuario al que se le retira el privilegio.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> QuitarAdmin(string id)

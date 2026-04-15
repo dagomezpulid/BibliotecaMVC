@@ -13,16 +13,31 @@ namespace BibliotecaMVC.Models
     {
         public int Id { get; set; }
 
+        /// <summary>
+        /// ID del libro que fue rentado (Relación N:1).
+        /// </summary>
         public int LibroId { get; set; }
         public Libro? Libro { get; set; }
 
+        /// <summary>
+        /// ID del usuario que realizó el préstamo.
+        /// </summary>
         public string? UsuarioId { get; set; }
         public ApplicationUser? Usuario { get; set; }
 
+        /// <summary>
+        /// Fecha en que se creó el préstamo.
+        /// </summary>
         public DateTime FechaPrestamo { get; set; } = DateTime.Now;
 
+        /// <summary>
+        /// Fecha límite pactada para la devolución del libro.
+        /// </summary>
         public DateTime FechaDevolucionProgramada { get; set; }
 
+        /// <summary>
+        /// Fecha real de la devolución. Es null mientras el préstamo esté activo.
+        /// </summary>
         public DateTime? FechaDevolucionReal { get; set; }
 
         /// <summary>
@@ -45,6 +60,11 @@ namespace BibliotecaMVC.Models
         /// </summary>
         public bool EstaVencido => FechaDevolucionReal == null && DateTime.Now > FechaDevolucionProgramada;
         
+        /// <summary>
+        /// Número de días de retraso en la devolución.
+        /// Calcula la diferencia entre la fecha de devolución programada y la real (o la fecha actual si aún no se devuelve).
+        /// Retorna 0 si no hay mora.
+        /// </summary>
         public int DiasMora 
         {
             get 
