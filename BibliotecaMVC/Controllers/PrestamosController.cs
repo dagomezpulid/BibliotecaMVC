@@ -66,7 +66,7 @@ public class PrestamosController : Controller
     {
         return _context.Prestamos
             .Include(p => p.Libro)
-                .ThenInclude(l => l.Archivos)
+                .ThenInclude(l => l!.Archivos)
             .Include(p => p.Usuario)
             .Include(p => p.Multa);
     }
@@ -126,16 +126,19 @@ public class PrestamosController : Controller
 
         if (prestamo.DiasMora > 0)
         {
-            var usuarioInfractor = await _userManager.FindByIdAsync(usuarioId);
+            var usuarioInfractor = await _userManager.FindByIdAsync(usuarioId ?? "");
+            decimal totalMulta = prestamo.DiasMora * 1000;
+
             if (usuarioInfractor != null)
             {
                 usuarioInfractor.BloqueadoParaPrestamos = true;
                 await _userManager.UpdateAsync(usuarioInfractor);
+                
+                NotificarUsuarioSmsAsync(usuarioInfractor, prestamo, $"Tu préstamo fue devuelto tarde. Multa: ${totalMulta}. Cuenta bloqueada.");
+                await CrearNotificacionAsync(usuarioInfractor.Id, "⚠️ Multa Generada", $"Se ha generado una multa de ${totalMulta} por retraso.", "warning");
+                
                 TempData["Error"] = "Has devuelto el libro con retraso. Tu cuenta ha sido SUSPENDIDA temporalmente.";
             }
-
-            decimal valorPorDia = 1000;
-            decimal totalMulta = prestamo.DiasMora * valorPorDia;
 
             var multa = new Multa
             {
@@ -146,8 +149,6 @@ public class PrestamosController : Controller
             };
 
             _context.Multas.Add(multa);
-            NotificarUsuarioSmsAsync(usuarioInfractor, prestamo, $"Tu préstamo fue devuelto tarde. Multa: ${totalMulta}. Cuenta bloqueada.");
-            await CrearNotificacionAsync(usuarioId, "⚠️ Multa Generada", $"Se ha generado una multa de ${totalMulta} por retraso.", "warning");
         }
 
         // Ya no existe préstamo.Libro.Stock++
@@ -194,6 +195,8 @@ public class PrestamosController : Controller
     public async Task<IActionResult> Prestar(int libroId, int diasPrestamo)
     {
         var usuarioId = _userManager.GetUserId(User);
+        if (string.IsNullOrEmpty(usuarioId)) return Unauthorized();
+
         var usuarioDB = await _userManager.FindByIdAsync(usuarioId);
         
         if (usuarioDB != null && usuarioDB.BloqueadoParaPrestamos)
@@ -220,7 +223,8 @@ public class PrestamosController : Controller
 
         var tieneMultaPendiente = await _context.Multas
             .Include(m => m.Prestamo)
-            .AnyAsync(m => m.Prestamo.UsuarioId == usuarioId && !m.Pagada);
+            .ThenInclude(p => p!.Libro)
+            .AnyAsync(m => m.Prestamo != null && m.Prestamo.UsuarioId == usuarioId && !m.Pagada);
 
         if (tieneMultaPendiente)
         {
@@ -253,8 +257,11 @@ public class PrestamosController : Controller
         await _context.SaveChangesAsync();
 
         string fechaLim = prestamo.FechaDevolucionProgramada.ToShortDateString();
-        NotificarUsuarioSmsAsync(usuarioDB, prestamo, $"Préstamo exitoso. Límite: {fechaLim}.");
-        await CrearNotificacionAsync(usuarioId, "📖 Préstamo Confirmado", $"Has alquilado '{libro.Titulo}'.", "success");
+        if (usuarioDB != null)
+        {
+            NotificarUsuarioSmsAsync(usuarioDB, prestamo, $"Préstamo exitoso. Límite: {fechaLim}.");
+            await CrearNotificacionAsync(usuarioDB.Id, "📖 Préstamo Confirmado", $"Has alquilado '{libro.Titulo}'.", "success");
+        }
 
         TempData["Success"] = "Préstamo realizado correctamente.";
         return RedirectToAction(nameof(Index));
@@ -291,7 +298,7 @@ public class PrestamosController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        if (!prestamo.Libro.Archivos.Any())
+        if (prestamo.Libro?.Archivos == null || !prestamo.Libro.Archivos.Any())
         {
             TempData["Error"] = "No hay archivos digitales.";
             return RedirectToAction(nameof(Index));
@@ -314,7 +321,7 @@ public class PrestamosController : Controller
             .ThenInclude(l => l.Archivos)
             .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId && p.Estado == "Activo" && p.FechaDevolucionReal == null);
 
-        if (prestamo == null || !prestamo.Libro.Archivos.Any()) return Forbid();
+        if (prestamo == null || prestamo.Libro?.Archivos == null || !prestamo.Libro.Archivos.Any()) return Forbid();
 
         // Por ahora descargamos el primer archivo disponible (Modelo simple)
         var archivo = prestamo.Libro.Archivos.First();
@@ -344,7 +351,7 @@ public class PrestamosController : Controller
             .ThenInclude(l => l.Archivos)
             .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId && p.Estado == "Activo" && p.FechaDevolucionReal == null);
 
-        if (prestamo == null || !prestamo.Libro.Archivos.Any()) return Forbid();
+        if (prestamo == null || prestamo.Libro?.Archivos == null || !prestamo.Libro.Archivos.Any()) return Forbid();
 
         var archivo = prestamo.Libro.Archivos.First();
         var vaultFolder = Path.Combine(_env.ContentRootPath, "BibliotecaLibros_Vault");

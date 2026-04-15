@@ -36,7 +36,7 @@ public class AdminController : Controller
 
         // N+1 SOLVED: Cargar todos los préstamos activos globalmente
         var prestamosActivosAll = await _context.Prestamos
-            .Where(p => p.FechaDevolucionReal == null && usuariosIds.Contains(p.UsuarioId))
+            .Where(p => p.FechaDevolucionReal == null && p.UsuarioId != null && usuariosIds.Contains(p.UsuarioId))
             .ToListAsync();
 
         // 2. Preparar el listado visual
@@ -49,7 +49,7 @@ public class AdminController : Controller
             {
                 Id = user.Id,
                 NombreCompleto = user.NombreCompleto,
-                Email = user.Email,
+                Email = user.Email ?? "Sin Email",
                 Roles = roles.ToList(),
                 EstaBloqueado = user.BloqueadoParaPrestamos
             });
@@ -60,13 +60,13 @@ public class AdminController : Controller
         // A. Usuarios con más mora histórica (Top 5)
         var morososData = await _context.Multas
             .Include(m => m.Prestamo)
-                .ThenInclude(p => p.Usuario)
-            .GroupBy(m => new { m.Prestamo.UsuarioId, m.Prestamo.Usuario.Nombre, m.Prestamo.Usuario.Apellido })
+                .ThenInclude(p => p!.Usuario)
+            .GroupBy(m => new { m.Prestamo!.UsuarioId, m.Prestamo.Usuario!.Nombre, m.Prestamo.Usuario!.Apellido })
             .Select(g => new {
                 Nombre = g.Key.Nombre + " " + g.Key.Apellido,
                 TotalMora = g.Sum(m => m.Monto),
                 // Calculamos los días de mora totales sumando la diferencia de días entre lo programado y lo real (o ahora)
-                TotalDias = g.Sum(m => EF.Functions.DateDiffDay(m.Prestamo.FechaDevolucionProgramada, m.Prestamo.FechaDevolucionReal ?? DateTime.Now))
+                TotalDias = g.Sum(m => EF.Functions.DateDiffDay(m.Prestamo!.FechaDevolucionProgramada, m.Prestamo.FechaDevolucionReal ?? DateTime.Now))
             })
             .OrderByDescending(x => x.TotalMora)
             .Take(5)
@@ -75,7 +75,7 @@ public class AdminController : Controller
         // B. Libros más prestados (Top 5)
         var librosPopularesData = await _context.Prestamos
             .Include(p => p.Libro)
-            .GroupBy(p => p.Libro.Titulo)
+            .GroupBy(p => p.Libro!.Titulo)
             .Select(g => new {
                 Titulo = g.Key,
                 Cantidad = g.Count()
@@ -207,7 +207,7 @@ public class AdminController : Controller
         // Protección dinámica: Evita eliminar al administrador principal configurado en appsettings/Secrets
         // Esto previene que se bloquee el acceso raíz al sistema.
         string masterAdminEmail = _configuration["AdminSettings:Email"] ?? "dgomezpulid@outlook.com";
-        if (usuario.Email == masterAdminEmail)
+        if (usuario.Email != null && usuario.Email.Equals(masterAdminEmail, StringComparison.OrdinalIgnoreCase))
         {
             TempData["Error"] = "No se puede eliminar el administrador principal configurado en el sistema.";
             return RedirectToAction(nameof(Index));

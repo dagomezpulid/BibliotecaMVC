@@ -137,9 +137,9 @@
                                     }
                                 </div>
                                 <span class="fw-bold fs-5">@Model.RatingPromedio</span>
-                                <span class="text-muted ms-2">(@Model.Resenas.Count reseñas)</span>
+                                <span class="text-muted ms-2">(@(Model.Resenas?.Count ?? 0) reseñas)</span>
                             </div>
-                            <p class="fs-4 text-muted">por <span class="text-dark fw-semibold">@(Model.Autor?.Nombre)</span></p>
+                            <p class="fs-4 text-muted">por <span class="text-dark fw-semibold">@(Model.Autor?.Nombre ?? "Autor Desconocido")</span></p>
                         </div>
                         <div class="text-end">
                             @if (Model.Archivos != null && Model.Archivos.Any())
@@ -203,7 +203,7 @@
                         @if (!User.IsInRole("Admin"))
                         {
                             <a asp-controller="Prestamos" asp-action="ConfirmarPrestamo" asp-route-id="@Model.Id" 
-                               class="btn btn-primary btn-lg rounded-pill px-5 shadow @(!Model.Archivos.Any() ? "disabled" : "")">
+                               class="btn btn-primary btn-lg rounded-pill px-5 shadow @((Model.Archivos == null || !Model.Archivos.Any()) ? "disabled" : "")">
                                 Solicitar Préstamo
                             </a>
                         }

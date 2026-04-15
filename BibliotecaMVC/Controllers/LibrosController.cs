@@ -41,10 +41,10 @@ namespace BibliotecaMVC.Controllers
             {
                 var lowerQuery = query.ToLower();
                 librosQuery = librosQuery.Where(l => 
-                    l.Titulo.ToLower().Contains(lowerQuery) || 
-                    l.Autor.Nombre.ToLower().Contains(lowerQuery) ||
+                    (l.Titulo != null && l.Titulo.ToLower().Contains(lowerQuery)) || 
+                    (l.Autor != null && l.Autor.Nombre.ToLower().Contains(lowerQuery)) ||
                     l.Categorias.Any(c => c.Nombre.ToLower().Contains(lowerQuery)) ||
-                    l.ISBN.Contains(lowerQuery)
+                    (l.ISBN != null && l.ISBN.Contains(lowerQuery))
                 );
             }
 

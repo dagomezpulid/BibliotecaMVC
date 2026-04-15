@@ -5,61 +5,55 @@
     
     var primerArchivo = Model.Archivos?.FirstOrDefault();
     var isPdf = primerArchivo?.Formato?.EndsWith("pdf", StringComparison.OrdinalIgnoreCase) ?? false;
-    // Extraer el PrestamoId de la URL
     var prestamoId = ViewContext.RouteData.Values["id"];
 }
 
-<div class="container-fluid py-4 min-vh-100 d-flex flex-column">
+<!-- Contenedor inmersivo fijado al viewport para evitar desplazamientos por el Layout -->
+<div id="immersive-reader" class="d-flex flex-column bg-dark">
     
-    <!-- Barra Superior de Navegación del Visor -->
-    <div class="d-flex justify-content-between align-items-center bg-dark text-white p-3 rounded-top-3 shadow">
+    <!-- Barra Superior de Navegación Estilizada -->
+    <div class="d-flex justify-content-between align-items-center bg-dark text-white p-2 px-3 border-bottom border-secondary shadow-lg" style="height: 65px; z-index: 1100;">
         <div class="d-flex align-items-center">
-            <a asp-controller="Prestamos" asp-action="Index" class="btn btn-outline-light me-3 border-0">
+            <a asp-controller="Prestamos" asp-action="Index" class="btn btn-info btn-sm fw-bold px-3 py-2 rounded-pill shadow-sm me-3">
                 <i class="bi bi-arrow-left"></i> Volver a Mis Préstamos
             </a>
-            <h5 class="mb-0 fw-bold border-start ps-3 py-1 border-secondary">
+            <h5 class="mb-0 fw-bold border-start ps-3 py-1 border-secondary d-none d-md-block">
                 <i class="bi bi-book me-2 text-warning"></i>@Model.Titulo
             </h5>
         </div>
         
-        <div>
-            <a asp-action="DescargarLibro" asp-route-id="@prestamoId" class="btn btn-warning shadow-sm fw-bold px-4 rounded-pill">
+        <div class="d-flex align-items-center">
+            <span class="badge bg-secondary me-3 d-none d-lg-inline-block">Modo Lectura Activo</span>
+            <a asp-action="DescargarLibro" asp-route-id="@prestamoId" class="btn btn-warning btn-sm shadow-sm fw-bold px-4 rounded-pill">
                 <i class="bi bi-download me-2"></i>Descargar Copia
             </a>
         </div>
     </div>
 
-    <!-- Contenedor Principal del Lector -->
-    <div class="bg-light flex-grow-1 p-0 m-0 rounded-bottom-3 shadow d-flex align-items-stretch" style="min-height: 80vh;">
-        
+    <!-- Area del Lector -->
+    <div class="flex-grow-1 bg-secondary position-relative w-100" style="height: calc(100vh - 65px);">
         @if (isPdf)
         {
-            <!-- Visor de PDF Nativo via DRM Stream -->
             <iframe src="/Prestamos/ArchivoLectura/@prestamoId#toolbar=0" 
                     title="Visor de PDF de @Model.Titulo"
-                    class="w-100 border-0 rounded-bottom-3" 
-                    style="min-height: 80vh; height: 100%; display: block;"
+                    class="w-100 h-100 border-0" 
+                    style="display: block; background-color: #525659;"
                     allowfullscreen>
             </iframe>
         }
         else
         {
-            <!-- Formatos No Soportados en Pantalla (Word/EPUB) -->
-            <div class="w-100 d-flex flex-column justify-content-center align-items-center text-center p-5">
-                <div class="bg-white p-5 rounded-4 shadow-sm border" style="max-width: 600px;">
-                    <span class="display-1 text-primary opacity-75 mb-4 d-block">
-                        <i class="bi bi-file-earmark-text"></i>
+            <div class="w-100 h-100 d-flex flex-column justify-content-center align-items-center text-center p-3">
+                <div class="bg-white p-5 rounded-4 shadow-lg border" style="max-width: 600px;">
+                    <span class="display-3 text-info opacity-75 mb-4 d-block">
+                        <i class="bi bi-cloud-arrow-down"></i>
                     </span>
-                    <h3 class="fw-bold text-dark">Lector no nativo requerido</h3>
-                    <p class="text-muted fs-5 mt-3 mb-4">
-                        El libro digital de "<strong>@Model.Titulo</strong>" se encuentra en un formato que tu navegador no puede reproducir directamente en pantalla (Ej. Word o EPUB).
+                    <h3 class="fw-bold text-dark">Formato Externo Detectado</h3>
+                    <p class="text-muted fs-6 mt-3 mb-4">
+                        El libro "<strong>@Model.Titulo</strong>" requiere una aplicación externa.
                     </p>
-                    <p class="text-secondary small mb-4">
-                        Pero no te preocupes, puedes descargar el archivo íntegro y leerlo usando la aplicación correspondiente en tu dispositivo. Tu licencia sigue activa.
-                    </p>
-                    
                     <a asp-action="DescargarLibro" asp-route-id="@prestamoId" class="btn btn-primary btn-lg fw-bold px-5 py-3 rounded-pill shadow">
-                        <i class="bi bi-cloud-download me-2"></i>Descargar para Leer Offline
+                        <i class="bi bi-download me-2"></i>Descargar para Leer
                     </a>
                 </div>
             </div>
@@ -68,15 +62,35 @@
 </div>
 
 <style>
-    /* Ocultar el layout principal si queremos una experiencia inmersiva */
+    /* Forzar el contenedor a ignorar el padding/margin del layout base */
+    #immersive-reader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1050; /* Por encima de la navbar estándar */
+    }
+
+    /* Ocultar elementos globales */
     header, footer {
         display: none !important;
     }
-    main {
-        padding: 0 !important;
-        margin: 0 !important;
-    }
+
     body {
-        background-color: #f8f9fa;
+        overflow: hidden !important;
+        background-color: #000 !important;
+    }
+
+    /* Animación suave para el botón info */
+    .btn-info {
+        background-color: #0dcaf0;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .btn-info:hover {
+        background-color: #0baccc;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(13, 202, 240, 0.4);
     }
 </style>

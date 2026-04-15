@@ -30,7 +30,7 @@
                 @foreach (var m in Model)
                 {
                     <tr>
-                        <td class="fw-semibold text-dark">@m.Prestamo.Libro.Titulo</td>
+                        <td class="fw-semibold text-dark">@(m.Prestamo?.Libro?.Titulo ?? "Libro no especificado")</td>
                         <td class="text-muted text-center">@m.FechaGenerada.ToShortDateString()</td>
                         <td class="text-danger fw-bold text-center fs-5">$@m.Monto.ToString("N0")</td>
 

@@ -14,7 +14,7 @@ namespace BibliotecaMVC.Models
         /// Identificador del préstamo que originó la multa.
         /// </summary>
         public int PrestamoId { get; set; }
-        public Prestamo Prestamo { get; set; }
+        public Prestamo? Prestamo { get; set; }
 
         /// <summary>
         /// Cantidad total a pagar calculada en base a los días de mora.

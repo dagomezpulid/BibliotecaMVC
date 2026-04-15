@@ -58,8 +58,8 @@
                         @if (!string.IsNullOrEmpty(Model.Descripcion))
                         {
                             <div class="mb-4">
-                                <h6 class="fw-bold text-dark text-uppercase small opacity-75 letter-spacing-1">Sinopsis</h6>
-                                <p class="text-muted small lh-lg" style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;">
+                                <h6 class="fw-bold text-dark text-uppercase small opacity-100 letter-spacing-1 border-start border-primary border-3 ps-2">Sinopsis</h6>
+                                <p class="text-dark opacity-100 lh-lg" style="display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; text-align: justify; font-size: 0.95rem;">
                                     @Model.Descripcion
                                 </p>
                             </div>
@@ -86,8 +86,10 @@
                                     <input type="number" id="diasPrestamo" name="diasPrestamo" class="form-control text-center fw-bold text-dark border-start-0" min="2" max="20" value="7" required />
                                     <span class="input-group-text bg-light text-muted fw-semibold">Días</span>
                                 </div>
-                                <div class="form-text mt-3 text-center text-secondary small">
-                                    <i class="bi bi-info-circle me-1"></i> Rango permitido: Entre 2 y 20 días. Pasado este tiempo, el acceso se revocará.
+                                <div class="form-text mt-3 text-center text-dark fw-semibold" style="font-size: 0.85rem;">
+                                    <i class="bi bi-info-circle-fill text-primary me-1"></i> 
+                                    <span class="border-bottom border-primary border-opacity-25 pb-1">Rango permitido: Entre 2 y 20 días.</span> 
+                                    <span class="d-block mt-1 text-muted small fw-normal">Pasado este tiempo, el acceso se revocará automáticamente.</span>
                                 </div>
                             </div>
                             

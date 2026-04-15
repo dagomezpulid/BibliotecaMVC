@@ -52,11 +52,11 @@ public class MultasController : Controller
     /// </summary>
     /// <param name="multaId">ID de la multa a recuperar.</param>
     /// <returns>Entidad Multa con relaciones cargadas o null si no existe.</returns>
-    private async Task<Multa> ObtenerMultaDetalladaAsync(int multaId)
+    private async Task<Multa?> ObtenerMultaDetalladaAsync(int multaId)
     {
         return await _context.Multas
             .Include(m => m.Prestamo)
-            .ThenInclude(p => p.Libro)
+            .ThenInclude(p => p!.Libro)
             .FirstOrDefaultAsync(m => m.Id == multaId);
     }
 
@@ -71,8 +71,8 @@ public class MultasController : Controller
 
         var multas = await _context.Multas
             .Include(m => m.Prestamo)
-            .ThenInclude(p => p.Libro)
-            .Where(m => m.Prestamo.UsuarioId == usuarioId)
+            .ThenInclude(p => p!.Libro)
+            .Where(m => m.Prestamo != null && m.Prestamo.UsuarioId == usuarioId)
             .OrderByDescending(m => m.FechaGenerada)
             .ToListAsync();
 
@@ -116,6 +116,8 @@ public class MultasController : Controller
             return BadRequest("La multa ya fue pagada o no existe.");
 
         var usuarioId = _userManager.GetUserId(User);
+        if (string.IsNullOrEmpty(usuarioId)) return Unauthorized();
+
         if (multa.Prestamo?.UsuarioId != usuarioId)
             return Forbid();
 
@@ -147,7 +149,7 @@ public class MultasController : Controller
         await _context.SaveChangesAsync();
 
         // 🔔 Notificación Interna
-        await CrearNotificacionAsync(usuarioId, "💰 Pago Aprobado", $"Tu pago de ${multa.Monto.ToString("N0")} ha sido procesado. La multa por el libro '{multa.Prestamo.Libro.Titulo}' ha sido saldada.", "success");
+        await CrearNotificacionAsync(usuarioId, "💰 Pago Aprobado", $"Tu pago de ${multa.Monto.ToString("N0")} ha sido procesado. La multa por el libro '{multa.Prestamo?.Libro?.Titulo ?? "Libro"}' ha sido saldada.", "success");
 
         TempData["Success"] = $"¡Pago de ${multa.Monto.ToString("N0")} aprobado exitosamente! Tu multa ha sido saldada.";
         

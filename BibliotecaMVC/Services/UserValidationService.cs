@@ -13,12 +13,12 @@ namespace BibliotecaMVC.Services
         /// <summary>Verifica si el email ya está registrado en el sistema.</summary>
         /// <param name="email">Correo electrónico a comprobar.</param>
         /// <returns>Mensaje de error si existe, null si es válido.</returns>
-        Task<string> CheckDuplicateEmailAsync(string email);
+        Task<string?> CheckDuplicateEmailAsync(string email);
 
         /// <summary>Verifica si el teléfono ya está en uso por otra cuenta.</summary>
         /// <param name="phoneNumber">Número de teléfono a comprobar.</param>
         /// <returns>Mensaje de error si existe, null si es válido.</returns>
-        string CheckDuplicatePhone(string phoneNumber);
+        string? CheckDuplicatePhone(string phoneNumber);
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ namespace BibliotecaMVC.Services
         /// </summary>
         /// <param name="email">Correo electrónico a verificar.</param>
         /// <returns>Mensaje de error localizado si existe un duplicado, null si el email está disponible.</returns>
-        public async Task<string> CheckDuplicateEmailAsync(string email)
+        public async Task<string?> CheckDuplicateEmailAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return null;
 
@@ -56,7 +56,7 @@ namespace BibliotecaMVC.Services
         /// </summary>
         /// <param name="phoneNumber">Número de teléfono a verificar.</param>
         /// <returns>Mensaje de error localizado si existe un duplicado, null si el teléfono está disponible.</returns>
-        public string CheckDuplicatePhone(string phoneNumber)
+        public string? CheckDuplicatePhone(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber)) return null;
 

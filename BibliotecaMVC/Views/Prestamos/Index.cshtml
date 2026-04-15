@@ -34,7 +34,7 @@
                     var diasRestantes = (p.FechaDevolucionProgramada - DateTime.Now).Days;
 
                     <tr>
-                        <td class="fw-semibold text-dark">@p.Libro.Titulo</td>
+                        <td class="fw-semibold text-dark">@(p.Libro?.Titulo ?? "Libro sin título")</td>
                         <td class="text-muted text-center">@p.FechaPrestamo.ToShortDateString()</td>
                         <td class="text-muted text-center fw-bold">@p.FechaDevolucionProgramada.ToShortDateString()</td>
                         
@@ -53,7 +53,7 @@
                             }
                         </td>
                         <td class="text-center d-flex justify-content-center gap-2">
-                            @if (p.Libro.Archivos != null && p.Libro.Archivos.Any())
+                            @if (p.Libro?.Archivos != null && p.Libro.Archivos.Any())
                             {
                                 <a asp-action="Leer" asp-route-id="@p.Id" class="btn btn-primary btn-sm shadow-sm" title="Leer / Descargar archivo">
                                     <i class="bi bi-book-half"></i> Leer
@@ -63,7 +63,7 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalDevolver"
                                     data-id="@p.Id"
-                                    data-libro="@p.Libro.Titulo">
+                                    data-libro="@(p.Libro?.Titulo ?? "Este libro")">
                                 🔄 Devolver
                             </button>
                         </td>

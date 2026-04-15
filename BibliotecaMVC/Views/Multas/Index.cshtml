@@ -33,8 +33,8 @@
                 @foreach (var m in Model)
                 {
                     <tr>
-                        <td class="fw-semibold text-dark">@m.Prestamo.Usuario.NombreCompleto</td>
-                        <td class="text-muted">@m.Prestamo.Libro.Titulo</td>
+                        <td class="fw-semibold text-dark">@(m.Prestamo?.Usuario?.NombreCompleto ?? "Usuario no identificado")</td>
+                        <td class="text-muted">@(m.Prestamo?.Libro?.Titulo ?? "Título no especificado")</td>
                         <td class="text-danger fw-bold text-center">$@m.Monto.ToString("N0")</td>
                         <td class="text-muted text-center">@m.FechaGenerada.ToShortDateString()</td>
 
