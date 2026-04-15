@@ -30,6 +30,11 @@
 *   **Centro de Alertas**: Un buzón de notificaciones en tiempo real (vía polling suave) que informa sobre multas generadas, préstamos confirmados y recordatorios del sistema.
 *   **Notificaciones Omnicanal**: Integración nativa con **Twilio SMS** para enviar alertas críticas directo al teléfono del usuario cuando se detecta morosidad.
 
+### 🛡️ 5. Ingeniería de Software y Seguridad
+*   **Documentación de Grado Industrial**: Todo el backend cuenta con una infraestructura completa de **XML Documentation (Summaries)**, asegurando que cada controlador, servicio y entidad esté debidamente documentada para su escalabilidad.
+*   **Auditoría de Seguridad (IDOR/CSRF)**: Implementación de validaciones estrictas de propiedad de datos en acciones transaccionales y protección endurecida contra ataques de falsificación de peticiones.
+*   **Integridad Relacional**: Lógica avanzada de borrado que valida la coexistencia de registros y migraciones a "usuarios fantasma" para preservar la integridad de las analíticas históricas.
+
 ---
 
 ## 🏛️ Arquitectura del Ecosistema
@@ -61,7 +66,8 @@ graph TD
 *   **Backend**: C# 12, ASP.NET Core 8.0+, Entity Framework Core.
 *   **Frontend**: Bootstrap 5 + CSS Custom Properties, JavaScript ES6 (Fetch/Async), Chart.js.
 *   **Cloud**: Twilio SMS API para notificaciones transaccionales.
-*   **Seguridad**: Identity con políticas de bloqueo y PhysicalFile Streaming para DRM.
+*   **Seguridad**: Identity con políticas de bloqueo, PhysicalFile Streaming para DRM y validaciones de IDOR multi-nivel.
+*   **Estándar**: Documentación XML Integral y Clean Code Architecture.
 
 ---
 
