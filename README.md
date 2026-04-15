@@ -1,129 +1,110 @@
-# 📚 BibliotecaMVC: Ecosistema de Gestión Bibliográfica Premium
+# 📚 BibliotecaMVC: Centro de Gestión Bibliográfica de Vanguardia
 
-[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download)
-[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-10.0-512BD4)](https://docs.microsoft.com/ef/)
+[![.NET 8.0](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download)
+[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-8.0-512BD4)](https://docs.microsoft.com/ef/)
+[![UI Design](https://img.shields.io/badge/UX-Premium%20Design-FF69B4)](file:///c:/Repos/BibliotecaMVC)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](file:///c:/Repos/BibliotecaMVC)
 
-**BibliotecaMVC** no es solo un gestor de préstamos; es un ecosistema de **Biblioteca 100% Digital** diseñado bajo estándares industriales de **Clean Code**, **Seguridad Ofensiva** y **Arquitectura Multi-formato**. Proporciona una solución integral para la gestión de activos virtuales, integrando mensajería omnicanal y un repositorio seguro de archivos (Vault).
+**BibliotecaMVC** es una plataforma de gestión bibliotecaria de alta gama que redefine la experiencia de préstamo digital. Diseñada bajo un estándar de **Estética Industrial**, integra analíticas avanzadas, un motor de lectura inteligente de última generación y una arquitectura de seguridad robusta para el manejo de activos digitales.
 
 ---
 
-## 🏛️ Arquitectura del Sistema
+## ✨ Características Premium
 
-El sistema utiliza una arquitectura **Model-View-Controller (MVC)** robusta, desacoplando la lógica de negocio del servidor de la presentación y los datos.
+### 🎨 1. Estética Industrial y UX Adaptativa
+*   **Diseño de Vanguardia**: Implementación de **Glassmorphism** (Efecto Cristal) en tarjetas de libros para una profundidad visual superior.
+*   **Modo Oscuro Dinámico**: Interfaz 100% armonizada. Los colores, sombras y componentes se adaptan orgánicamente a las preferencias del sistema.
+*   **Diferenciación de Interacción**: Jerarquía visual clara entre "Acciones" (botones sólidos, `rounded-3`) y "Estados" (badges de cápsula, traslúcidos), eliminando cualquier carga cognitiva para el usuario.
+
+### 📊 2. Inteligencia de Negocio y Analíticas
+*   **Insights en Tiempo Real**: Dashboards administrativos potenciados por `Chart.js` con visualización adaptativa (textos y grillas inteligentes para modo oscuro).
+*   **Tendencias de Préstamos**: Análisis gráfico de la actividad mensual para la toma de decisiones basada en datos.
+*   **Control de Morosidad**: Monitorización visual de deudas y días de mora mediante gráficos de barras horizontales de alto impacto.
+*   **Curaduría de Contenido**: Gráficos circulares de los libros más populares para identificar los intereses de la comunidad.
+
+### 📖 3. Smart Reading Engine (Motor de Lectura)
+*   **Visor Inmersivo**: Experiencia de lectura fluida a pantalla completa diseñada para máxima concentración, eliminando distracciones de navegación global.
+*   **Persistencia de Progreso**: El sistema guarda automáticamente la página exacta donde te quedaste, permitiendo una continuidad total entre dispositivos.
+*   **Streaming de Activos**: Soporte multiformato (PDF, EPUB, DOCX) servido mediante streaming seguro desde un **Vault** protegido.
+
+### 🛡️ 4. Infraestructura de Seguridad Industrial
+*   **Protección Digital (Vault)**: Los archivos originales están aislados de la carpeta pública; solo usuarios con un préstamo activo y validado pueden leer o descargar.
+*   **Validación de Negocio**: Control estricto de límites de préstamo (Máx. 3), prevención de multas pendientes y bloqueos automáticos por morosidad.
+*   **Seguridad Ofensiva**: Blindaje contra ataques de **IDOR** y **CSRF**, junto con un sistema de Identity endurecido.
+
+---
+
+## 🏛️ Arquitectura del Ecosistema
 
 ```mermaid
 graph TD
     User((Usuario/Admin)) -->|HTTPS| WebServer[ASP.NET Core MVC Engine]
-    subgraph "Core Server"
+    subgraph "Core Business Logic"
         WebServer --> Controllers[Controllers]
         Controllers --> Services[Business Services]
         Services --> EF[Entity Framework Core]
-        EF --> DB[(SQL Server)]
+        EF --> DB[(SQL Server / LocalDB)]
     end
-    subgraph "External Integrations"
-        Services -->|SMTP| EmailService[Email Server]
-        Services -->|REST| Twilio[Twilio WhatsApp/SMS]
+    subgraph "Advanced Integrations"
+        Services -->|SMS/WhatsApp| Twilio[Twilio Messaging]
+        Services -->|Analytics| Charts[Chart.js Adaptive Engine]
     end
-    subgraph "Security & Assets"
-        Controllers -->|Access Control| Vault[Digital Vault /Vault/ - Multi-Archivo]
+    subgraph "Asset Management"
+        Controllers -->|Access Control| Vault[Digital Vault Infrastructure]
         WebServer -->|Auth| Identity[ASP.NET Identity Hardened]
     end
-    CronWorker[SmsBackgroundWorker] -->|IHostedService| Services
+    Worker[SmsBackgroundWorker] -->|IHostedService| Services
 ```
 
 ---
 
-## 🛠️ Stack Tecnológico de Ingeniería
-
-### **Core Backend**
-- **Framework**: .NET 10.0 con C# 12+.
-- **ORM**: Entity Framework Core 10 con **Fluent API** para relaciones complejas.
-- **Calidad de Software**: Código auditado exhaustivamente para **Null Safety** (C# Nullable Reference Types), reduciendo drásticamente riesgos de excepciones en producción.
-- **Documentación**: API 100% documentada mediante comentarios XML para soporte de IntelliSense avanzado.
-- **Arquitectura de Activos**: Relación 1:N entre el título original y sus representaciones digitales (`LibroArchivo`), permitiendo múltiples formatos por obra.
-
-### **Seguridad y DRM**
-- **Protocolo Identity**: Autenticación reforzada con política de **Lockout** (bloqueo tras 5 intentos fallidos).
-- **Vault System**: Los archivos (PDF, EPUB, Word) se almacenan en una infraestructura física fuera del directorio público. El acceso se gestiona mediante streaming seguro que valida los derechos de préstamo en tiempo real para prevenir descargas no autorizadas.
-- **Seguridad de Dependencias**: Auditoría y mitigación proactiva de vulnerabilidades NuGet (GHSA) mediante la promoción de dependencias transitivas a versiones seguras.
-
-### **Comunicación & Automatización**
-- **Omnicanalidad**: Despacho de notificaciones vía **WhatsApp Business API** (mediante Twilio) y **SMTP Transaccional**.
-- **Background Computing**: `SmsBackgroundWorker` patrulla la base de datos cada 24 horas para detectar morosidad de forma proactiva.
+## 🛠️ Stack Tecnológico
+*   **Backend**: C# 12, ASP.NET Core 8.0+, Entity Framework Core.
+*   **Frontend**: Bootstrap 5 (Custom Premium Utility), JavaScript ES6, CSS Variables (Dynamic Theme).
+*   **Analíticas**: Chart.js con configuraciones de contraste adaptativas.
+*   **Cloud & Mensajería**: Twilio SMS API para notificaciones transaccionales.
 
 ---
 
-## ✨ Características de Alto Nivel
+## 💻 Guía de Despliegue y Configuración
 
-### 1. 🛡️ Blindaje de Usuarios e Identidad
-- **Amnistía Administrativa**: Los administradores pueden desbloquear usuarios suspendidos tras conciliaciones manuales.
-- **Protección de Cuenta Raíz**: El sistema impide la eliminación del administrador principal configurado en los secretos del servidor.
-
-### 2. 📖 Motor Digital Evolucionado
-- **Modo Inmersivo (Full-Experience)**: Interfaz de lectura a pantalla completa (`100vw/100vh`) sin distracciones, diseñada para una experiencia de usuario de "grado estudio".
-- **Visor Multi-formato**: Renderizado nativo de PDF y streaming seguro de otros activos (EPUB, Word) con soporte de `Range Processing` para carga eficiente.
-- **Gestión de Versiones**: Un mismo libro puede tener múltiples archivos asociados, permitiendo diferentes ediciones o calidades en un solo registro.
-- **Búsqueda Segmentada**: Filtrado dinámico por ISBN, Autor o Categoría con paginación en servidor para escalabilidad masiva.
-
-### 3. 🔄 Ciclo de Licenciamiento Digital
-- **Préstamo de Acceso**: El usuario adquiere el derecho de lectura/descarga por un tiempo limitado. No hay límites de "stock" físico, permitiendo escalabilidad infinita.
-- **Flexibilidad de Duración**: El sistema permite al usuario configurar el rango del préstamo entre **2 y 20 días** según sus necesidades.
-- **Cálculo Automático de Mora**: Peritaje en tiempo real de los días de retraso y generación inmediata de multas financieras para incentivar la liberación de la licencia.
-- **Validación Multicapa**: Control de deudas pendientes y límites de préstamos activos (Máx. 3) antes de confirmar el acceso.
-
----
-
-## 💻 Guía de Despliegue Técnico
-
-### 1. Configuración de Secretos (Indispensable)
-El proyecto utiliza **Secret Management** para proteger credenciales. Ejecute estos comandos en su terminal de desarrollo:
+### 1. Gestión de Secretos
+El sistema protege tus credenciales críticas mediante `dotnet user-secrets`. Configura tus llaves antes de iniciar:
 
 ```powershell
-# Iniciar gestión de secretos
+# Iniciar gestión de secretos en el proyecto
 dotnet user-secrets init
 
-# Configuración de Identidad Administrativa
-dotnet user-secrets set "AdminSettings:Email" "tu_admin@ejemplo.com"
-dotnet user-secrets set "AdminSettings:Password" "PasswordMuyFuerte123!"
+# Configuración Administrativa
+dotnet user-secrets set "AdminSettings:Email" "admin@bibliotecamvc.com"
+dotnet user-secrets set "AdminSettings:Password" "TuPasswordSeguro123!"
 
-# Configuración Twilio (WhatsApp/SMS)
-dotnet user-secrets set "TwilioSettings:AccountSid" "ACXXXXXXXXXXXXX"
-dotnet user-secrets set "TwilioSettings:AuthToken" "tu_auth_token"
+# Configuración Twilio (SMS/Notificaciones)
+dotnet user-secrets set "TwilioSettings:AccountSid" "ACXXXXXXXXXX"
+dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token_aqui"
 dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+123456789"
-
-# Configuración SMTP (Email)
-dotnet user-secrets set "EmailSettings:Username" "tu_smtp_user"
-dotnet user-secrets set "EmailSettings:Password" "tu_smtp_password"
 ```
 
-### 2. Inicialización de Datos
+### 2. Inicialización del Ecosistema
 ```powershell
-# Aplicar Migraciones de EF Core y Seeding de Categorías
+# Actualizar base de datos con migraciones de EF
 dotnet ef database update
 
-# Ejecutar Proyecto
+# Ejecutar el servidor de desarrollo
 dotnet run
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
-
-```text
-BibliotecaMVC/
-├── Areas/Identity        # Personalización de ASP.NET Core Identity
-├── Controllers/          # Lógica de flujo (Admin, Prestamos, Multas, etc.)
-├── Models/               # Entidades de Dominio y ViewModels optimizados
-├── Services/             # Lógica de Negocio (Twilio, Email, Workers)
-├── ViewComponents/       # Componentes de UI desacoplados (e.g., Alerta de Multas)
-├── Views/                # Vistas Razor con diseño responsivo premium
-└── wwwroot/              # Activos estáticos (CSS, JS, Imágenes)
-```
+## 📁 Estructura de la Solución
+*   **Controllers/**: Orquestación de flujos (Préstamos, Admin, Multas).
+*   **Services/**: Lógica de pesada y servicios externos (SMS, Lectura).
+*   **ViewComponents/**: Widgets de UI reutilizables y reactivos.
+*   **BibliotecaLibros_Vault/**: Repositorio físico protegido de activos (fuera de wwwroot).
 
 ---
 
 > [!IMPORTANT]
-> **Nota sobre Seguridad**: Esta aplicación implementa protección contra ataques de **IDOR** (Insecure Direct Object Reference) en la gestión de libros y **CSRF** en todos los formularios transaccionales.
+> **Aviso de Cumplimiento**: Este software implementa validaciones de integridad de datos en cada capa para asegurar una experiencia de usuario robusta y sin excepciones imprevistas.
 
-*Desarrollado con pasión técnica por Daniel Gómez Pulido.*
+*Desarrollado con arquitectura premium y pasión tecnológica.*
