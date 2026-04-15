@@ -39,12 +39,14 @@ graph TD
 ### **Core Backend**
 - **Framework**: .NET 10.0 con C# 12+.
 - **ORM**: Entity Framework Core 10 con **Fluent API** para relaciones complejas.
-- **Base de Datos**: SQL Server (optimizado con índices y claves foráneas).
+- **Calidad de Software**: Código auditado exhaustivamente para **Null Safety** (C# Nullable Reference Types), reduciendo drásticamente riesgos de excepciones en producción.
+- **Documentación**: API 100% documentada mediante comentarios XML para soporte de IntelliSense avanzado.
 - **Arquitectura de Activos**: Relación 1:N entre el título original y sus representaciones digitales (`LibroArchivo`), permitiendo múltiples formatos por obra.
 
 ### **Seguridad y DRM**
 - **Protocolo Identity**: Autenticación reforzada con política de **Lockout** (bloqueo tras 5 intentos fallidos).
 - **Vault System**: Los archivos (PDF, EPUB, Word) se almacenan en una infraestructura física fuera del directorio público. El acceso se gestiona mediante streaming seguro que valida los derechos de préstamo en tiempo real para prevenir descargas no autorizadas.
+- **Seguridad de Dependencias**: Auditoría y mitigación proactiva de vulnerabilidades NuGet (GHSA) mediante la promoción de dependencias transitivas a versiones seguras.
 
 ### **Comunicación & Automatización**
 - **Omnicanalidad**: Despacho de notificaciones vía **WhatsApp Business API** (mediante Twilio) y **SMTP Transaccional**.
@@ -59,12 +61,14 @@ graph TD
 - **Protección de Cuenta Raíz**: El sistema impide la eliminación del administrador principal configurado en los secretos del servidor.
 
 ### 2. 📖 Motor Digital Evolucionado
-- **Visor Multi-formato**: Renderizado nativo de PDF y soporte para descarga controlada de otros activos (EPUB, Word) bajo licencia de préstamo.
+- **Modo Inmersivo (Full-Experience)**: Interfaz de lectura a pantalla completa (`100vw/100vh`) sin distracciones, diseñada para una experiencia de usuario de "grado estudio".
+- **Visor Multi-formato**: Renderizado nativo de PDF y streaming seguro de otros activos (EPUB, Word) con soporte de `Range Processing` para carga eficiente.
 - **Gestión de Versiones**: Un mismo libro puede tener múltiples archivos asociados, permitiendo diferentes ediciones o calidades en un solo registro.
 - **Búsqueda Segmentada**: Filtrado dinámico por ISBN, Autor o Categoría con paginación en servidor para escalabilidad masiva.
 
 ### 3. 🔄 Ciclo de Licenciamiento Digital
 - **Préstamo de Acceso**: El usuario adquiere el derecho de lectura/descarga por un tiempo limitado. No hay límites de "stock" físico, permitiendo escalabilidad infinita.
+- **Flexibilidad de Duración**: El sistema permite al usuario configurar el rango del préstamo entre **2 y 20 días** según sus necesidades.
 - **Cálculo Automático de Mora**: Peritaje en tiempo real de los días de retraso y generación inmediata de multas financieras para incentivar la liberación de la licencia.
 - **Validación Multicapa**: Control de deudas pendientes y límites de préstamos activos (Máx. 3) antes de confirmar el acceso.
 
