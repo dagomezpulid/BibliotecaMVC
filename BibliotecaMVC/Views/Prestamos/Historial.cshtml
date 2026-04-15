@@ -13,15 +13,15 @@
     </div>
 </div>
 
-<div class="table-responsive card p-3 rounded-4 shadow-sm border-0">
+<div class="table-responsive card p-2 rounded-4 shadow-sm border-0 bg-white">
     <table class="table table-hover align-middle mb-0">
-        <thead>
+        <thead class="bg-light">
             <tr>
-                <th class="border-0">Libro</th>
-                <th class="border-0">Fecha Préstamo</th>
-                <th class="border-0">Vencimiento</th>
-                <th class="border-0">Devolución Real</th>
-                <th class="border-0 text-center">Estado</th>
+                <th class="border-0 ps-3">Libro</th>
+                <th class="border-0 text-center">Prestado</th>
+                <th class="border-0 text-center">Límite</th>
+                <th class="border-0 text-center">Devolución</th>
+                <th class="border-0 text-center">Resultado</th>
             </tr>
         </thead>
         <tbody>
@@ -37,34 +37,51 @@
                     }
 
                     <tr>
-                        <td class="fw-semibold text-dark">@p.Libro?.Titulo</td>
-                        <td class="text-muted">@p.FechaPrestamo.ToShortDateString()</td>
-                        <td class="text-muted">@p.FechaDevolucionProgramada.ToShortDateString()</td>
-                        <td class="text-muted fw-bold">@(devuelto ? p.FechaDevolucionReal?.ToShortDateString() : "-")</td>
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-2">📖</span>
+                                <div>
+                                    <div class="fw-bold text-dark">@p.Libro?.Titulo</div>
+                                    <small class="text-muted">ID: #@p.Id</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-muted text-center">@p.FechaPrestamo.ToShortDateString()</td>
+                        <td class="text-muted text-center">@p.FechaDevolucionProgramada.ToShortDateString()</td>
+                        <td class="text-dark fw-bold text-center">@(devuelto ? p.FechaDevolucionReal?.ToShortDateString() : "-")</td>
 
                         <td class="text-center">
                             @if (p.Multa != null && !p.Multa.Pagada)
                             {
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Multa Pendiente</span>
+                                <span class="badge rounded-pill bg-danger shadow-sm px-3">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Multa Pendiente
+                                </span>
                             }
                             else if (devuelto && diasRetraso > 0)
                             {
-                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning">Tardío (@diasRetraso días)</span>
+                                <span class="badge rounded-pill bg-warning text-dark border border-warning px-3">
+                                    <i class="bi bi-clock-history me-1"></i> Tardío (@diasRetraso d)
+                                </span>
                             }
                             else if (devuelto)
                             {
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success">Devuelto a tiempo</span>
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success px-3">
+                                    <i class="bi bi-check-circle-fill me-1"></i> A tiempo
+                                </span>
                             }
                             else
                             {
-                                <span class="badge bg-info bg-opacity-10 text-info border border-info">Activo</span>
+                                <span class="badge rounded-pill bg-info bg-opacity-10 text-info border border-info px-3">Activo</span>
                             }
                         </td>
                     </tr>
                 }
             } else {
                  <tr>
-                    <td colspan="5" class="text-center text-muted py-4">No hay historial de préstamos.</td>
+                    <td colspan="5" class="text-center text-muted py-5">
+                        <i class="bi bi-clock-history d-block fs-1 mb-2 opacity-25"></i>
+                        No hay historial de préstamos registrado.
+                    </td>
                 </tr>
             }
         </tbody>

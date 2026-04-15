@@ -117,66 +117,95 @@
 <h4 id="seccion-usuarios" class="fw-bold mb-3 mt-4">⚙️ Gestión de Usuarios</h4>
 <p class="text-muted">Administra roles, bloqueos y accesos desde aquí.</p>
 
-<div class="table-responsive card p-3 rounded-4 shadow-sm border-0">
+<div class="table-responsive card p-2 rounded-4 shadow-sm border-0 bg-white">
     <table class="table table-hover align-middle mb-0">
-        <thead>
+        <thead class="bg-light">
             <tr>
-                <th class="border-0">Nombre</th>
+                <th class="border-0 ps-3">Usuario</th>
                 <th class="border-0">Email</th>
-                <th class="border-0">Rol</th>
+                <th class="border-0">Roles</th>
                 <th class="border-0 text-center">Estado</th>
-                <th class="border-0 text-center">Acciones</th>
+                <th class="border-0 text-center">Acciones Centralizadas</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var user in Model.Usuarios)
             {
                 <tr>
-                    <td class="fw-semibold text-dark">@user.NombreCompleto</td>
-                    <td class="text-muted">@user.Email</td>
+                    <td class="ps-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+                                <span class="fs-5 fw-bold">@user.NombreCompleto.Substring(0, 1).ToUpper()</span>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">@user.NombreCompleto</div>
+                                <small class="text-muted">ID: #@user.Id.Substring(0, 8)...</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-muted">
+                        <i class="bi bi-envelope-fill me-1 opacity-50"></i> @user.Email
+                    </td>
                     <td>
-                        <span class="badge bg-secondary">@string.Join(", ", user.Roles)</span>
-                    </td>
-                    <td class="text-center">
-                        @if (user.EstaBloqueado)
+                        @foreach (var rol in user.Roles)
                         {
-                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Suspendido</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success">Limpio</span>
+                            <span class="badge rounded-pill @(rol == "Admin" ? "bg-warning text-dark border border-warning" : "bg-light text-muted border") px-3">
+                                @(rol == "Admin" ? "⭐ " : "")@rol
+                            </span>
                         }
                     </td>
                     <td class="text-center">
                         @if (user.EstaBloqueado)
                         {
-                            <form asp-action="DesbloquearUsuario" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="@user.Id" />
-                                <button class="btn btn-outline-success btn-sm shadow-sm" title="Rehabilitar Cuenta">🔓 Perdonar</button>
-                            </form>
-                        }
-                        
-                        @if (user.Roles.Contains("Admin"))
-                        {
-                            <form asp-action="QuitarAdmin" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="@user.Id" />
-                                <button class="btn btn-warning btn-sm shadow-sm" title="Quitar rol de Administrador">⬇️ Quitar Admin</button>
-                            </form>
+                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger px-3">
+                                <i class="bi bi-shield-lock-fill me-1"></i> Suspendido
+                            </span>
                         }
                         else
                         {
-                            <form asp-action="HacerAdmin" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="@user.Id" />
-                                <button class="btn btn-success btn-sm shadow-sm" title="Convertir a Administrador">⭐ Hacer Admin</button>
-                            </form>
+                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success px-3">
+                                <i class="bi bi-shield-check me-1"></i> Activo
+                            </span>
                         }
-                        <form asp-action="EliminarUsuario" method="post" style="display:inline;" class="ms-1">
-                            <input type="hidden" name="id" value="@user.Id" />
-                            <button type="submit" class="btn btn-danger btn-sm shadow-sm"
-                                    onclick="return confirm('¿Estás SEGURO de eliminar al usuario? También borrará todo su historial.')">
-                                🗑️ Eliminar
-                            </button>
-                        </form>
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-1">
+                            @if (user.EstaBloqueado)
+                            {
+                                <form asp-action="DesbloquearUsuario" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button class="btn btn-sm btn-outline-success border-0 rounded-pill px-3" title="Rehabilitar Cuenta">
+                                        <i class="bi bi-unlock-fill"></i> Perdonar
+                                    </button>
+                                </form>
+                            }
+                            
+                            @if (user.Roles.Contains("Admin"))
+                            {
+                                <form asp-action="QuitarAdmin" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button class="btn btn-sm btn-outline-warning border-0 rounded-pill px-3" title="Degradar a Usuario">
+                                        <i class="bi bi-person-down"></i> Bajar
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="HacerAdmin" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button class="btn btn-sm btn-outline-primary border-0 rounded-pill px-3" title="Promover a Admin">
+                                        <i class="bi bi-person-up"></i> Ascender
+                                    </button>
+                                </form>
+                            }
+                            <form asp-action="EliminarUsuario" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger border-0 rounded-pill px-3"
+                                        onclick="return confirm('¿Estás SEGURO de eliminar al usuario? También borrará todo su historial.')">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             }

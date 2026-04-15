@@ -16,16 +16,16 @@
     </div>
 </div>
 
-<div class="table-responsive card p-3 rounded-4 shadow-sm border-0">
+<div class="table-responsive card p-2 rounded-4 shadow-sm border-0 bg-white">
     <table class="table table-hover align-middle mb-0">
-        <thead>
+        <thead class="bg-light">
             <tr>
-                <th class="border-0">Usuario Solicitante</th>
+                <th class="border-0 ps-3">Usuario Moroso</th>
                 <th class="border-0">Libro Asociado</th>
                 <th class="border-0 text-center">Monto</th>
                 <th class="border-0 text-center">Fecha Emisión</th>
                 <th class="border-0 text-center">Estado</th>
-                <th class="border-0 text-center">Acción</th>
+                <th class="border-0 text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -33,19 +33,37 @@
                 @foreach (var m in Model)
                 {
                     <tr>
-                        <td class="fw-semibold text-dark">@(m.Prestamo?.Usuario?.NombreCompleto ?? "Usuario no identificado")</td>
-                        <td class="text-muted">@(m.Prestamo?.Libro?.Titulo ?? "Título no especificado")</td>
-                        <td class="text-danger fw-bold text-center">$@m.Monto.ToString("N0")</td>
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div class="fw-bold text-dark">@(m.Prestamo?.Usuario?.NombreCompleto ?? "Anónimo")</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span class="fs-5 me-2">📖</span>
+                                <div class="text-truncate" style="max-width: 250px;">@(m.Prestamo?.Libro?.Titulo ?? "Sin Título")</div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-danger fw-bold fs-5">$@m.Monto.ToString("N0")</span>
+                        </td>
                         <td class="text-muted text-center">@m.FechaGenerada.ToShortDateString()</td>
 
                         <td class="text-center">
                             @if (m.Pagada)
                             {
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success">Saldada</span>
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success px-3">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Saldada
+                                </span>
                             }
                             else
                             {
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">Pendiente de Pago</span>
+                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger px-3">
+                                    <i class="bi bi-hourglass-split me-1"></i> Pendiente
+                                </span>
                             }
                         </td>
 
@@ -53,22 +71,26 @@
                             @if (!m.Pagada)
                             {
                                 <form asp-action="MarcarPagada" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@m.Id" />
-                                    <button class="btn btn-success btn-sm shadow-sm">
+                                    <button class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm border-0">
                                         💸 Registrar Pago
                                     </button>
                                 </form>
                             }
                             else
                             {
-                                <span class="text-muted small fw-semibold">✅ Completado</span>
+                                <span class="badge bg-light text-muted border px-2">Finalizado</span>
                             }
                         </td>
                     </tr>
                 }
             } else {
                  <tr>
-                    <td colspan="6" class="text-center text-muted py-4">No hay multas registradas en el sistema.</td>
+                    <td colspan="6" class="text-center text-muted py-5">
+                        <i class="bi bi-cash-stack d-block fs-1 mb-2 opacity-25"></i>
+                        No hay multas registradas en el sistema.
+                    </td>
                 </tr>
             }
         </tbody>

@@ -13,16 +13,15 @@
     </div>
 </div>
 
-<div class="table-responsive card p-3 rounded-4 shadow-sm border-0">
-
-    <table class="table table-hover align-middle mb-0 mt-3">
-        <thead>
+<div class="table-responsive card p-2 rounded-4 shadow-sm border-0 bg-white">
+    <table class="table table-hover align-middle mb-0 mt-2">
+        <thead class="bg-light">
             <tr>
-                <th class="border-0">Libro Asociado</th>
-                <th class="border-0 text-center">Fecha de Emisión</th>
+                <th class="border-0 ps-3">Libro Asociado</th>
+                <th class="border-0 text-center">Fecha Emisión</th>
                 <th class="border-0 text-center">Monto a Pagar</th>
-                <th class="border-0 text-center">Estado de Deuda</th>
-                <th class="border-0 text-center">Acción</th>
+                <th class="border-0 text-center">Estado</th>
+                <th class="border-0 text-center">Gestión</th>
             </tr>
         </thead>
         <tbody>
@@ -30,41 +29,53 @@
                 @foreach (var m in Model)
                 {
                     <tr>
-                        <td class="fw-semibold text-dark">@(m.Prestamo?.Libro?.Titulo ?? "Libro no especificado")</td>
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-4 me-2">📖</span>
+                                <div class="fw-bold text-dark">@(m.Prestamo?.Libro?.Titulo ?? "Sin Título")</div>
+                            </div>
+                        </td>
                         <td class="text-muted text-center">@m.FechaGenerada.ToShortDateString()</td>
-                        <td class="text-danger fw-bold text-center fs-5">$@m.Monto.ToString("N0")</td>
+                        <td class="text-center">
+                            <span class="text-danger fw-bold fs-5">$@m.Monto.ToString("N0")</span>
+                        </td>
 
                         <td class="text-center">
                             @if (m.Pagada)
                             {
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success fs-6 px-3 py-2">
-                                    Saldada
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success px-3 py-2">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Saldada
                                 </span>
                             }
                             else
                             {
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger fs-6 px-3 py-2">
-                                    Pendiente
+                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i> Pendiente
                                 </span>
                             }
                         </td>
                         <td class="text-center">
                             @if (!m.Pagada)
                             {
-                                <a asp-action="Checkout" asp-route-id="@m.Id" class="btn btn-sm btn-primary fw-bold shadow-sm rounded-pill px-3">
-                                    💳 Pagar
+                                <a asp-action="Checkout" asp-route-id="@m.Id" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                                    💳 Pagar Ahora
                                 </a>
                             }
                             else
                             {
-                                <span class="text-muted fst-italic fs-6">Pagado el @m.FechaPago?.ToShortDateString()</span>
+                                <div class="small text-muted">
+                                    <i class="bi bi-calendar-check me-1"></i> Pagado el @m.FechaPago?.ToShortDateString()
+                                </div>
                             }
                         </td>
                     </tr>
                 }
             } else {
                  <tr>
-                    <td colspan="5" class="text-center text-muted py-4">¡Felicidades! No tienes multas pendientes.</td>
+                    <td colspan="5" class="text-center text-muted py-5">
+                        <i class="bi bi-check-all d-block fs-1 mb-2 text-success opacity-50"></i>
+                        ¡Felicidades! No tienes multas pendientes.
+                    </td>
                 </tr>
             }
         </tbody>
