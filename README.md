@@ -1,114 +1,124 @@
-# 📚 Biblioteca Digital (MVC)
+# 📚 BibliotecaMVC: Ecosistema de Gestión Bibliográfica Premium
 
-Plataforma de gestión de préstamos, inventario y usuarios construida bajo la arquitectura **ASP.NET Core MVC**. Diseñada con un enfoque en *Clean Code*, reglas de negocio centralizadas y una interfaz gráfica Premium, completamente responsiva.
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download)
+[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-10.0-512BD4)](https://docs.microsoft.com/ef/)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](file:///c:/Repos/BibliotecaMVC)
 
----
-
-## 🚀 Tecnologías Principales
-- **Backend:** C# / .NET 10.0
-- **Frontend:** HTML5, CSS3, Razor Pages, Bootstrap 5 (UI enriquecida con Componentes de Tarjeta, Gradientes y Sombras).
-- **Base de Datos:** SQL Server gestionado mediante **Entity Framework Core**.
-- **Autenticación:** ASP.NET Core Identity (Autenticación por Cookies, Roles y Perfiles Extendidos).
-- **Notificaciones:** Integración con **Twilio API** (WhatsApp/SMS) y **SmtpClient** (Email).
+**BibliotecaMVC** no es solo un gestor de préstamos; es un ecosistema digital diseñado bajo estándares industriales de **Clean Code**, **Seguridad Ofensiva** y **Arquitectura de Micro-servicios Simulada**. Proporciona una solución integral para la digitalización de bibliotecas, integrando mensajería omnicanal y gestión segura de activos.
 
 ---
 
-## ✨ Características y Funcionalidades
+## 🏛️ Arquitectura del Sistema
 
-### 1. 🛡️ Sistema de Roles y Seguridad (Identity)
-- **Rol Administrador:** Acceso al Panel de Control (Dashboard central), gestión de usuarios, auditoría global y capacidad de "Amnistía" para desbloqueo de cuentas.
-- **Rol Usuario (Lector):** Acceso al catálogo, panel "Mi Perfil" (autoservicio de datos) y gestión personal de préstamos/favoritos.
-- **Verificación SMTP Real:** Implementación para el envío asíncrono de enlaces de recuperación y confirmaciones de cuenta.
-- **Bloqueo Restrictivo (Mora):** Suspensión automática del privilegio de préstamos si se detectan entregas tardías, rehabilitable únicamente por un administrador.
+El sistema utiliza una arquitectura **Model-View-Controller (MVC)** robusta, desacoplando la lógica de negocio del servidor de la presentación y los datos.
 
-### 2. 🌐 Ecosistema de Biblioteca 100% Digital
-- **Visor Inmersivo Integrado (Web Reader):** Capacidad de leer archivos nativos (como PDFs) a pantalla completa directamente desde el ecosistema sin requerir descargas.
-- **Túneles de Privacidad (DRM Backend):** Los libros digitales yacen alojados en una Bóveda Confidencial (Vault). El acceso se proporciona mediante URLs temporales, imposibilitando los ataques de "Fuga Pública" o desvío de hipervínculos de archivos.
-- **Motor AI de Metadatos Bibliográficos:** La carga de nuevos ejemplares ahora cuenta con una integración a Base de Datos Mundial mediante ISBN (Google Books API). Implementa un barrido de información masiva que mapea autores, categorías estandarizadas, sinopsis limpiadas de HTMl y portadas adaptativas.
-- **Garbage Collector Discreto:** Detecta automáticamente ficheros obsoletos en el servidor cuando el usuario sustituye un libro antiguo y lo elimina para asegurar el uso responsable del espacio en disco duro.
-- **Soporte Multiformato Seguro:** Plataforma de carga de volúmenes con validación estricta de documentos PDF, EPUB y Microsoft Word Docx. Almacenados inteligentemente bajo inyecciones GUID anti-colisión.
-
-### 3. 📖 Experiencia de Usuario Interactiva
-- **Catálogo Inteligente:** Motor de búsqueda dinámica que filtra por Título, Autor, Categoría o ISBN con paginación segmentada ultrarrápida.
-- **⭐ Sistema de Reseñas:** Calificación numérica (1-5 estrellas) y comentarios sobre cada obra con protección anti-spam.
-- **Muros de Confirmación Dinámica:** Las transacciones de Préstamo despliegan portadas en alta definición y resúmenes de sinopsis anticipando la experiencia para el solicitante.
-- **💡 Motor de Recomendaciones:** Algoritmo integrado que sugiere lecturas similares basándose en la categoría y el autor del libro visualizado.
-- **❤️ Wishlist (Favoritos) de un-clic:** Persistencia de selecciones mediante operaciones AJAX en vivo para una lectura futura.
-- **🔔 Centro de Notificaciones:** Sistema interno de alertas persistentes para comunicar estados de préstamos, multas y mensajes del sistema.
-
-### 4. 🔄 Motor Avanzado de Préstamos y Multas
-- **Gestión de Stock en Tiempo Real:** Validación estricta que impide préstamos sin existencias y restaura stock automáticamente en devoluciones.
-- **🛡️ Concurrencia Optimista:** Implementación de tokens de concurrencia (`RowVersion`) para evitar colisiones de datos y asegurar la integridad del inventario en accesos simultáneos.
-- **Límites de Uso:** Máximo 3 préstamos activos por usuario para garantizar la rotación del inventario.
-- **Calculadora de Mora y Amnistía:** Procesamiento automático de días de retraso con generación de recargos financieros, con potestad del Administrador para dictaminar "Amnistía" global o particular en devoluciones complicadas.
-
-### 5. 📲 Infraestructura de Mensajería (WhatsApp/Cron Jobs)
-- **Mensajería Twilio WhatsApp/SMS:** Envío transaccional en tiempo real para generar huella física fuera de la aplicación (solicitudes, atrasos agresivos).
-- **Vigilante Nocturno Automatizado (Cron Job):** BackgroundWorker (`IHostedService`) que patrulla la base de datos de manera silenciosa detectando deudores furtivos y disparando alertas sincronizadas.
-
-### 6. 🛠️ Excelencia Técnica y Auditoría (Hardening)
-- **Hardening de Identidad:** Requisitos de contraseñas de alta complejidad y bloqueo agresivo de cuentas tras 5 intentos fallidos o moras severas.
-- **Unificación Premium Global:** Implementación de Aspect-Ratios (Proporción aurea) de CSS universales e integrados globalmente que desvían renders rotos, entregando la mejor apariencia bajo Tema Oscuro o Claro automáticamente.
-- **Blindaje de Secretos:** Implementación de **User Secrets** para llaves de API, credenciales de servidor y configuración administrativa raíz.
-- **Defensa CSRF/XSS:** Tokens de verificación sincronizados globalmente y sanitización automática de Razor.
-
----
-
-## 💻 Instalación y Configuración Paso a Paso
-
-Sigue este orden exacto para poner en marcha el proyecto:
-
-### 1. Preparación de Archivos
-Clona el repositorio en tu máquina local:
-```bash
-git clone [URL-del-repositorio]
+```mermaid
+graph TD
+    User((Usuario/Admin)) -->|HTTPS| WebServer[ASP.NET Core MVC Engine]
+    subgraph "Core Server"
+        WebServer --> Controllers[Controllers]
+        Controllers --> Services[Business Services]
+        Services --> EF[Entity Framework Core]
+        EF --> DB[(SQL Server)]
+    end
+    subgraph "External Integrations"
+        Services -->|SMTP| EmailService[Email Server]
+        Services -->|REST| Twilio[Twilio WhatsApp/SMS]
+    end
+    subgraph "Security & Assets"
+        Controllers -->|Access Control| Vault[Digital Vault /Vault/ - No Public]
+        WebServer -->|Auth| Identity[ASP.NET Identity Hardened]
+    end
+    CronWorker[SmsBackgroundWorker] -->|IHostedService| Services
 ```
 
-### 2. Acceso al Corazón del Proyecto (VITAL) 🚩
-Sitúate en la carpeta del código fuente para ejecutar los comandos:
-```bash
-cd BibliotecaMVC/BibliotecaMVC
-```
+---
 
-### 3. Configuración de Secretos (Identity & APIs)
-Ejecuta estos comandos en la terminal para configurar tus credenciales privadas:
+## 🛠️ Stack Tecnológico de Ingeniería
 
-```bash
-# A. Inicializa el gestor de secretos
+### **Core Backend**
+- **Framework**: .NET 10.0 con C# 12+.
+- **ORM**: Entity Framework Core 10 con **Fluent API** para relaciones complejas.
+- **Base de Datos**: SQL Server (optimizado con índices y claves foráneas).
+- **Control de Concurrencia**: Implementación de **Tokens de Transacción (`RowVersion`)** para evitar la sobreventa de stock en accesos simultáneos.
+
+### **Seguridad y DRM**
+- **Protocolo Identity**: Autenticación reforzada con política de **Lockout** (bloqueo tras 5 intentos fallidos) y requerimientos de complejidad de contraseña (Non-Alphanumeric).
+- **Vault System**: Los libros digitales se almacenan en una carpeta física fuera del directorio público (`wwwroot`). El acceso solo es posible a través de un controlador que verifica los derechos de préstamo en tiempo real.
+
+### **Comunicación & Automatización**
+- **Omnicanalidad**: Despacho de notificaciones vía **WhatsApp Business API** (mediante Twilio) y **SMTP Transaccional**.
+- **Background Computing**: `SmsBackgroundWorker` patrulla la base de datos cada 24 horas para detectar morosidad de forma proactiva.
+
+---
+
+## ✨ Características de Alto Nivel
+
+### 1. 🛡️ Blindaje de Usuarios e Identidad
+- **Amnistía Administrativa**: Los administradores pueden desbloquear usuarios suspendidos tras conciliaciones manuales.
+- **Protección de Cuenta Raíz**: El sistema impide la eliminación del administrador principal configurado en los secretos del servidor.
+
+### 2. 📖 Motor Digital Evolucionado
+- **Visor Inmersivo**: Renderizado de documentos PDF y EPUB directamente en el navegador con túneles de lectura seguros.
+- **Motor de Recomendaciones**: Algoritmo que analiza categorías y autores para sugerir lecturas relacionadas (Fase 4).
+- **Búsqueda Segmentada**: Filtrado dinámico por ISBN, Autor o Categoría con paginación en servidor para escalabilidad masiva.
+
+### 3. 🔄 Ciclo de Préstamo Inteligente
+- **Cálculo Automático de Mora**: Peritaje en tiempo real de los días de retraso y generación inmediata de multas financieras.
+- **Validación Multicapa**: Control de stock, deudas pendientes y límites de préstamos activos (Máx. 3) antes de confirmar la renta.
+
+---
+
+## 💻 Guía de Despliegue Técnico
+
+### 1. Configuración de Secretos (Indispensable)
+El proyecto utiliza **Secret Management** para proteger credenciales. Ejecute estos comandos en su terminal de desarrollo:
+
+```powershell
+# Iniciar gestión de secretos
 dotnet user-secrets init
 
-# B. Configura tu servidor de correo (SMTP)
-dotnet user-secrets set "EmailSettings:Username" "tu_correo@gmail.com"
-dotnet user-secrets set "EmailSettings:Password" "tu_app_password"
+# Configuración de Identidad Administrativa
+dotnet user-secrets set "AdminSettings:Email" "tu_admin@ejemplo.com"
+dotnet user-secrets set "AdminSettings:Password" "PasswordMuyFuerte123!"
 
-# C. Configura las llaves de Twilio (WhatsApp/SMS)
-dotnet user-secrets set "TwilioSettings:AccountSid" "tu_sid"
-dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token"
-dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+1234567890"
+# Configuración Twilio (WhatsApp/SMS)
+dotnet user-secrets set "TwilioSettings:AccountSid" "ACXXXXXXXXXXXXX"
+dotnet user-secrets set "TwilioSettings:AuthToken" "tu_auth_token"
+dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+123456789"
 
-# D. Configura la Identidad Maestra (Administrador Raíz)
-dotnet user-secrets set "AdminSettings:Email" "tu-admin@ejemplo.com"
-dotnet user-secrets set "AdminSettings:Password" "TuPasswordAdmin123!"
+# Configuración SMTP (Email)
+dotnet user-secrets set "EmailSettings:Username" "tu_smtp_user"
+dotnet user-secrets set "EmailSettings:Password" "tu_smtp_password"
 ```
 
-### 4. Preparación de la Base de Datos
-Asegúrate de tener **SQL Server** iniciado y ejecuta las migraciones:
-```bash
+### 2. Inicialización de Datos
+```powershell
+# Aplicar Migraciones de EF Core y Seeding de Categorías
 dotnet ef database update
-```
 
-### 5. Lanzamiento
-```bash
+# Ejecutar Proyecto
 dotnet run
 ```
 
 ---
 
-## 🔐 Acceso Administrativo
-El sistema crea automáticamente un administrador inicial basado en tus secretos del **Paso 3-D**:
-- **Usuario:** El configurado en `AdminSettings:Email` (Default: `dgomezpulid@outlook.com`)
-- **Contraseña:** La configurada en `AdminSettings:Password`.
+## 📁 Estructura del Proyecto
+
+```text
+BibliotecaMVC/
+├── Areas/Identity        # Personalización de ASP.NET Core Identity
+├── Controllers/          # Lógica de flujo (Admin, Prestamos, Multas, etc.)
+├── Models/               # Entidades de Dominio y ViewModels optimizados
+├── Services/             # Lógica de Negocio (Twilio, Email, Workers)
+├── ViewComponents/       # Componentes de UI desacoplados (e.g., Alerta de Multas)
+├── Views/                # Vistas Razor con diseño responsivo premium
+└── wwwroot/              # Activos estáticos (CSS, JS, Imágenes)
+```
 
 ---
-*Desarrollado con estándares de Clean Code, MVC Patterns y auditoría de seguridad preventiva Fase 3.*
 
+> [!IMPORTANT]
+> **Nota sobre Seguridad**: Esta aplicación implementa protección contra ataques de **IDOR** (Insecure Direct Object Reference) en la gestión de libros y **CSRF** en todos los formularios transaccionales.
+
+*Desarrollado con pasión técnica por Daniel Gómez Pulido.*
