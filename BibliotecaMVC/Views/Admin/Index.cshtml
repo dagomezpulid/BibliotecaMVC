@@ -221,10 +221,21 @@
             const ctxLibros = document.getElementById('librosChart').getContext('2d');
             const ctxMorosos = document.getElementById('morososChart').getContext('2d');
 
-            // --- DETECCION DE TEMA PARA COLORES ---
-            const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const labelColor = isDarkMode ? '#adb5bd' : '#6c757d';
-            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+            // --- DETECCION DE TEMA PARA COLORES (INTEGRADO CON BOOTSTRAP 5) ---
+            const getChartColors = () => {
+                const htmlTheme = document.documentElement.getAttribute('data-bs-theme');
+                const isDark = htmlTheme === 'dark' || (htmlTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                
+                return {
+                    label: isDark ? '#adb5bd' : '#343a40', // Gris grafito en modo claro para máxima legibilidad
+                    grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.08)',
+                    border: isDark ? '#1e293b' : '#ffffff'
+                };
+            };
+
+            const themeColors = getChartColors();
+            const labelColor = themeColors.label;
+            const gridColor = themeColors.grid;
 
             const palette = [
                 '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
@@ -283,7 +294,7 @@
                         data: @Html.Raw(Json.Serialize(Model.ValoresLibrosPopulares)),
                         backgroundColor: palette.slice(0, 5),
                         hoverOffset: 15,
-                        borderColor: isDarkMode ? '#1e293b' : '#fff',
+                        borderColor: themeColors.border,
                         borderWidth: 3
                     }]
                 },
