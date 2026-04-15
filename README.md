@@ -12,25 +12,23 @@
 ## ✨ Características Premium
 
 ### 🎨 1. Estética Industrial y UX Adaptativa
-*   **Diseño de Vanguardia**: Implementación de **Glassmorphism** (Efecto Cristal) en tarjetas de libros para una profundidad visual superior.
-*   **Modo Oscuro Dinámico**: Interfaz 100% armonizada. Los colores, sombras y componentes se adaptan orgánicamente a las preferencias del sistema.
-*   **Diferenciación de Interacción**: Jerarquía visual clara entre "Acciones" (botones sólidos, `rounded-3`) y "Estados" (badges de cápsula, traslúcidos), eliminando cualquier carga cognitiva para el usuario.
+*   **Diseño de Vanguardia**: Implementación de **Glassmorphism** (Efecto Cristal) en tarjetas de libros para una profundidad visual superior que detecta y se adapta al tema actual.
+*   **Modo Oscuro Dinámico**: Interfaz 100% armonizada mediante variables CSS y `backdrop-filter`. Los componentes cambian orgánicamente basándose en las preferencias del sistema o del usuario.
+*   **Diferenciación de Interacción**: Jerarquía visual clara entre "Acciones" (botones sólidos, `rounded-3`) y "Estados" (badges de cápsula, traslúcidos), eliminando la carga cognitiva.
 
 ### 📊 2. Inteligencia de Negocio y Analíticas
-*   **Insights en Tiempo Real**: Dashboards administrativos potenciados por `Chart.js` con visualización adaptativa (textos y grillas inteligentes para modo oscuro).
-*   **Tendencias de Préstamos**: Análisis gráfico de la actividad mensual para la toma de decisiones basada en datos.
-*   **Control de Morosidad**: Monitorización visual de deudas y días de mora mediante gráficos de barras horizontales de alto impacto.
-*   **Curaduría de Contenido**: Gráficos circulares de los libros más populares para identificar los intereses de la comunidad.
+*   **Insights en Tiempo Real**: Dashboards administrativos potenciados por `Chart.js` con visualización adaptativa (textos y grillas que cambian de color automáticamente según el tema).
+*   **Tendencias de Préstamos**: Análisis gráfico de la actividad mensual para la toma de decisiones basada en datos históricos.
+*   **Control de Morosidad**: Monitorización visual de deudas y días de retraso mediante gráficos de impacto para una supervisión administrativa eficiente.
 
-### 📖 3. Smart Reading Engine (Motor de Lectura)
-*   **Visor Inmersivo**: Experiencia de lectura fluida a pantalla completa diseñada para máxima concentración, eliminando distracciones de navegación global.
-*   **Persistencia de Progreso**: El sistema guarda automáticamente la página exacta donde te quedaste, permitiendo una continuidad total entre dispositivos.
-*   **Streaming de Activos**: Soporte multiformato (PDF, EPUB, DOCX) servido mediante streaming seguro desde un **Vault** protegido.
+### 📖 3. Smart Reading Engine & Búsqueda
+*   **Búsqueda Inteligente (AJAX)**: Filtrado en tiempo real sin recarga de página por título, autor o categoría, garantizando una exploración fluida.
+*   **Navegación Centralizada**: El sistema utiliza el Catálogo de Libros como eje central, asegurando que todos los botones de retorno y accesos directos lleven al corazón del ecosistema.
+*   **Visor Inmersivo con Memoria**: Experiencia de lectura fluida que guarda automáticamente la página exacta donde se detuvo el usuario, sincronizando el progreso de forma persistente.
 
-### 🛡️ 4. Infraestructura de Seguridad Industrial
-*   **Protección Digital (Vault)**: Los archivos originales están aislados de la carpeta pública; solo usuarios con un préstamo activo y validado pueden leer o descargar.
-*   **Validación de Negocio**: Control estricto de límites de préstamo (Máx. 3), prevención de multas pendientes y bloqueos automáticos por morosidad.
-*   **Seguridad Ofensiva**: Blindaje contra ataques de **IDOR** y **CSRF**, junto con un sistema de Identity endurecido.
+### 🔔 4. Centro de Notificaciones y Mensajería
+*   **Centro de Alertas**: Un buzón de notificaciones en tiempo real (vía polling suave) que informa sobre multas generadas, préstamos confirmados y recordatorios del sistema.
+*   **Notificaciones Omnicanal**: Integración nativa con **Twilio SMS** para enviar alertas críticas directo al teléfono del usuario cuando se detecta morosidad.
 
 ---
 
@@ -48,6 +46,7 @@ graph TD
     subgraph "Advanced Integrations"
         Services -->|SMS/WhatsApp| Twilio[Twilio Messaging]
         Services -->|Analytics| Charts[Chart.js Adaptive Engine]
+        Controllers -->|Real-time| Notif[Notification System]
     end
     subgraph "Asset Management"
         Controllers -->|Access Control| Vault[Digital Vault Infrastructure]
@@ -60,9 +59,9 @@ graph TD
 
 ## 🛠️ Stack Tecnológico
 *   **Backend**: C# 12, ASP.NET Core 8.0+, Entity Framework Core.
-*   **Frontend**: Bootstrap 5 (Custom Premium Utility), JavaScript ES6, CSS Variables (Dynamic Theme).
-*   **Analíticas**: Chart.js con configuraciones de contraste adaptativas.
-*   **Cloud & Mensajería**: Twilio SMS API para notificaciones transaccionales.
+*   **Frontend**: Bootstrap 5 + CSS Custom Properties, JavaScript ES6 (Fetch/Async), Chart.js.
+*   **Cloud**: Twilio SMS API para notificaciones transaccionales.
+*   **Seguridad**: Identity con políticas de bloqueo y PhysicalFile Streaming para DRM.
 
 ---
 
@@ -79,7 +78,7 @@ dotnet user-secrets init
 dotnet user-secrets set "AdminSettings:Email" "admin@bibliotecamvc.com"
 dotnet user-secrets set "AdminSettings:Password" "TuPasswordSeguro123!"
 
-# Configuración Twilio (SMS/Notificaciones)
+# Configuración Twilio (SMS)
 dotnet user-secrets set "TwilioSettings:AccountSid" "ACXXXXXXXXXX"
 dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token_aqui"
 dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+123456789"
@@ -87,24 +86,24 @@ dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+123456789"
 
 ### 2. Inicialización del Ecosistema
 ```powershell
-# Actualizar base de datos con migraciones de EF
+# Aplicar esquema de base de datos
 dotnet ef database update
 
-# Ejecutar el servidor de desarrollo
+# Ejecutar el servidor
 dotnet run
 ```
 
 ---
 
 ## 📁 Estructura de la Solución
-*   **Controllers/**: Orquestación de flujos (Préstamos, Admin, Multas).
-*   **Services/**: Lógica de pesada y servicios externos (SMS, Lectura).
-*   **ViewComponents/**: Widgets de UI reutilizables y reactivos.
-*   **BibliotecaLibros_Vault/**: Repositorio físico protegido de activos (fuera de wwwroot).
+*   **BibliotecaLibros_Vault/**: Repositorio físico protegido (DRM) fuera de la ruta pública.
+*   **Services/**: Motores de SMS, Notificaciones y Lógica de Negocio.
+*   **Controllers/**: Flujos de Administración, Préstamos y Catálogo AJAX.
+*   **ViewComponents/**: Componentes de UI modulares (ej. Alertas de Multa).
 
 ---
 
 > [!IMPORTANT]
-> **Aviso de Cumplimiento**: Este software implementa validaciones de integridad de datos en cada capa para asegurar una experiencia de usuario robusta y sin excepciones imprevistas.
+> **Aviso de Cumplimiento**: Esta plataforma implementa validaciones de seguridad multicapa (IDOR, CSRF) y un diseño orientado a la excelencia operacional.
 
 *Desarrollado con arquitectura premium y pasión tecnológica.*
