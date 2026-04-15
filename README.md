@@ -17,9 +17,9 @@
 *   **Diferenciación de Interacción**: Jerarquía visual clara entre "Acciones" (botones sólidos, `rounded-3`) y "Estados" (badges de cápsula, traslúcidos), eliminando la carga cognitiva.
 
 ### 📊 2. Inteligencia de Negocio y Analíticas
-*   **Insights en Tiempo Real**: Dashboards administrativos potenciados por `Chart.js` con visualización adaptativa (textos y grillas que cambian de color automáticamente según el tema).
-*   **Tendencias de Préstamos**: Análisis gráfico de la actividad mensual para la toma de decisiones basada en datos históricos.
-*   **Control de Morosidad**: Monitorización visual de deudas y días de retraso mediante gráficos de impacto para una supervisión administrativa eficiente.
+*   **Insights en Tiempo Real**: Dashboards administrativos potenciados por `Chart.js` con **Reactividad de Tema**: las gráficas se redibujan instantáneamente al alternar entre modo claro y oscuro para mantener legibilidad absoluta.
+*   **Tendencias de Préstamos**: Análisis gráfico de la actividad mensual con gradientes dinámicos para una interpretación visual rápida.
+*   **Control de Morosidad**: Monitorización dual (Monto vs Días) mediante gráficos de barras horizontales de alto contraste.
 
 ### 📖 3. Smart Reading Engine & Búsqueda
 *   **Búsqueda Inteligente (AJAX)**: Filtrado en tiempo real sin recarga de página por título, autor o categoría, garantizando una exploración fluida.
@@ -27,8 +27,9 @@
 *   **Visor Inmersivo con Memoria**: Experiencia de lectura fluida que guarda automáticamente la página exacta donde se detuvo el usuario, sincronizando el progreso de forma persistente.
 
 ### 🔔 4. Centro de Notificaciones y Mensajería
-*   **Centro de Alertas**: Un buzón de notificaciones en tiempo real (vía polling suave) que informa sobre multas generadas, préstamos confirmados y recordatorios del sistema.
-*   **Notificaciones Omnicanal**: Integración nativa con **Twilio SMS** para enviar alertas críticas directo al teléfono del usuario cuando se detecta morosidad.
+*   **Centro de Alertas**: Un buzón de notificaciones inteligente que informa sobre multas y préstamos. Incluye marcado asíncrono de lectura para una experiencia sin interrupciones.
+*   **Notificaciones Omnicanal**: Integración nativa con **Twilio SMS** para alertas críticas.
+*   **Feedback Inmediato**: Sistema de alertas (Success/Error) auto-desvanecibles tipo "Toast" que mantienen la limpieza de la interfaz.
 
 ### 🛡️ 5. Ingeniería de Software y Seguridad
 *   **Documentación de Grado Industrial**: Todo el backend cuenta con una infraestructura completa de **XML Documentation (Summaries)**, asegurando que cada controlador, servicio y entidad esté debidamente documentada para su escalabilidad.
