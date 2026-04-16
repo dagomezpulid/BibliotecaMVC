@@ -134,4 +134,3 @@ dotnet run
 *Desarrollado con arquitectura premium y pasión tecnológica.*
 SRF) y un diseño orientado a la excelencia operacional.
 
-*Desarrollado con arquitectura premium y pasión tecnológica.*
