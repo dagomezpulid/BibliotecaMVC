@@ -1,81 +1,223 @@
 @model BibliotecaMVC.Models.Multa
 
 @{
-    ViewData["Title"] = "Pagar Multa";
+    ViewData["Title"] = "Pago Seguro - Mi Deuda";
 }
 
-<div class="row justify-content-center mt-5 mb-5">
-    <div class="col-md-5 mt-3">
+<style>
+    .glass-card {
+        background: rgba(var(--bs-body-bg-rgb), 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 2rem;
+    }
 
+    /* Estilo de la Tarjeta Virtual */
+    .credit-card-wrap {
+        perspective: 1000px;
+        width: 100%;
+        max-width: 350px;
+        height: 200px;
+        margin: 0 auto -100px;
+        position: relative;
+        z-index: 10;
+    }
 
-        <div class="card shadow rounded-4 border-0">
-            <!-- Header simulando Checkout Seguro -->
-            <div class="card-header bg-dark text-white rounded-top-4 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold">🔒 Checkout Seguro</h5>
-                <span class="fs-4">💳</span>
-            </div>
+    .credit-card {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+        cursor: pointer;
+    }
 
-            <div class="card-body p-4 p-md-5 bg-light rounded-bottom-4">
+    .credit-card.flipped {
+        transform: rotateY(180deg);
+    }
 
-                <!-- Resumen de Cuenta -->
-                <div class="mb-4 text-center">
-                    <p class="text-muted mb-1 text-uppercase fw-semibold" style="letter-spacing: 1px; font-size: 0.85rem;">Total a pagar</p>
-                    <h1 class="display-4 fw-bold text-dark mb-0">$@Model.Monto.ToString("N0")</h1>
-                    <p class="text-muted mt-2">
-                        Multa por retraso de <span class="fw-bold text-dark">@Model.Prestamo?.Libro?.Titulo</span>
-                    </p>
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 15px;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
+
+    .card-front {
+        background: linear-gradient(135deg, #1a1a1a 0%, #3d3d3d 100%);
+        color: white;
+    }
+
+    .card-back {
+        background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+        color: white;
+        transform: rotateY(180deg);
+        padding: 0;
+    }
+
+    .card-chip {
+        width: 50px;
+        height: 40px;
+        background: linear-gradient(135deg, #d4af37 0%, #f9d976 100%);
+        border-radius: 8px;
+    }
+
+    .card-number {
+        font-size: 1.4rem;
+        letter-spacing: 2px;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .mag-stripe {
+        width: 100%;
+        height: 40px;
+        background: #111;
+        margin-top: 30px;
+    }
+
+    .cvv-area {
+        margin: 10px 20px;
+        background: white;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 15px;
+        color: #333;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="glass-card shadow-lg overflow-hidden">
+                <div class="row g-0">
+                    <!-- Columna de Resumen -->
+                    <div class="col-md-5 bg-primary text-white p-5 d-flex flex-column justify-content-center align-items-center text-center">
+                        <i class="fa-solid fa-shield-halved fa-3x mb-4 opacity-50"></i>
+                        <h4 class="fw-bold mb-4">Resumen de Multa</h4>
+                        <div class="mb-4">
+                            <h2 class="display-3 fw-bold mb-0 text-white">$@Model.Monto.ToString("N0")</h2>
+                            <p class="opacity-75">PESOS COLOMBIANOS</p>
+                        </div>
+                        <div class="bg-white bg-opacity-10 p-3 rounded-4 w-100">
+                            <p class="mb-0 small"><i class="fa-solid fa-book me-2"></i> @Model.Prestamo?.Libro?.Titulo</p>
+                        </div>
+                        <p class="mt-4 small opacity-50">Transacción protegida por cifrado de extremo a extremo.</p>
+                    </div>
+
+                    <!-- Columna de Pago -->
+                    <div class="col-md-7 p-4 p-lg-5 pt-0">
+                        <!-- Tarjeta Virtual que flota sobre el layout -->
+                        <div class="credit-card-wrap">
+                            <div class="credit-card" id="virtualCard">
+                                <div class="card-front">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="card-chip"></div>
+                                        <i class="fa-brands fa-cc-visa fa-2x"></i>
+                                    </div>
+                                    <div class="card-number" id="vCardNumber">#### #### #### ####</div>
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <small class="opacity-50 d-block" style="font-size: 0.6rem;">TITULAR</small>
+                                            <span id="vCardName" class="text-uppercase small">NOMBRE APELLIDO</span>
+                                        </div>
+                                        <div>
+                                            <small class="opacity-50 d-block" style="font-size: 0.6rem;">EXP</small>
+                                            <span id="vCardExpiry" class="small">MM/AA</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-back">
+                                    <div class="mag-stripe"></div>
+                                    <div class="cvv-area" id="vCardCVV">***</div>
+                                    <div class="p-3 text-center">
+                                        <small style="font-size: 0.5rem;" class="opacity-50">Esta es una simulación de pago seguro para BibliotecaMVC Académica.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-5">
+                            <form asp-action="ProcesarPago" method="post" id="paymentForm">
+                                <input type="hidden" name="MultaId" value="@Model.Id" />
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">NOMBRE EN LA TARJETA</label>
+                                    <input type="text" id="cardName" class="form-control form-control-lg border-0 bg-light rounded-3" placeholder="Ej. Daniel Gomez" required autocomplete="off">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">NÚMERO DE TARJETA</label>
+                                    <input type="text" name="NumeroTarjeta" id="cardNumber" class="form-control form-control-lg border-0 bg-light rounded-3" placeholder="0000 0000 0000 0000" maxlength="19" required autocomplete="off">
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold text-muted">VENCIMIENTO</label>
+                                        <input type="text" id="cardExpiry" class="form-control form-control-lg border-0 bg-light rounded-3" placeholder="MM/AA" maxlength="5" required autocomplete="off">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold text-muted">CVC</label>
+                                        <input type="password" id="cardCVV" class="form-control form-control-lg border-0 bg-light rounded-3" placeholder="***" maxlength="4" required autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg w-100 py-3 rounded-pill fw-bold shadow-sm">
+                                    <i class="fa-solid fa-lock me-2"></i> Confirmar Pago
+                                </button>
+                                
+                                <div class="text-center mt-3">
+                                    <a asp-action="MisMultas" class="text-decoration-none text-muted small"><i class="fa-solid fa-arrow-left me-1"></i> Cancelar y volver</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-
-                <hr class="mb-4 text-secondary">
-
-                <!-- Formulario Simulador de Tarjeta -->
-                <form asp-action="ProcesarPago" method="post" id="paymentForm">
-                    <input type="hidden" name="MultaId" value="@Model.Id" />
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-dark small">Titular de la Tarjeta</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person"></i> 👤</span>
-                            <input type="text" class="form-control border-start-0" placeholder="Ej. Juan Pérez" required>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label fw-bold text-dark small">Número de la Tarjeta</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted">💳</span>
-                            <input type="text" name="NumeroTarjeta" class="form-control border-start-0" placeholder="0000 0000 0000 0000" minlength="13" maxlength="19" required>
-                            <span class="input-group-text bg-white text-primary fw-bold">VISA</span>
-                        </div>
-                        <div class="form-text mt-2"><small><i>*Esto es una simulación. Puedes ingresar cualquier número ficticio de 16 dígitos para propósitos de prueba.</i></small></div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-6">
-                            <label class="form-label fw-bold text-dark small">Vencimiento</label>
-                            <input type="text" class="form-control" placeholder="MM/YY" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label fw-bold text-dark small">CVV</label>
-                            <input type="text" class="form-control" placeholder="123" maxlength="4" required>
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2 mt-2">
-                        <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm rounded-pill py-3 h5 mb-0" id="btnPagar">
-                            Procesar Pago Seguro
-                        </button>
-                        <a asp-action="MisMultas" class="btn btn-link text-muted text-decoration-none mt-2">Cancelar y volver</a>
-                    </div>
-                </form>
-
             </div>
         </div>
-        
-        <!-- Trust Badges -->
-        <div class="text-center mt-4">
-            <span class="text-muted small">🔒 Cifrado SSL de 256-bits | Pagos procesados por MockServer</span>
-        </div>
-
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const virtualCard = document.getElementById('virtualCard');
+        const vNum = document.getElementById('vCardNumber');
+        const vName = document.getElementById('vCardName');
+        const vExp = document.getElementById('vCardExpiry');
+        const vCVV = document.getElementById('vCardCVV');
+
+        // Inputs
+        document.getElementById('cardNumber').addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            val = val.replace(/(\d{4})(?=\d)/g, '$1 ');
+            e.target.value = val;
+            vNum.innerText = val || '#### #### #### ####';
+        });
+
+        document.getElementById('cardName').addEventListener('input', (e) => {
+            vName.innerText = e.target.value.toUpperCase() || 'NOMBRE APELLIDO';
+        });
+
+        document.getElementById('cardExpiry').addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            if (val.length >= 2) val = val.substring(0,2) + '/' + val.substring(2,4);
+            e.target.value = val;
+            vExp.innerText = val || 'MM/AA';
+        });
+
+        document.getElementById('cardCVV').addEventListener('focus', () => virtualCard.classList.add('flipped'));
+        document.getElementById('cardCVV').addEventListener('blur', () => virtualCard.classList.remove('flipped'));
+        document.getElementById('cardCVV').addEventListener('input', (e) => {
+            vCVV.innerText = e.target.value || '***';
+        });
+    </script>
+}
+

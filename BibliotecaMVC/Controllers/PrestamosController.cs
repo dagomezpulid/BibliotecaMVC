@@ -51,6 +51,31 @@ public class PrestamosController : Controller
     }
 
     /// <summary>
+    /// Registra una acción de auditoría en la base de datos de forma asíncrona.
+    /// </summary>
+    private async Task RegistrarAuditoriaAsync(string accion, string? recursoId, string? detalles = null)
+    {
+        try
+        {
+            var log = new LogAuditoria
+            {
+                UsuarioId = _userManager.GetUserId(User) ?? "Anónimo",
+                Accion = accion,
+                RecursoId = recursoId,
+                Detalles = detalles,
+                Fecha = DateTime.Now,
+                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+            };
+            _context.LogsAuditoria.Add(log);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception)
+        {
+            // Fallo silencioso en auditoría para no bloquear la experiencia de usuario
+        }
+    }
+
+    /// <summary>
     /// Inicializa el controlador con los servicios de contexto, seguridad y mensajería.
     /// </summary>
     /// <param name="context">Contexto EF Core.</param>
@@ -385,6 +410,8 @@ public class PrestamosController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        await RegistrarAuditoriaAsync("Descarga Física", archivo.LibroId.ToString(), $"Archivo: {archivo.Ruta}");
+
         return PhysicalFile(filePath, "application/octet-stream", archivo.Ruta);
     }
 
@@ -415,6 +442,8 @@ public class PrestamosController : Controller
         if (ext == ".pdf") contentType = "application/pdf";
         else if (ext == ".epub") contentType = "application/epub+zip";
         else if (ext == ".docx") contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+        await RegistrarAuditoriaAsync("Lectura Digital", archivo.LibroId.ToString(), $"Formato: {ext}");
 
         return PhysicalFile(filePath, contentType, enableRangeProcessing: true);
     }

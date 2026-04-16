@@ -8,38 +8,79 @@
 <div class="container py-4">
     <div class="row align-items-center mb-5">
         <div class="col-lg-6 mb-3 mb-lg-0">
-            <h1 class="fw-bold text-dark mb-1">📚 Explorar Biblioteca</h1>
-            <p class="text-muted mb-0">Colección digital actualizada con @Model.Count() títulos</p>
+            <h1 class="fw-bold text-dark mb-1"><i class="fa-solid fa-layer-group text-primary me-2"></i> Explorar Biblioteca</h1>
+            <p class="text-muted mb-0">Colección digital con @Model.Count() títulos seleccionados</p>
         </div>
         <div class="col-lg-6">
-            <div class="position-relative shadow-sm rounded-pill overflow-hidden bg-white border">
-                <span class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted">🔍</span>
-                <input type="text" id="searchInput" 
-                       class="form-control border-0 ps-5 py-3 rounded-pill" 
-                       placeholder="Buscar por título, autor o categoría..." 
-                       autocomplete="off">
-                <div id="searchSpinner" class="spinner-border spinner-border-sm text-primary position-absolute top-50 end-0 translate-middle-y me-3 d-none" role="status">
-                    <span class="visually-hidden">Loading...</span>
+            <div class="d-flex gap-2">
+                <div class="position-relative flex-fill shadow-sm rounded-pill overflow-hidden bg-white border">
+                    <span class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="searchInput" 
+                           class="form-control border-0 ps-5 py-3 rounded-pill" 
+                           placeholder="Buscar por título, autor o categoría..." 
+                           autocomplete="off">
+                    <div id="searchSpinner" class="spinner-border spinner-border-sm text-primary position-absolute top-50 end-0 translate-middle-y me-3 d-none" role="status"></div>
                 </div>
+                <button class="btn btn-dark rounded-pill px-4 shadow-sm h-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterSidebar">
+                    <i class="fa-solid fa-sliders me-2"></i> Filtros
+                </button>
             </div>
         </div>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="text-muted small">
-            Mostrando resultados en tiempo real
+            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                <i class="fa-solid fa-bolt me-1"></i> Mostrando resultados en vivo
+            </span>
         </div>
         @if (User.IsInRole("Admin"))
         {
             <div class="d-flex gap-2">
-                <a class="btn btn-outline-secondary rounded-pill px-4" asp-controller="Admin" asp-action="Index">
-                    📊 Volver al Dashboard
-                </a>
-                <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
-                    ➕ Nuevo Libro
+                <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                    <i class="fa-solid fa-plus me-2"></i> Nuevo Libro
                 </a>
             </div>
         }
+    </div>
+
+    <!-- Offcanvas de Filtros -->
+    <div class="offcanvas offcanvas-end border-0 shadow-lg" tabindex="-1" id="filterSidebar" style="border-radius: 2rem 0 0 2rem;">
+        <div class="offcanvas-header bg-light p-4" style="border-radius: 2rem 0 0 0;">
+            <h5 class="offcanvas-title fw-bold"><i class="fa-solid fa-filter me-2 text-primary"></i> Filtrar Catálogo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4">
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-muted text-uppercase mb-3">Disponibilidad</label>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="filterDigital">
+                    <label class="form-check-label small" for="filterDigital">Solo con archivos digitales</label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-muted text-uppercase mb-3">Categorías Populares</label>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Ficción</button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Historia</button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Tecnología</button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Ciencia</button>
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Arte</button>
+                </div>
+            </div>
+
+            <hr class="my-4 opacity-10">
+            
+            <button class="btn btn-primary w-100 rounded-pill py-2 fw-bold" onclick="applyFilters()" data-bs-dismiss="offcanvas">
+                Aplicar Filtros
+            </button>
+            <button class="btn btn-link w-100 text-muted small mt-2" onclick="resetSearch()" data-bs-dismiss="offcanvas">
+                Limpiar todo
+            </button>
+        </div>
     </div>
 
     <div id="resultsContainer">
@@ -88,6 +129,24 @@
         }, 500); 
     });
 
+    // Listener para chips de categorías
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            this.classList.toggle('btn-primary');
+            this.classList.toggle('btn-outline-secondary');
+            this.classList.toggle('active');
+        });
+    });
+
+    function applyFilters() {
+        // En esta versión simplificada, el filtro digital y los chips 
+        // simplemente disparan una nueva búsqueda con los términos seleccionados.
+        // Podría extenderse el backend para recibir parámetros de filtro complejos.
+        const activeChips = Array.from(document.querySelectorAll('.filter-chip.active')).map(c => c.innerText);
+        const searchQuery = searchInput.value + ' ' + activeChips.join(' ');
+        updateGrid(searchQuery.trim(), 1);
+    }
+
     // Cambia de página manteniendo el filtro de búsqueda actual
     function changePage(page) {
         updateGrid(searchInput.value, page);
@@ -95,6 +154,11 @@
 
     function resetSearch() {
         searchInput.value = '';
+        document.querySelectorAll('.filter-chip.active').forEach(c => {
+            c.classList.remove('btn-primary', 'active');
+            c.classList.add('btn-outline-secondary');
+        });
+        document.getElementById('filterDigital').checked = false;
         updateGrid('', 1);
     }
 </script>

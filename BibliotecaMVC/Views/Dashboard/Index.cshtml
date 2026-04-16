@@ -1,0 +1,222 @@
+@model BibliotecaMVC.Models.ViewModels.UserDashboardViewModel
+
+@{
+    ViewData["Title"] = "Mi Espacio - Dashboard";
+}
+
+<style>
+    .glass-panel {
+        background: rgba(var(--bs-body-bg-rgb), 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1.5rem;
+    }
+
+    .stat-card {
+        transition: transform 0.3s ease;
+        border: none;
+        border-radius: 1.2rem;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .progress {
+        height: 8px;
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    .book-thumb {
+        width: 60px;
+        height: 90px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .category-chart-container {
+        height: 250px;
+        position: relative;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="p-5 glass-panel shadow-sm text-center text-md-start d-flex flex-column flex-md-row align-items-center justify-content-between">
+                <div>
+                    <h1 class="display-5 fw-bold mb-1">¡Hola, @Model.NombreUsuario! 👋</h1>
+                    <p class="text-muted lead">Bienvenido a tu santuario digital de lectura.</p>
+                </div>
+                <div class="d-none d-lg-block">
+                    <i class="fa-solid fa-book-open-reader fa-5x text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stat-card glass-panel p-4 shadow-sm text-center">
+                <div class="btn btn-primary rounded-circle p-3 mb-3 no-hover">
+                    <i class="fa-solid fa-bookmark fa-xl"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@Model.PrestamosActivos</h3>
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Libros Actuales</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card glass-panel p-4 shadow-sm text-center">
+                <div class="btn btn-success rounded-circle p-3 mb-3 no-hover">
+                    <i class="fa-solid fa-check-double fa-xl"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@Model.LibrosLeidosTotal</h3>
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Lecturas Completas</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card glass-panel p-4 shadow-sm text-center">
+                <div class="btn btn-warning rounded-circle p-3 mb-3 no-hover text-white">
+                    <i class="fa-solid fa-heart fa-xl"></i>
+                </div>
+                <h3 class="fw-bold mb-0">@Model.FavoritosCount</h3>
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Tus Favoritos</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card glass-panel p-4 shadow-sm text-center">
+                <div class="btn btn-danger rounded-circle p-3 mb-3 no-hover">
+                    <i class="fa-solid fa-money-bill-wave fa-xl"></i>
+                </div>
+                <h3 class="fw-bold mb-0">$@Model.DeudaTotal.ToString("N0")</h3>
+                <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Deuda por Mora</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content: Current Progress -->
+        <div class="col-lg-8">
+            <div class="glass-panel p-4 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-hourglass-half me-2 text-primary"></i> Continúa Leyendo</h5>
+                    <a asp-controller="Prestamos" asp-action="Index" class="btn btn-link btn-sm text-decoration-none">Ver todos</a>
+                </div>
+
+                @if (!Model.LecturaActual.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-ghost fa-3x text-muted mb-3 opacity-25"></i>
+                        <p class="text-muted">No tienes libros activos en este momento.</p>
+                        <a asp-controller="Libros" asp-action="Index" class="btn btn-primary rounded-pill px-4">Explorar catálogo</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-3">
+                        @foreach (var book in Model.LecturaActual)
+                        {
+                            <div class="col-12 p-3 rounded-4 bg-light bg-opacity-10 border border-white border-opacity-10 hover-lift mb-2">
+                                <div class="d-flex align-items-center">
+                                    <img src="@(string.IsNullOrEmpty(book.Portada) ? "https://placehold.co/400x600?text=No+Preview" : book.Portada)" class="book-thumb me-3" alt="Portada">
+                                    <div class="flex-fill">
+                                        <h6 class="fw-bold mb-0">@book.TituloLibro</h6>
+                                        <p class="text-muted small mb-2">por @book.Autor</p>
+                                        <div class="progress mb-1">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @book.Porcentaje.ToString("0")%" aria-valuenow="@book.Porcentaje" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted" style="font-size: 0.65rem;">@book.Porcentaje.ToString("0")% completado</small>
+                                            <small class="text-muted" style="font-size: 0.65rem;">Pág. @book.PaginaActual de @book.PaginasTotales</small>
+                                        </div>
+                                    </div>
+                                    <div class="ms-3">
+                                        <a asp-controller="Prestamos" asp-action="Leer" asp-route-id="@book.PrestamoId" class="btn btn-dark rounded-circle btn-lg shadow-sm">
+                                            <i class="fa-solid fa-play"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Right Side: Charts & Tips -->
+        <div class="col-lg-4">
+            <!-- Genres Chart -->
+            <div class="glass-panel p-4 shadow-sm mb-4">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-chart-pie me-2 text-primary"></i> Tus Géneros</h5>
+                <div class="category-chart-container">
+                    <canvas id="userCategoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="glass-panel p-4 shadow-sm">
+                <h5 class="fw-bold mb-4"><i class="fa-solid fa-wand-magic-sparkles me-2 text-primary"></i> Para ti</h5>
+                @foreach (var rec in Model.Recomendaciones)
+                {
+                    <div class="d-flex align-items-center mb-3 p-2 rounded-3 hover-bg-light">
+                        <img src="@(string.IsNullOrEmpty(rec.ImagenUrl) ? "https://placehold.co/400x600?text=No+Preview" : rec.ImagenUrl)" style="width: 40px; height: 60px; object-fit: cover;" class="rounded shadow-sm me-3">
+                        <div>
+                            <h6 class="fw-bold mb-0 small">@rec.Titulo</h6>
+                            <p class="text-muted mb-0" style="font-size: 0.7rem;">@rec.Autor?.Nombre</p>
+                            <a asp-controller="Prestamos" asp-action="ConfirmarPrestamo" asp-route-id="@rec.Id" class="text-primary text-decoration-none small" style="font-size: 0.7rem;">Alquilar ahora</a>
+                        </div>
+                    </div>
+                }
+                @if (!Model.Recomendaciones.Any())
+                {
+                    <p class="small text-muted text-center py-4">Sigue leyendo para obtener recomendaciones personalizadas.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('userCategoryChart').getContext('2d');
+            
+            const data = {
+                labels: @Html.Raw(Json.Serialize(Model.LabelsCategorias)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.ValoresCategorias)),
+                    backgroundColor: [
+                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+                    ],
+                    hoverBackgroundColor: [
+                        '#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617', '#60616f'
+                    ],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }]
+            };
+
+            const myPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        });
+    </script>
+}
