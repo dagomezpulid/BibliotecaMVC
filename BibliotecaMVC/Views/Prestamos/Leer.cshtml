@@ -4,7 +4,9 @@
     ViewData["Title"] = "Leer Libro";
     
     var primerArchivo = Model.Archivos?.FirstOrDefault();
-    var isPdf = primerArchivo?.Formato?.EndsWith("pdf", StringComparison.OrdinalIgnoreCase) ?? false;
+    var formato = primerArchivo?.Formato?.ToLower() ?? "";
+    var isPdf = formato.EndsWith("pdf");
+    var isDocx = formato.EndsWith("docx");
     var prestamoId = ViewBag.PrestamoId;
     var paginaInicial = ViewBag.PaginaGuardada ?? 1;
 }
@@ -24,7 +26,7 @@
         </div>
 
         <!-- CONTROLES DE PROGRESO DE LECTURA (Fase Premium) -->
-        <div class="d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 shadow-inner">
+        <div class="d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 shadow-inner @(isDocx ? "d-none" : "")">
             <span class="small text-white-50 me-2 d-none d-sm-inline">Vas en la página:</span>
             <input type="number" id="inputPagina" class="form-control form-control-sm border-0 bg-transparent text-white fw-bold text-center" 
                    style="width: 60px;" value="@paginaInicial" min="1" />
@@ -57,6 +59,19 @@
                     style="display: block; background-color: #525659;"
                     allowfullscreen>
             </iframe>
+        }
+        else if (isDocx)
+        {
+            <div id="word-container" class="w-100 h-100 p-2 p-md-4 overflow-auto bg-secondary d-flex justify-content-center">
+                <div id="word-render-area" class="bg-white shadow-lg my-2" style="max-width: 900px; min-height: 100%;">
+                    <div class="d-flex justify-content-center align-items-center h-100 py-5" id="word-loader">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando documento...</span>
+                        </div>
+                        <span class="ms-3 fw-bold text-dark">Preparando documento Word...</span>
+                    </div>
+                </div>
+            </div>
         }
         else
         {
@@ -108,17 +123,62 @@
     .fade-out {
         animation: fadeOut 2s forwards;
     }
+    /* Estilo para el renderizado de docx-preview */
+    .docx-wrapper {
+        background-color: transparent !important;
+        padding: 0 !important;
+    }
+    .docx {
+        box-shadow: none !important;
+        margin-bottom: 0 !important;
+        border: none !important;
+    }
 </style>
 
 @section Scripts {
+    @if (isDocx)
+    {
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://unpkg.com/docx-preview/dist/docx-preview.min.js"></script>
+    }
+
     <script>
         const btnGuardar = document.getElementById('btnGuardarProgreso');
         const inputPagina = document.getElementById('inputPagina');
         const indicator = document.getElementById('saveIndicator');
         const libroId = @Model.Id;
+        const isDocx = @isDocx.ToString().ToLower();
+        const prestamoId = @prestamoId;
+
+        // Lógica específica para Word
+        if (isDocx) {
+            const wordContainer = document.getElementById("word-render-area");
+            const wordLoader = document.getElementById("word-loader");
+
+            async function loadWord() {
+                try {
+                    const response = await fetch(`/Prestamos/ArchivoLectura/${prestamoId}`);
+                    const blob = await response.blob();
+                    
+                    await docx.renderAsync(blob, wordContainer, null, {
+                        className: "docx",
+                        inWrapper: false,
+                        ignoreLastRenderedPageBreak: false
+                    });
+                    
+                    wordLoader.classList.add("d-none");
+                } catch (err) {
+                    console.error("Error cargando Word:", err);
+                    wordContainer.innerHTML = `<div class="p-5 text-danger fw-bold">Error al renderizar el documento Word. Por favor intenta descargarlo.</div>`;
+                }
+            }
+            loadWord();
+        }
 
         // Función para guardar progreso vía AJAX
         async function saveProgress() {
+            if (isDocx) return; // Por ahora no guardamos paginación en Word flow
+            
             const pagina = parseInt(inputPagina.value);
             if (isNaN(pagina) || pagina < 1) return;
 
@@ -129,7 +189,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || document.cookie.split(';').find(c => c.trim().startsWith('__RequestVerificationToken='))?.split('=')[1]
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ""
                     },
                     body: `libroId=${libroId}&pagina=${pagina}`
                 });
@@ -142,10 +202,8 @@
             }
         }
 
-        btnGuardar.addEventListener('click', saveProgress);
-
-        // Autoguardado al cambiar el input (cuando el usuario marca manualmente donde va)
-        inputPagina.addEventListener('change', saveProgress);
+        if (btnGuardar) btnGuardar.addEventListener('click', saveProgress);
+        if (inputPagina) inputPagina.addEventListener('change', saveProgress);
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {

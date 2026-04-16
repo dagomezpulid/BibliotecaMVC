@@ -221,7 +221,7 @@ public class AdminController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // 👻 MIGRACIÓN A USUARIO FANTASMA PARA PROTEGER ANALÍTICAS
+        // MIGRACIÓN A USUARIO FANTASMA PARA PROTEGER ANALÍTICAS
         // En lugar de borrar préstamos y reseñas, las asignamos a un perfil anónimo 
         // conservando las estadísticas mensuales y de popularidad.
         var ghostUser = await _userManager.FindByEmailAsync("fantasma@biblioteca.net");
