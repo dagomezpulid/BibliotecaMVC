@@ -43,24 +43,40 @@
 
 ```mermaid
 graph TD
-    User((Usuario/Admin)) -->|HTTPS| WebServer[ASP.NET Core 9 Engine]
-    subgraph "Core Business Logic"
-        WebServer --> Controllers[Controllers]
-        Controllers --> Services[Business Services]
-        Services --> EF[Entity Framework Core]
+    User((Usuario / Lector)) -->|HTTPS| WebServer[ASP.NET Core 9 Engine]
+    
+    subgraph "Navegador (Frontend UX)"
+        User -.-> UX[Interfaz Premium / Glassmorphism]
+        UX -.-> Reader[Smart Reading Engine]
+        Reader --> PDF[Visor PDF Nativo]
+        Reader --> Word[docx-preview + JSZip]
+        UX --> Charts[Chart.js / Analíticas]
+    end
+
+    subgraph "Núcleo del Servidor (Backend)"
+        WebServer --> Auth[Identity Hardened]
+        WebServer --> Controllers[Controladores MVC/AJAX]
+        Controllers --> Logic[Servicios de Negocio]
+        Logic --> EF[Entity Framework Core 9]
         EF --> DB[(SQL Server / LocalDB)]
+        Logic --> UV[UserValidationService]
     end
-    subgraph "Advanced Integrations"
-        Services -->|SMS/WhatsApp| Twilio[Twilio Messaging]
-        Services -->|Analytics| Charts[Chart.js Adaptive Engine]
-        Controllers -->|Real-time| Notif[Notification System]
+
+    subgraph "Integraciones y Mensajería"
+        Logic -->|SMS| Twilio[Twilio SMS Sender]
+        Logic -->|Email| SMTP[SMTP Client Sender]
     end
-    subgraph "Asset Management"
-        Controllers -->|Access Control| Vault[Digital Vault Infrastructure]
-        Controllers -->|Word Rendering| DocxPreview[docx-preview Native Reader]
-        WebServer -->|Auth| Identity[ASP.NET Identity Hardened]
+
+    subgraph "Gestión de Activos (DRM)"
+        Controllers -->|Control de Acceso| Vault[(Digital Vault - Vault Folder)]
     end
-    Worker[SmsBackgroundWorker] -->|IHostedService| Services
+
+    subgraph "Tareas en Segundo Plano"
+        Worker[SmsBackgroundWorker] -->|Escaneo Diario| EF
+        Worker -->|Notificación| Twilio
+    end
+
+    Auth -.-> DB
 ```
 
 ---
