@@ -25,6 +25,9 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly IUserValidationService _validationService;
 
+        /// <summary>
+        /// Inicializa el modelo de registro con los servicios de identidad, roles, logs, email y validación.
+        /// </summary>
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
@@ -75,10 +78,16 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; } = string.Empty;
         }
 
+        /// <summary>
+        /// Prepara la vista de registro.
+        /// </summary>
         public void OnGet()
         {
         }
 
+        /// <summary>
+        /// Procesa el formulario de registro, valida la unicidad de datos y crea un nuevo usuario con rol de 'Usuario'.
+        /// </summary>
         public async Task<IActionResult> OnPostAsync()
         {
             // Verificación de correo electrónico duplicado

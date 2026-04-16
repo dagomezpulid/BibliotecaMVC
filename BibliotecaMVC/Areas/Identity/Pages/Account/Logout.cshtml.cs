@@ -28,17 +28,24 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
             _logger = logger;
         }
 
+        /// <summary>
+        /// Procesa la solicitud de cierre de sesión mediante el método GET.
+        /// </summary>
         public async Task<IActionResult> OnGet()
         {
             await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out via GET.");
+            _logger.LogInformation("Usuario cerró sesión mediante GET.");
             return LocalRedirect("~/");
         }
 
+        /// <summary>
+        /// Procesa la solicitud de cierre de sesión mediante el método POST.
+        /// </summary>
+        /// <param name="returnUrl">URL a la cual redirigir tras el cierre de sesión.</param>
         public async Task<IActionResult> OnPost(string returnUrl = null)
         {
             await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out via POST.");
+            _logger.LogInformation("Usuario cerró sesión mediante POST.");
             
             if (returnUrl != null)
             {
