@@ -39,6 +39,9 @@
         @if (User.IsInRole("Admin"))
         {
             <div class="d-flex gap-2">
+                <a asp-controller="Admin" asp-action="Index" class="btn-dashboard-premium shadow-sm">
+                    📊 Volver al Dashboard
+                </a>
                 <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
                     <i class="fa-solid fa-plus me-2"></i> Nuevo Libro
                 </a>
@@ -62,13 +65,15 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-bold small text-muted text-uppercase mb-3">Categorías Populares</label>
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Ficción</button>
-                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Historia</button>
-                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Tecnología</button>
-                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Ciencia</button>
-                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip">Arte</button>
+                <label class="form-label fw-bold small text-muted text-uppercase mb-3">Todas las Categorías</label>
+                <div class="d-flex flex-wrap gap-2 overflow-auto" style="max-height: 250px; padding: 5px;">
+                    @if (ViewBag.Categorias != null)
+                    {
+                        foreach (var cat in (List<BibliotecaMVC.Models.Categoria>)ViewBag.Categorias)
+                        {
+                            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 filter-chip" data-id="@cat.Id">@cat.Nombre</button>
+                        }
+                    }
                 </div>
             </div>
 

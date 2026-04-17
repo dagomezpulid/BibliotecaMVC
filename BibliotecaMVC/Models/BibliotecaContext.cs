@@ -93,7 +93,22 @@ namespace BibliotecaMVC.Models
                 new Categoria { Id = 32, Nombre = "Novela Negra" },
                 new Categoria { Id = 33, Nombre = "Novela Oratorio" },
                 new Categoria { Id = 34, Nombre = "Crónica Documental" },
-                new Categoria { Id = 35, Nombre = "Crónica" }
+                new Categoria { Id = 35, Nombre = "Crónica" },
+                new Categoria { Id = 36, Nombre = "Filosofía" },
+                new Categoria { Id = 37, Nombre = "Política" },
+                new Categoria { Id = 38, Nombre = "Sociología" },
+                new Categoria { Id = 39, Nombre = "Psicología" },
+                new Categoria { Id = 40, Nombre = "Matemáticas" },
+                new Categoria { Id = 41, Nombre = "Física" },
+                new Categoria { Id = 42, Nombre = "Química" },
+                new Categoria { Id = 43, Nombre = "Biología" },
+                new Categoria { Id = 44, Nombre = "Medicina" },
+                new Categoria { Id = 45, Nombre = "Ingeniería" },
+                new Categoria { Id = 46, Nombre = "Arquitectura" },
+                new Categoria { Id = 47, Nombre = "Música" },
+                new Categoria { Id = 48, Nombre = "Cine" },
+                new Categoria { Id = 49, Nombre = "Fotografía" },
+                new Categoria { Id = 50, Nombre = "Deportes" }
             );
         }
     }

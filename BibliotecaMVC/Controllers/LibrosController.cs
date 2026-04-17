@@ -50,6 +50,8 @@ namespace BibliotecaMVC.Controllers
                 }
             }
 
+            ViewBag.Categorias = await _context.Categorias.OrderBy(c => c.Nombre).ToListAsync();
+
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
                 return PartialView("_LibrosGrid", libros);

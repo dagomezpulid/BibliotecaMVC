@@ -25,8 +25,8 @@
             </h5>
         </div>
 
-        <!-- CONTROLES DE PROGRESO DE LECTURA (Fase Premium) -->
-        <div class="d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 shadow-inner @(isDocx ? "d-none" : "")">
+        <!-- CONTROLES DE PROGRESO DE LECTURA -->
+        <div class="d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 shadow-inner">
             <span class="small text-white-50 me-2 d-none d-sm-inline">Vas en la página:</span>
             <input type="number" id="inputPagina" class="form-control form-control-sm border-0 bg-transparent text-white fw-bold text-center" 
                    style="width: 60px;" value="@paginaInicial" min="1" />
@@ -62,15 +62,23 @@
         }
         else if (isDocx)
         {
-            <div id="word-container" class="w-100 h-100 p-2 p-md-4 overflow-auto bg-secondary d-flex justify-content-center">
-                <div id="word-render-area" class="bg-white shadow-lg my-2" style="max-width: 900px; min-height: 100%;">
+            <div id="word-container" class="w-100 h-100 p-0 p-md-4 overflow-hidden bg-dark d-flex justify-content-center position-relative">
+                <div id="word-render-area" class="my-0" style="width: 100%; max-width: 900px;">
                     <div class="d-flex justify-content-center align-items-center h-100 py-5" id="word-loader">
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border text-info" style="width: 3rem; height: 3rem;" role="status">
                             <span class="visually-hidden">Cargando documento...</span>
                         </div>
-                        <span class="ms-3 fw-bold text-dark">Preparando documento Word...</span>
+                        <h4 class="ms-3 fw-bold text-white-50">Preparando motor de lectura Word...</h4>
                     </div>
                 </div>
+
+                <!-- Botones de Navegación Virtual (Solo para Word) -->
+                <button id="prevPageWord" class="btn btn-dark btn-lg rounded-circle shadow-lg position-absolute start-0 top-50 translate-middle-y ms-4 border-secondary opacity-50 hover-opacity-100" style="z-index: 1200; width: 60px; height: 60px;">
+                    <i class="bi bi-chevron-left fs-3"></i>
+                </button>
+                <button id="nextPageWord" class="btn btn-dark btn-lg rounded-circle shadow-lg position-absolute end-0 top-50 translate-middle-y me-4 border-secondary opacity-50 hover-opacity-100" style="z-index: 1200; width: 60px; height: 60px;">
+                    <i class="bi bi-chevron-right fs-3"></i>
+                </button>
             </div>
         }
         else
@@ -123,15 +131,30 @@
     .fade-out {
         animation: fadeOut 2s forwards;
     }
-    /* Estilo para el renderizado de docx-preview */
+    /* Estilo para el renderizado de docx-preview - Efecto Hoja Física */
     .docx-wrapper {
         background-color: transparent !important;
         padding: 0 !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     .docx {
-        box-shadow: none !important;
-        margin-bottom: 0 !important;
-        border: none !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
+        margin-bottom: 3rem !important;
+        border: 1px solid #ddd !important;
+        background-color: white !important;
+        padding: 50pt !important; /* Margen de impresión estándar */
+    }
+    #word-container {
+        scroll-behavior: smooth;
+        background: radial-gradient(circle, #2c2f33 0%, #1a1c1e 100%);
+        overflow-y: scroll !important; /* Permitir scroll pero ocultar barra si se prefiere */
+    }
+    .hover-opacity-100:hover {
+        opacity: 1 !important;
+        background-color: #0dcaf0 !important;
+        color: black !important;
     }
 </style>
 
@@ -150,34 +173,105 @@
         const isDocx = @isDocx.ToString().ToLower();
         const prestamoId = @prestamoId;
 
-        // Lógica específica para Word
+        // Lógica específica para Word con Paginación Virtual
         if (isDocx) {
-            const wordContainer = document.getElementById("word-render-area");
+            const wordContainer = document.getElementById("word-container");
+            const wordRenderArea = document.getElementById("word-render-area");
             const wordLoader = document.getElementById("word-loader");
+            const btnPrev = document.getElementById("prevPageWord");
+            const btnNext = document.getElementById("nextPageWord");
+
+            let totalVirtualPages = 1;
 
             async function loadWord() {
                 try {
                     const response = await fetch(`/Prestamos/ArchivoLectura/${prestamoId}`);
                     const blob = await response.blob();
                     
-                    await docx.renderAsync(blob, wordContainer, null, {
+                    await docx.renderAsync(blob, wordRenderArea, null, {
                         className: "docx",
                         inWrapper: false,
-                        ignoreLastRenderedPageBreak: false
+                        ignoreLastRenderedPageBreak: false,
+                        useMathMLPolyfill: true
                     });
                     
                     wordLoader.classList.add("d-none");
+
+                    // Calcular páginas virtuales tras el renderizado
+                    setTimeout(() => {
+                        updateTotalPages();
+                        const pagina = @paginaInicial;
+                        if (pagina > 1) {
+                            irAVirtualPage(pagina);
+                        }
+                    }, 800);
+
                 } catch (err) {
                     console.error("Error cargando Word:", err);
-                    wordContainer.innerHTML = `<div class="p-5 text-danger fw-bold">Error al renderizar el documento Word. Por favor intenta descargarlo.</div>`;
+                    wordRenderArea.innerHTML = `<div class="p-5 text-danger fw-bold text-center text-white">Error al renderizar el documento Word.</div>`;
                 }
             }
+
+            function updateTotalPages() {
+                const scrollHeight = wordContainer.scrollHeight;
+                const clientHeight = wordContainer.clientHeight;
+                totalVirtualPages = Math.max(1, Math.ceil(scrollHeight / clientHeight));
+                console.log("Total Virtual Pages:", totalVirtualPages);
+            }
+
+            function irAVirtualPage(num) {
+                if (num < 1) num = 1;
+                if (num > totalVirtualPages) num = totalVirtualPages;
+                
+                const clientHeight = wordContainer.clientHeight;
+                wordContainer.scrollTo({
+                    top: (num - 1) * clientHeight,
+                    behavior: 'smooth'
+                });
+                inputPagina.value = num;
+                saveProgress();
+            }
+
+            btnNext.onclick = () => {
+                const current = parseInt(inputPagina.value);
+                irAVirtualPage(current + 1);
+            };
+
+            btnPrev.onclick = () => {
+                const current = parseInt(inputPagina.value);
+                irAVirtualPage(current - 1);
+            };
+
+            // Detectar scroll para actualizar el input de página
+            wordContainer.addEventListener('scroll', () => {
+                const clientHeight = wordContainer.clientHeight;
+                const current = Math.round(wordContainer.scrollTop / clientHeight) + 1;
+                if (inputPagina.value != current) {
+                    inputPagina.value = current;
+                }
+            });
+
+            // Atajos de flechas
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === 'PageDown') btnNext.click();
+                if (e.key === 'ArrowLeft' || e.key === 'PageUp') btnPrev.click();
+            });
+
             loadWord();
+            
+            inputPagina.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    irAVirtualPage(parseInt(inputPagina.value));
+                }
+            });
+            
+            // Recalcular páginas al cambiar el tamaño de la ventana
+            window.addEventListener('resize', updateTotalPages);
         }
 
         // Función para guardar progreso vía AJAX
         async function saveProgress() {
-            if (isDocx) return; // Por ahora no guardamos paginación en Word flow
+            // Permitimos guardar para Word también
             
             const pagina = parseInt(inputPagina.value);
             if (isNaN(pagina) || pagina < 1) return;

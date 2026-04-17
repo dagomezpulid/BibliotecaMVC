@@ -37,13 +37,16 @@ namespace BibliotecaMVC.Services
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                var lowerQuery = query.ToLower();
-                librosQuery = librosQuery.Where(l =>
-                    (l.Titulo != null && l.Titulo.ToLower().Contains(lowerQuery)) ||
-                    (l.Autor != null && l.Autor.Nombre.ToLower().Contains(lowerQuery)) ||
-                    l.Categorias.Any(c => c.Nombre.ToLower().Contains(lowerQuery)) ||
-                    (l.ISBN != null && l.ISBN.Contains(lowerQuery))
-                );
+                var keywords = query.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var word in keywords)
+                {
+                    librosQuery = librosQuery.Where(l =>
+                        (l.Titulo != null && l.Titulo.ToLower().Contains(word)) ||
+                        (l.Autor != null && l.Autor.Nombre.ToLower().Contains(word)) ||
+                        l.Categorias.Any(c => c.Nombre.ToLower().Contains(word)) ||
+                        (l.ISBN != null && l.ISBN.Contains(word))
+                    );
+                }
             }
 
             int totalLibros = await librosQuery.CountAsync();
