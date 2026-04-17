@@ -13,6 +13,7 @@
 
 ### 🎨 1. Estética Industrial y UX Adaptativa
 *   **Diseño de Vanguardia**: Implementación de **Glassmorphism** (Efecto Cristal) y micro-animaciones dinámicas con **Animate.css**.
+*   **Botones Premium de Navegación**: Sistema de navegación administrativo unificado con botones de efecto cristal y feedback háptico visual.
 *   **Modo Oscuro Dinámico**: Interfaz 100% armonizada mediante variables CSS. Los componentes cambian orgánicamente basándose en las preferencias del sistema.
 *   **Feedback Visual Real**: La campana de notificaciones reacciona físicamente (efecto *swing*) ante nuevos eventos en tiempo real.
 
@@ -27,11 +28,14 @@
 *   **Documentación XML Integral**: Código 100% documentado siguiendo estándares de la industria para facilitar el mantenimiento y la extensibilidad.
 
 ### 📖 4. Smart Reading Engine Multi-Formato
-*   **Lector Word (.docx) & PDF**: Renderizado nativo en navegador con estética de "hoja física" y guardado persistente del progreso de lectura.
-*   **Búsqueda Inteligente (AJAX)**: Filtrado asíncrono ultra-rápido por múltiples criterios.
+*   **Paginación Virtual para Word**: Motor avanzado que simula páginas físicas en archivos `.docx`, permitiendo un control preciso del progreso incluso en formatos fluidos.
+*   **Visor de Alta Densidad**: Estética de "hoja física" con sombras proyectadas y márgenes de impresión reales para una lectura inmersiva.
+*   **Guardado de Progreso Inteligente**: Sincronización automática de la última página leída (PDF y Word) vinculada al perfil del usuario.
 *   **Digital Vault (DRM)**: Almacenamiento seguro de activos digitales fuera de la ruta pública para protección de derechos de autor.
 
-### 📊 5. Inteligencia de Negocio
+### 📊 5. Inteligencia de Negocio y Filtrado
+*   **Filtrado Dinámico por 50 Categorías**: Sistema de clasificación masivo que permite explorar el catálogo mediante chips interactivos generados dinámicamente desde la base de datos.
+*   **Búsqueda Multipalabra**: Algoritmo de búsqueda optimizado que procesa múltiples palabras clave en títulos, autores y categorías simultáneamente.
 *   **Dashboards con Chart.js**: Visualizaciones reactivas al tema actual para control administrativo total de préstamos, multas y tendencias.
 
 ---
@@ -47,7 +51,7 @@ graph TD
         UX -.-> SignalRClient[SignalR Connection]
         UX -.-> Reader[Smart Reading Engine]
         Reader --> PDF[Visor PDF Nativo]
-        Reader --> Word[docx-preview]
+        Reader --> Word[Virtual Paging Engine]
     end
 
     subgraph "Backend Core (Servidor)"
@@ -76,8 +80,8 @@ graph TD
     end
 
     subgraph "Integraciones y Almacenamiento"
-        INS -->|SMS| Twilio[Twilio API]
-        INS -->|Email| SMTP[SMTP Relay]
+        INS -->|SMS| Twilio API
+        INS -->|Email| SMTP Relay
         ILS -->|Control DRM| Vault[(Digital Vault - Vault Folder)]
     end
 ```
@@ -87,7 +91,7 @@ graph TD
 ## 🛠️ Stack Tecnológico
 *   **Backend**: C# 13, .NET 10.0, EF Core 10.
 *   **Real-Time**: ASP.NET Core SignalR.
-*   **Frontend**: Bootstrap 5, JS ES2022, Animate.css, Chart.js.
+*   **Frontend**: Bootstrap 5, JS ES2022, Animate.css, Chart.js, docx-preview (Customized).
 *   **Mensajería**: Twilio SMS API.
 *   **Seguridad**: Identity con Lockout, PhysicalFile Streaming (DRM), Auditoría de IP.
 
@@ -95,9 +99,9 @@ graph TD
 
 ## 📁 Estructura de la Solución
 *   **Hubs/**: Punto de entrada para comunicaciones en tiempo real.
-*   **Services/**: Capa de servicios que contiene la médula de la lógica de negocio (Préstamos, Libros, Notificaciones).
+*   **Services/**: Capa de servicios que contiene la médula de la lógica de negocio.
 *   **Controllers/**: Gestión de flujos de navegación y endpoints API.
-*   **Models/**: Definición de entidades y contexto de datos EF Core.
+*   **Models/**: Definición de entidades y contexto de datos EF Core (50 categorías base).
 *   **BibliotecaLibros_Vault/**: Repositorio físico de libros digitales protegido.
 
 ---
