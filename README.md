@@ -42,7 +42,7 @@
 graph TD
     User((Usuario / Lector)) -->|HTTPS| WebServer[ASP.NET Core 10 Engine]
     
-    subgraph "Navegador (Frontend UX)"
+    subgraph "Frontend UX (Navegador)"
         User -.-> UX[Interfaz Premium / Animate.css]
         UX -.-> SignalRClient[SignalR Connection]
         UX -.-> Reader[Smart Reading Engine]
@@ -50,30 +50,35 @@ graph TD
         Reader --> Word[docx-preview]
     end
 
-    subgraph "Núcleo del Servidor (Backend)"
+    subgraph "Backend Core (Servidor)"
         WebServer --> Auth[Identity Hardened]
         WebServer --> SignalRHub[NotificationHub]
         WebServer --> Controllers[Controladores MVC]
         
-        subgraph "Service Layer (Negocio)"
+        subgraph "Service Layer (Capa de Negocio)"
             Controllers --> IPS[IPrestamoService]
             Controllers --> ILS[ILibroService]
             IPS --> INS[INotificationService]
             ILS --> INS
         end
         
-        INS --> SignalRHub
+        SignalRClient <==>|WebSockets| SignalRHub
+        INS -->|Push| SignalRHub
+        
         IPS --> EF[Entity Framework Core 10]
-        EF --> DB[(SQL Server / LocalDB)]
+        ILS --> EF
+        EF --> DB[(SQL Server)]
     end
 
-    subgraph "Integraciones Externas"
-        INS -->|SMS| Twilio[Twilio SMS API]
+    subgraph "Workers (Tareas en 2do Plano)"
+        Worker[SmsBackgroundWorker] -->|Patrulla Diaria| EF
+        Worker -->|Alerta SMS| INS
+    end
+
+    subgraph "Integraciones y Almacenamiento"
+        INS -->|SMS| Twilio[Twilio API]
         INS -->|Email| SMTP[SMTP Relay]
-    end
-
-    subgraph "Gestión de Activos"
-        ILS -->|Control DRM| Vault[(Digital Vault - Folder)]
+        ILS -->|Control DRM| Vault[(Digital Vault - Vault Folder)]
     end
 ```
 

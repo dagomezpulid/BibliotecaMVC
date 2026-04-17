@@ -74,7 +74,7 @@ namespace BibliotecaMVC.Services
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<BibliotecaContext>();
-                    var smsSender = scope.ServiceProvider.GetRequiredService<ISmsSender>();
+                    var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
                     _logger.LogInformation("[VIGILANTE NOCTURNO] Escaneando Base de Datos buscando deudores fugitivos...");
 
@@ -99,7 +99,8 @@ namespace BibliotecaMVC.Services
                             string smsBody = $"🔴 BibliotecaMVC (URGENTE): Tu préstamo del libro '{titulo}' expiró el {date}. " +
                                              $"Entrégalo HOY a la central para detener la acumulación de MULTAS diarias.";
 
-                            await smsSender.SendSmsAsync(p.Usuario.PhoneNumber, smsBody);
+                            await notificationService.SendSmsAsync(p.Usuario, titulo, $"Tu préstamo expiró el {date}. Entrégalo pronto.");
+                            await notificationService.CreateNotificationAsync(p.UsuarioId!, "⚠️ Mora Detectada", $"Tu préstamo de '{titulo}' ha vencido.", "warning");
                             
                             // Activar la bandera de Memoria para no volver a escribirle mañana
                             p.AlertaMoraEnviada = true; 
