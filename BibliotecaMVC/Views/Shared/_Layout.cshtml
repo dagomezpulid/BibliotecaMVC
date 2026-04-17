@@ -8,8 +8,10 @@
     <title>@ViewData["Title"] - BibliotecaMVC</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 </head>
 <body class ="d-flex flex-column min-vh-100">
     @Html.AntiForgeryToken()
@@ -199,9 +201,29 @@
                 updateNotifications();
             }
 
-            // Polling suave cada 60 segundos
+            // --- INTEGRACIÓN SIGNALR (TIEMPO REAL) ---
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("ReceiveNotification", (notif) => {
+                console.log("Nueva notificación recibida:", notif);
+                // Actualizar la lista completa para mantener consistencia
+                updateNotifications();
+                
+                // Efecto visual premium: Sacudir la campana
+                const bell = document.getElementById('notifDropdown');
+                bell.classList.add('animate__animated', 'animate__swing');
+                setTimeout(() => bell.classList.remove('animate__animated', 'animate__swing'), 1000);
+
+                // Opcional: Mostrar un Toast de Bootstrap si se desea más visibilidad
+            });
+
+            connection.start().catch(err => console.error("Error SignalR Connection:", err));
+
+            // Carga inicial
             updateNotifications();
-            setInterval(updateNotifications, 60000);
             </text>
         }
 

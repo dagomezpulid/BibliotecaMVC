@@ -43,9 +43,15 @@ builder.Services.AddHostedService<BibliotecaMVC.Services.SmsBackgroundWorker>();
 // Servicios de validación
 builder.Services.AddScoped<IUserValidationService, UserValidationService>();
 
+// 🏛️ Capa de Servicios de Negocio (Arquitectura Reforzada)
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IPrestamoService, PrestamoService>();
+builder.Services.AddScoped<ILibroService, LibroService>();
+
 // Registro de Controladores con Vistas (MVC) e infraestructura de Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 /// <summary>
 /// Construcción de la aplicación y configuración del pipeline.
@@ -131,6 +137,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
+app.MapHub<BibliotecaMVC.Hubs.NotificationHub>("/notificationHub");
 
 // Inicia el ciclo de vida de la aplicación y escucha peticiones entrantes.
 app.Run();

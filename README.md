@@ -1,41 +1,38 @@
 # 📚 BibliotecaMVC: Centro de Gestión Bibliográfica de Vanguardia
 
-[![.NET 9.0](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download)
-[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-9.0-512BD4)](https://docs.microsoft.com/ef/)
+[![.NET 10.0](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download)
+[![Entity Framework Core](https://img.shields.io/badge/EF%20Core-10.0-512BD4)](https://docs.microsoft.com/ef/)
 [![UI Design](https://img.shields.io/badge/UX-Premium%20Design-FF69B4)](file:///c:/Repos/BibliotecaMVC)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success)](file:///c:/Repos/BibliotecaMVC)
 
-**BibliotecaMVC** es una plataforma de gestión bibliotecaria de alta gama que redefine la experiencia de préstamo digital. Diseñada bajo un estándar de **Estética Industrial**, integra analíticas avanzadas, un motor de lectura inteligente de última generación y una arquitectura de seguridad robusta para el manejo de activos digitales.
+**BibliotecaMVC** es una plataforma de gestión bibliotecaria de alta gama que redefine la experiencia de préstamo digital. Diseñada bajo un estándar de **Estética Industrial**, integra analíticas avanzadas, un motor de lectura inteligente de última generación y una arquitectura de servicios desacoplada para una robustez de nivel empresarial.
 
 ---
 
 ## ✨ Características Premium
 
 ### 🎨 1. Estética Industrial y UX Adaptativa
-*   **Diseño de Vanguardia**: Implementación de **Glassmorphism** (Efecto Cristal) en tarjetas de libros para una profundidad visual superior que detecta y se adapta al tema actual.
-*   **Modo Oscuro Dinámico**: Interfaz 100% armonizada mediante variables CSS y `backdrop-filter`. Los componentes cambian orgánicamente basándose en las preferencias del sistema o del usuario.
-*   **Diferenciación de Interacción**: Jerarquía visual clara entre "Acciones" (botones sólidos, `rounded-3`) y "Estados" (badges de cápsula, traslúcidos), eliminando la carga cognitiva.
+*   **Diseño de Vanguardia**: Implementación de **Glassmorphism** (Efecto Cristal) y micro-animaciones dinámicas con **Animate.css**.
+*   **Modo Oscuro Dinámico**: Interfaz 100% armonizada mediante variables CSS. Los componentes cambian orgánicamente basándose en las preferencias del sistema.
+*   **Feedback Visual Real**: La campana de notificaciones reacciona físicamente (efecto *swing*) ante nuevos eventos en tiempo real.
 
-### 📊 2. Inteligencia de Negocio y Analíticas
-*   **Insights en Tiempo Real**: Dashboards administrativos potenciados por `Chart.js` con **Reactividad de Tema**: las gráficas se redibujan instantáneamente al alternar entre modo claro y oscuro para mantener legibilidad absoluta.
-*   **Tendencias de Préstamos**: Análisis gráfico de la actividad mensual con gradientes dinámicos para una interpretación visual rápida.
-*   **Control de Morosidad**: Monitorización dual (Monto vs Días) mediante gráficos de barras horizontales de alto contraste.
+### 🚀 2. Notificaciones en Tiempo Real (SignalR)
+*   **Push Engine**: Integración con **SignalR** para la entrega inmediata de alertas sin necesidad de recarga de página.
+*   **Reactividad Instantánea**: Los contadores de multas, préstamos y notificaciones se actualizan en el acto al producirse cambios en el servidor.
+*   **Notificaciones Omnicanal**: Sincronización entre la interfaz web, alertas de base de datos y **Twilio SMS** para comunicaciones críticas.
 
-### 📖 3. Smart Reading Engine con Soporte Multi-Formato
-*   **Lector de Word (.docx) Nativo**: Integración de vanguardia con `docx-preview` que permite renderizar documentos de Word directamente en el navegador con estética de "hoja física", sin necesidad de descargas externas.
-*   **Visor de PDF Inmersivo**: Experiencia de lectura fluida que guarda automáticamente la página exacta donde se detuvo el usuario, sincronizando el progreso de forma persistente.
-*   **Búsqueda Inteligente (AJAX)**: Filtrado en tiempo real sin recarga de página por título, autor o categoría, garantizando una exploración fluida.
-*   **Navegación Centralizada**: El sistema utiliza el Catálogo de Libros como eje central, asegurando que todos los botones de retorno y accesos directos lleven al corazón del ecosistema.
+### 🏛️ 3. Arquitectura de Servicios Reforzada
+*   **Capa de Negocio (Service Layer)**: Desacoplamiento total de la lógica de controladores. Servicios especializados como `IPrestamoService`, `ILibroService` y `INotificationService` gestionan la integridad del sistema.
+*   **Observabilidad y Logging**: Registro estructurado de eventos críticos mediante `ILogger`, permitiendo una trazabilidad profesional de transacciones y errores.
+*   **Documentación XML Integral**: Código 100% documentado siguiendo estándares de la industria para facilitar el mantenimiento y la extensibilidad.
 
-### 🔔 4. Centro de Notificaciones y Mensajería
-*   **Centro de Alertas**: Un buzón de notificaciones inteligente que informa sobre multas y préstamos. Incluye marcado asíncrono de lectura para una experiencia sin interrupciones.
-*   **Notificaciones Omnicanal**: Integración nativa con **Twilio SMS** para alertas críticas enviadas automáticamente por el sistema de patrullaje nocturno.
-*   **Feedback Inmediato**: Sistema de alertas (Success/Error) auto-desvanecibles tipo "Toast" que mantienen la limpieza de la interfaz.
+### 📖 4. Smart Reading Engine Multi-Formato
+*   **Lector Word (.docx) & PDF**: Renderizado nativo en navegador con estética de "hoja física" y guardado persistente del progreso de lectura.
+*   **Búsqueda Inteligente (AJAX)**: Filtrado asíncrono ultra-rápido por múltiples criterios.
+*   **Digital Vault (DRM)**: Almacenamiento seguro de activos digitales fuera de la ruta pública para protección de derechos de autor.
 
-### 🛡️ 5. Ingeniería de Software y Seguridad Profesional
-*   **Documentación Técnica Profunda**: El proyecto cuenta con una [Explicación Médula de la Lógica](file:///C:/Users/DanielGomezPulido/.gemini/antigravity/brain/56c756d6-fae1-4809-8eb2-f00de0ca3b69/explicacion_logica_proyecto.md) que detalla el funcionamiento interno de préstamos, multas y seguridad.
-*   **Auditoría de Seguridad (IDOR/CSRF)**: Implementación de validaciones estrictas de propiedad de datos en acciones transaccionales y protección endurecida contra ataques de falsificación de peticiones.
-*   **Integridad Relacional**: Lógica avanzada de borrado que valida la coexistencia de registros y migraciones a "usuarios fantasma" para preservar la integridad de las analíticas históricas.
+### 📊 5. Inteligencia de Negocio
+*   **Dashboards con Chart.js**: Visualizaciones reactivas al tema actual para control administrativo total de préstamos, multas y tendencias.
 
 ---
 
@@ -43,94 +40,64 @@
 
 ```mermaid
 graph TD
-    User((Usuario / Lector)) -->|HTTPS| WebServer[ASP.NET Core 9 Engine]
+    User((Usuario / Lector)) -->|HTTPS| WebServer[ASP.NET Core 10 Engine]
     
     subgraph "Navegador (Frontend UX)"
-        User -.-> UX[Interfaz Premium / Glassmorphism]
+        User -.-> UX[Interfaz Premium / Animate.css]
+        UX -.-> SignalRClient[SignalR Connection]
         UX -.-> Reader[Smart Reading Engine]
         Reader --> PDF[Visor PDF Nativo]
-        Reader --> Word[docx-preview + JSZip]
-        UX --> Charts[Chart.js / Analíticas]
+        Reader --> Word[docx-preview]
     end
 
     subgraph "Núcleo del Servidor (Backend)"
         WebServer --> Auth[Identity Hardened]
-        WebServer --> Controllers[Controladores MVC/AJAX]
-        Controllers --> Logic[Servicios de Negocio]
-        Logic --> EF[Entity Framework Core 9]
+        WebServer --> SignalRHub[NotificationHub]
+        WebServer --> Controllers[Controladores MVC]
+        
+        subgraph "Service Layer (Negocio)"
+            Controllers --> IPS[IPrestamoService]
+            Controllers --> ILS[ILibroService]
+            IPS --> INS[INotificationService]
+            ILS --> INS
+        end
+        
+        INS --> SignalRHub
+        IPS --> EF[Entity Framework Core 10]
         EF --> DB[(SQL Server / LocalDB)]
-        Logic --> UV[UserValidationService]
     end
 
-    subgraph "Integraciones y Mensajería"
-        Logic -->|SMS| Twilio[Twilio SMS Sender]
-        Logic -->|Email| SMTP[SMTP Client Sender]
+    subgraph "Integraciones Externas"
+        INS -->|SMS| Twilio[Twilio SMS API]
+        INS -->|Email| SMTP[SMTP Relay]
     end
 
-    subgraph "Gestión de Activos (DRM)"
-        Controllers -->|Control de Acceso| Vault[(Digital Vault - Vault Folder)]
+    subgraph "Gestión de Activos"
+        ILS -->|Control DRM| Vault[(Digital Vault - Folder)]
     end
-
-    subgraph "Tareas en Segundo Plano"
-        Worker[SmsBackgroundWorker] -->|Escaneo Diario| EF
-        Worker -->|Notificación| Twilio
-    end
-
-    Auth -.-> DB
 ```
 
 ---
 
 ## 🛠️ Stack Tecnológico
-*   **Backend**: C# 13, ASP.NET Core 9.0, Entity Framework Core 9.
-*   **Frontend**: Bootstrap 5, JavaScript ES2022, Chart.js, **docx-preview + JSZip**.
-*   **Cloud**: Twilio SMS API para notificaciones transaccionales automáticas.
-*   **Seguridad**: Identity con políticas de bloqueo, PhysicalFile Streaming para DRM y validaciones de IDOR multi-nivel.
-*   **Estándar**: Documentación XML Integral y Clean Code Architecture.
-
----
-
-## 💻 Guía de Despliegue y Configuración
-
-### 1. Gestión de Secretos
-El sistema protege tus credenciales críticas mediante `dotnet user-secrets`. Configura tus llaves antes de iniciar:
-
-```powershell
-# Iniciar gestión de secretos en el proyecto
-dotnet user-secrets init
-
-# Configuración Administrativa
-dotnet user-secrets set "AdminSettings:Email" "admin@bibliotecamvc.com"
-dotnet user-secrets set "AdminSettings:Password" "TuPasswordSeguro123!"
-
-# Configuración Twilio (SMS)
-dotnet user-secrets set "TwilioSettings:AccountSid" "ACXXXXXXXXXX"
-dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token_aqui"
-dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+123456789"
-```
-
-### 2. Inicialización del Ecosistema
-```powershell
-# Aplicar esquema de base de datos
-dotnet ef database update
-
-# Ejecutar el servidor
-dotnet run
-```
+*   **Backend**: C# 13, .NET 10.0, EF Core 10.
+*   **Real-Time**: ASP.NET Core SignalR.
+*   **Frontend**: Bootstrap 5, JS ES2022, Animate.css, Chart.js.
+*   **Mensajería**: Twilio SMS API.
+*   **Seguridad**: Identity con Lockout, PhysicalFile Streaming (DRM), Auditoría de IP.
 
 ---
 
 ## 📁 Estructura de la Solución
-*   **BibliotecaLibros_Vault/**: Repositorio físico protegido (DRM) fuera de la ruta pública.
-*   **Services/**: Motores de SMS, Notificaciones y Lógica de Negocio.
-*   **Controllers/**: Flujos de Administración, Préstamos y Catálogo AJAX.
-*   **Views/Prestamos/Leer.cshtml**: Corazón del motor de lectura multi-formato.
+*   **Hubs/**: Punto de entrada para comunicaciones en tiempo real.
+*   **Services/**: Capa de servicios que contiene la médula de la lógica de negocio (Préstamos, Libros, Notificaciones).
+*   **Controllers/**: Gestión de flujos de navegación y endpoints API.
+*   **Models/**: Definición de entidades y contexto de datos EF Core.
+*   **BibliotecaLibros_Vault/**: Repositorio físico de libros digitales protegido.
 
 ---
 
 > [!IMPORTANT]
-> **Aviso de Cumplimiento**: Esta plataforma implementa validaciones de seguridad multicapa (IDOR, CSRF) y un diseño orientado a la excelencia operacional.
+> **Aviso de Excelencia**: Esta plataforma ha sido refactorizada para cumplir con los más altos estándares de arquitectura de software, garantizando un código limpio, desacoplado y orientado al rendimiento.
 
 *Desarrollado con arquitectura premium y pasión tecnológica.*
-SRF) y un diseño orientado a la excelencia operacional.
-
