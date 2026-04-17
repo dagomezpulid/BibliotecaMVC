@@ -97,6 +97,46 @@ graph TD
 
 ---
 
+## 🚀 Instalación y Configuración Local
+
+Sigue estos pasos para poner en marcha el ecosistema en tu entorno de desarrollo:
+
+### 1. Clonar y Restaurar
+```bash
+git clone https://github.com/usuario/BibliotecaMVC.git
+cd BibliotecaMVC
+dotnet restore
+```
+
+### 2. Configuración de Base de Datos
+El proyecto utiliza **SQL Server Express** por defecto. Asegúrate de tenerlo instalado y ejecuta las migraciones para crear el esquema y cargar las 50 categorías iniciales:
+```bash
+dotnet ef database update
+```
+
+### 3. Gestión de Secretos (Crítico)
+Para el funcionamiento de las notificaciones SMS y el acceso administrativo, debes configurar los **User Secrets** en la carpeta del proyecto `BibliotecaMVC`:
+
+```bash
+# Inicializar secretos
+dotnet user-secrets init
+
+# Configurar el servicio SMTP de Google
+dotnet user-secrets set "EmailSettings:Username" "tu_correo_Gmail"
+dotnet user-secrets set "EmailSettings:Password" "tu_password_aqui"
+
+# Configurar Twilio para Notificaciones SMS
+dotnet user-secrets set "TwilioSettings:AccountSid" "tu_sid_aqui"
+dotnet user-secrets set "TwilioSettings:AuthToken" "tu_token_aqui"
+dotnet user-secrets set "TwilioSettings:FromPhoneNumber" "+1234567890"
+
+# Configurar Cuenta de Administrador Maestra
+dotnet user-secrets set "AdminSettings:Email" "dgomezpulid@outlook.com"
+dotnet user-secrets set "AdminSettings:Password" "TuPasswordSegura123!"
+```
+
+---
+
 ## 📁 Estructura de la Solución
 *   **Hubs/**: Punto de entrada para comunicaciones en tiempo real.
 *   **Services/**: Capa de servicios que contiene la médula de la lógica de negocio.
