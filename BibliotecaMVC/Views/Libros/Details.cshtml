@@ -156,7 +156,7 @@
                     <div class="mt-4 mb-5">
                         <div class="d-flex align-items-center mb-2">
                             <h5 class="fw-bold text-dark mb-0 me-2">Sinopsis</h5>
-                            <span id="externalBadge" class="badge bg-info text-white d-none" style="font-size: 0.6rem;">Enriquecido con Google Books</span>
+                            <span id="externalBadge" class="badge bg-info text-white d-none" style="font-size: 0.6rem;">Enriquecido con Fuentes Externas</span>
                         </div>
                         <p id="bookDescription" class="text-muted lh-lg">
                             @(string.IsNullOrEmpty(Model.Descripcion) ? "No hay una descripción disponible para este libro aún." : Model.Descripcion)
@@ -352,47 +352,57 @@
 
 @section Scripts {
     <script>
-        // LUIS: Enriquecimiento dinámico con Google Books API (MEJORADO)
-        document.addEventListener("DOMContentLoaded", function() {
+        // LUIS: Enriquecimiento dinámico Multi-Servicio (MEJORADO)
+        document.addEventListener("DOMContentLoaded", async function() {
             let isbnRaw = "@Model.ISBN";
-            // Limpiamos el ISBN: solo dejamos números y la letra X (para ISBN-10)
-            const isbn = isbnRaw.replace(/[^0-9X]/gi, '');
+            const isbn = isbnRaw.replace(/[^0-9Xx]/g, '').toUpperCase();
             
             const descElement = document.getElementById("bookDescription");
             const badge = document.getElementById("externalBadge");
 
             if (isbn && isbn.length >= 10) {
-                // 1. Intentamos búsqueda específica por filtro de ISBN
-                fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // 2. Si no hay resultados por ISBN exacto, intentamos búsqueda general por el código
-                        if (!data.items || data.items.length === 0) {
-                            return fetch(`https://www.googleapis.com/books/v1/volumes?q=${isbn}`).then(res => res.json());
-                        }
-                        return data;
-                    })
-                    .then(data => {
-                        if (data.items && data.items.length > 0) {
-                            const info = data.items[0].volumeInfo;
-                            
-                            // Solo actualizamos si la descripción actual es muy corta y Google tiene una mejor
-                            if (descElement.innerText.length < 150 && info.description) {
-                                descElement.style.opacity = "0";
-                                setTimeout(() => {
-                                    descElement.innerText = info.description;
-                                    descElement.style.transition = "opacity 0.5s ease";
-                                    descElement.style.opacity = "1";
-                                    badge.classList.remove("d-none");
-                                }, 300);
-                            }
-                        }
-                    })
-                    .catch(err => console.error("Error al enriquecer con Google Books:", err));
+                try {
+                    const info = await buscarInfoLibro(isbn);
+                    if (info && info.description && descElement.innerText.length < 150) {
+                        descElement.style.opacity = "0";
+                        setTimeout(() => {
+                            descElement.innerText = info.description;
+                            descElement.style.transition = "opacity 0.5s ease";
+                            descElement.style.opacity = "1";
+                            badge.classList.remove("d-none");
+                            badge.innerText = `Enriquecido con ${info.source}`;
+                        }, 300);
+                    }
+                } catch (err) { console.error("Error al enriquecer:", err); }
             }
         });
 
-        // Lógica del Carrusel Manual
+        async function buscarInfoLibro(isbn) {
+            // 1. Google Books
+            try {
+                let res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+                if (res.ok) {
+                    let data = await res.json();
+                    if (data.items && data.items.length > 0) {
+                        return { description: data.items[0].volumeInfo.description, source: "Google Books" };
+                    }
+                }
+            } catch (e) {}
+
+            // 2. Open Library
+            try {
+                let res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+                if (res.ok) {
+                    let data = await res.json();
+                    const key = `ISBN:${isbn}`;
+                    if (data[key]) {
+                        return { description: data[key].notes || (data[key].excerpts ? data[key].excerpts[0].text : ""), source: "OpenLibrary" };
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
         function scrollCarousel(direction) {
             const carousel = document.getElementById("recoCarousel");
             const scrollAmount = 300;

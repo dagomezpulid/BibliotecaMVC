@@ -30,7 +30,7 @@ namespace BibliotecaMVC.Models
         /// Identificador universal de edición. Ayuda a evitar duplicados y automatizar metadata.
         /// </summary>
         [StringLength(20)]
-        [RegularExpression(@"^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$", ErrorMessage = "El formato del ISBN no es válido. Use 10 o 13 dígitos.")]
+        [RegularExpression(@"^(?=(?:\D*[\dXx]){10}(?:(?:\D*\d){3})?$)[\dXx-]+$", ErrorMessage = "El formato del ISBN no es válido. Use 10 o 13 dígitos.")]
         public string? ISBN { get; set; }
 
         /// <summary>

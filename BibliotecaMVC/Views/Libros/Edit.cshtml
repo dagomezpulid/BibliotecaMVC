@@ -113,7 +113,8 @@
 
     <script>
         document.getElementById('btnAutocompletar').addEventListener('click', async function() {
-            const isbn = document.getElementById('isbnInput').value.trim();
+            const rawIsbn = document.getElementById('isbnInput').value;
+            const isbn = rawIsbn.replace(/[^0-9Xx]/g, '').toUpperCase();
             const btn = this;
             const btnText = document.getElementById('btnText');
             const btnSpinner = document.getElementById('btnSpinner');
@@ -131,60 +132,35 @@
             feedback.classList.add('d-none');
 
             try {
-                // 1. Estrategia de Búsqueda Dual (Específica -> General)
-                let response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
-                let data = await response.json();
+                const bookData = await buscarLibroMultiService(isbn);
 
-                if (data.totalItems === 0) {
-                    console.log("ISBN exacto no encontrado, intentando búsqueda persistente...");
-                    response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${isbn}`);
-                    data = await response.json();
-                }
-
-                if (data.totalItems > 0) {
-                    const item = data.items[0];
-                    const info = item.volumeInfo;
+                if (bookData) {
+                    fillIfEmpty('tituloInput', bookData.titulo);
                     
-                    // A. LLENADO CONDICIONAL (Solo si están vacíos)
-                    fillIfEmpty('tituloInput', info.title);
-                    
-                    // Fallback de descripción (Description -> textSnippet)
-                    let rawDesc = info.description || (item.searchInfo ? item.searchInfo.textSnippet : "");
-                    if (rawDesc) {
-                        const cleanDesc = rawDesc.replace(/<\/?[^>]+(>|$)/g, ""); // Limpieza HTML
+                    if (bookData.descripcion) {
+                        const cleanDesc = bookData.descripcion.replace(/<\/?[^>]+(>|$)/g, "");
                         fillIfEmpty('descripcionInput', cleanDesc);
                     }
 
-                    // B. EXTRACCIÓN JERÁRQUICA DE IMAGEN
-                    if (info.imageLinks) {
-                        const sizes = ['extraLarge', 'large', 'medium', 'small', 'thumbnail', 'smallThumbnail'];
-                        let bestUrl = null;
-                        for (const size of sizes) {
-                            if (info.imageLinks[size]) {
-                                bestUrl = info.imageLinks[size].replace("http://", "https://");
-                                break;
-                            }
-                        }
-                        if (bestUrl) fillIfEmpty('imagenInput', bestUrl);
+                    if (bookData.imagenUrl) {
+                        fillIfEmpty('imagenInput', bookData.imagenUrl);
                     }
 
-                    // C. MAPEO DE AUTOR INTELIGENTE
-                    if (info.authors && info.authors.length > 0) {
-                        matchInSelect('autorSelect', info.authors[0]);
+                    if (bookData.autor) {
+                        matchInSelect('autorSelect', bookData.autor);
                     }
 
-                    // D. MAPEO DE CATEGORÍAS (Múltiple)
-                    if (info.categories && info.categories.length > 0) {
-                        info.categories.forEach(cat => matchInSelect('categoriaSelect', cat, true));
+                    if (bookData.categorias && bookData.categorias.length > 0) {
+                        bookData.categorias.forEach(cat => matchInSelect('categoriaSelect', cat, true));
                     }
 
-                    showFeedback("✨ Datos recuperados (Se respetaron los campos ya llenos).", "text-success");
+                    showFeedback(`✨ Datos recuperados vía ${bookData.source} (Se respetaron campos llenos).`, "text-success");
                 } else {
-                    showFeedback("❌ No se encontró información ni siquiera en búsqueda persistente.", "text-warning");
+                    showFeedback("❌ No se encontraron datos en Google Books ni OpenLibrary.", "text-warning");
                 }
             } catch (error) {
-                console.error("Error AI Search:", error);
-                showFeedback("⚠️ Error de conexión con el servicio.", "text-danger");
+                console.error("Error ISBN Search:", error);
+                showFeedback("⚠️ Error de conexión con los servicios de búsqueda.", "text-danger");
             } finally {
                 btn.disabled = false;
                 btnText.innerText = "🪄 Autocompletar";
@@ -192,7 +168,69 @@
             }
         });
 
-        // Solo llena si el valor actual es nulo o vacío
+        async function buscarLibroMultiService(isbn) {
+            // 1. INTENTAR GOOGLE BOOKS (Prioridad por riqueza de datos)
+            try {
+                console.log("Consultando Google Books...");
+                let response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data.totalItems > 0) return { ...mapearGoogle(data.items[0]), source: "Google Books" };
+                }
+                
+                // Búsqueda general en Google si la específica falla
+                response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${isbn}`);
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data.totalItems > 0) return { ...mapearGoogle(data.items[0]), source: "Google Books" };
+                }
+            } catch (e) { console.warn("Google Books falló o alcanzó cuota."); }
+
+            // 2. FALLBACK A OPEN LIBRARY
+            try {
+                console.log("Consultando OpenLibrary...");
+                let response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
+                if (response.ok) {
+                    let data = await response.json();
+                    const key = `ISBN:${isbn}`;
+                    if (data[key]) return { ...mapearOpenLibrary(data[key]), source: "OpenLibrary" };
+                }
+            } catch (e) { console.warn("OpenLibrary falló."); }
+
+            return null;
+        }
+
+        function mapearGoogle(item) {
+            const info = item.volumeInfo;
+            let bestUrl = null;
+            if (info.imageLinks) {
+                const sizes = ['extraLarge', 'large', 'medium', 'small', 'thumbnail', 'smallThumbnail'];
+                for (const size of sizes) {
+                    if (info.imageLinks[size]) {
+                        bestUrl = info.imageLinks[size].replace("http://", "https://");
+                        break;
+                    }
+                }
+            }
+            return {
+                titulo: info.title,
+                descripcion: info.description || (item.searchInfo ? item.searchInfo.textSnippet : ""),
+                imagenUrl: bestUrl,
+                autor: info.authors ? info.authors[0] : null,
+                categorias: info.categories || []
+            };
+        }
+
+        function mapearOpenLibrary(book) {
+            return {
+                titulo: book.title,
+                descripcion: book.notes || (book.excerpts ? book.excerpts[0].text : ""),
+                imagenUrl: book.cover ? (book.cover.large || book.cover.medium || book.cover.small) : null,
+                autor: book.authors ? book.authors[0].name : null,
+                categorias: book.subjects ? book.subjects.map(s => s.name) : []
+            };
+        }
+
         function fillIfEmpty(elementId, value) {
             const el = document.getElementById(elementId);
             if (el && value && (!el.value || el.value.trim() === "")) {
@@ -200,21 +238,17 @@
             }
         }
 
-        // Intenta encontrar una coincidencia de texto en un select
         function matchInSelect(selectId, searchText, isMultiple = false) {
             const select = document.getElementById(selectId);
             if (!select) return;
-
             const search = searchText.toLowerCase();
             let found = false;
-
             for (let i = 0; i < select.options.length; i++) {
                 const optText = select.options[i].text.toLowerCase();
-                // Coincidencia parcial o total
                 if (optText.includes(search) || search.includes(optText)) {
                     if (isMultiple) {
                         select.options[i].selected = true;
-                    } else if (!found) { // Para select simple, solo el primero que coincida
+                    } else if (!found) {
                         select.selectedIndex = i;
                         found = true;
                     }
