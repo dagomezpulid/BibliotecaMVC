@@ -9,6 +9,24 @@
 
 ---
 
+## 🏗️ Arquitectura del Sistema
+
+```mermaid
+graph TD
+    A[Usuario / Admin] --> B(ASP.NET Core 10 MVC)
+    B --> C{Capa de Servicios}
+    C --> D[LibroService]
+    C --> E[PrestamoService]
+    C --> F[NotificationHub - SignalR]
+    D --> G[(SQL Server - EF Core)]
+    E --> G
+    D --> H[Digital Vault - Almacenamiento Protegido]
+    F --> I[Alertas Real-Time]
+    C --> J[Twilio / Email Sender]
+```
+
+---
+
 ## 🌟 Características de Élite
 
 ### 1. 🧬 Inteligencia de Datos ISBN (Multi-Servicio)
@@ -27,11 +45,6 @@ Seguridad absoluta para tus activos digitales:
 - **SignalR Push Engine**: Notificaciones en tiempo real sobre préstamos próximos a vencer y nuevas adquisiciones.
 - **Visualización con Chart.js**: Gráficos dinámicos que analizan la rotación del catálogo y preferencias de los lectores.
 - **Notificaciones Multi-Canal**: Integración nativa con **Twilio SMS** y envío de correos electrónicos transaccionales.
-
-### 4. 💫 Experiencia de Usuario "Premium"
-- **Glassmorphism UI**: Interfaz translúcida con efectos de desenfoque y sombras dinámicas.
-- **Micro-interacciones**: Animaciones suaves con **Animate.css** y transiciones de estado mediante AJAX/PartialViews.
-- **Búsqueda Dual**: Filtrado instantáneo por texto y categorías con resaltado de coincidencias.
 
 ---
 
