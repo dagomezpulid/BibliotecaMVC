@@ -154,5 +154,3 @@ Seguridad absoluta para tus activos digitales:
 
 ## 👨‍💻 Contribuciones
 Este proyecto es una muestra de ingeniería de software moderna. Siéntete libre de clonarlo y proponer mejoras en la capa de IA o integración de lectores PDF.js avanzados.
-
-**Desarrollado con ❤️ para la comunidad de ASP.NET**
