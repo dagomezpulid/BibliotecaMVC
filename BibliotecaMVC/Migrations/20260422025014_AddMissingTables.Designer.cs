@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BibliotecaMVC.Migrations
 {
     [DbContext(typeof(BibliotecaContext))]
-    [Migration("20260410162215_Add_Reviews_System")]
-    partial class Add_Reviews_System
+    [Migration("20260422025014_AddMissingTables")]
+    partial class AddMissingTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -173,7 +173,249 @@ namespace BibliotecaMVC.Migrations
                         {
                             Id = 7,
                             Nombre = "Misterio"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Nombre = "Novela Histórica"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Nombre = "Novela Romántica"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Nombre = "Novela Policíaca"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Nombre = "Suspenso"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Nombre = "Ciencia Ficción"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Nombre = "Distopía"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Nombre = "Cuentos y Relatos"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Nombre = "Poesía"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Nombre = "Teatro y Drama"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Nombre = "Cómic y Novela Gráfica"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Nombre = "Autoayuda"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Nombre = "Negocios y Finanzas"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Nombre = "Salud y Bienestar"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Nombre = "Arte y Fotografía"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Nombre = "Religión y Espiritualidad"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Nombre = "Infantil y Juvenil"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Nombre = "Consulta y Referencia"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Nombre = "Libros de Texto"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Nombre = "Cocina"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Nombre = "Manualidades"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Nombre = "Viajes y Guías"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Nombre = "Terror"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Nombre = "Novela Autobiográfica"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Nombre = "Relato de Memorias"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Nombre = "Novela Negra"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Nombre = "Novela Oratorio"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Nombre = "Crónica Documental"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Nombre = "Crónica"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Nombre = "Filosofía"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Nombre = "Política"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Nombre = "Sociología"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Nombre = "Psicología"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Nombre = "Matemáticas"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Nombre = "Física"
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Nombre = "Química"
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Nombre = "Biología"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Nombre = "Medicina"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Nombre = "Ingeniería"
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Nombre = "Arquitectura"
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Nombre = "Música"
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Nombre = "Cine"
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Nombre = "Fotografía"
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Nombre = "Deportes"
                         });
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.Favorito", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaAgregado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LibroId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LibroId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Favoritos");
                 });
 
             modelBuilder.Entity("BibliotecaMVC.Models.Libro", b =>
@@ -197,9 +439,6 @@ namespace BibliotecaMVC.Migrations
                     b.Property<string>("ImagenUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Stock")
-                        .HasColumnType("int");
-
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -210,6 +449,70 @@ namespace BibliotecaMVC.Migrations
                     b.HasIndex("AutorId");
 
                     b.ToTable("Libros");
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.LibroArchivo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaCarga")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Formato")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LibroId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ruta")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LibroId");
+
+                    b.ToTable("LibroArchivos");
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.LogAuditoria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Detalles")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecursoId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("LogsAuditoria");
                 });
 
             modelBuilder.Entity("BibliotecaMVC.Models.Multa", b =>
@@ -227,6 +530,7 @@ namespace BibliotecaMVC.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("Pagada")
@@ -241,6 +545,45 @@ namespace BibliotecaMVC.Migrations
                         .IsUnique();
 
                     b.ToTable("Multas");
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.Notificacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Contenido")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Notificaciones");
                 });
 
             modelBuilder.Entity("BibliotecaMVC.Models.Pago", b =>
@@ -260,6 +603,7 @@ namespace BibliotecaMVC.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("MultaId")
@@ -271,7 +615,6 @@ namespace BibliotecaMVC.Migrations
                         .HasColumnType("nvarchar(4)");
 
                     b.Property<string>("UsuarioId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -320,6 +663,39 @@ namespace BibliotecaMVC.Migrations
                     b.HasIndex("UsuarioId");
 
                     b.ToTable("Prestamos", (string)null);
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.ProgresoLectura", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("LibroId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaginaActual")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UltimoAcceso")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UsuarioId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LibroId");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("ProgresosLectura");
                 });
 
             modelBuilder.Entity("BibliotecaMVC.Models.Resena", b =>
@@ -509,6 +885,25 @@ namespace BibliotecaMVC.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BibliotecaMVC.Models.Favorito", b =>
+                {
+                    b.HasOne("BibliotecaMVC.Models.Libro", "Libro")
+                        .WithMany()
+                        .HasForeignKey("LibroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BibliotecaMVC.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Libro");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("BibliotecaMVC.Models.Libro", b =>
                 {
                     b.HasOne("BibliotecaMVC.Models.Autor", "Autor")
@@ -518,6 +913,28 @@ namespace BibliotecaMVC.Migrations
                         .IsRequired();
 
                     b.Navigation("Autor");
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.LibroArchivo", b =>
+                {
+                    b.HasOne("BibliotecaMVC.Models.Libro", "Libro")
+                        .WithMany("Archivos")
+                        .HasForeignKey("LibroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Libro");
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.LogAuditoria", b =>
+                {
+                    b.HasOne("BibliotecaMVC.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("BibliotecaMVC.Models.Multa", b =>
@@ -531,6 +948,17 @@ namespace BibliotecaMVC.Migrations
                     b.Navigation("Prestamo");
                 });
 
+            modelBuilder.Entity("BibliotecaMVC.Models.Notificacion", b =>
+                {
+                    b.HasOne("BibliotecaMVC.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("BibliotecaMVC.Models.Pago", b =>
                 {
                     b.HasOne("BibliotecaMVC.Models.Multa", "Multa")
@@ -541,9 +969,7 @@ namespace BibliotecaMVC.Migrations
 
                     b.HasOne("BibliotecaMVC.Models.ApplicationUser", "Usuario")
                         .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UsuarioId");
 
                     b.Navigation("Multa");
 
@@ -561,6 +987,25 @@ namespace BibliotecaMVC.Migrations
                     b.HasOne("BibliotecaMVC.Models.ApplicationUser", "Usuario")
                         .WithMany()
                         .HasForeignKey("UsuarioId");
+
+                    b.Navigation("Libro");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("BibliotecaMVC.Models.ProgresoLectura", b =>
+                {
+                    b.HasOne("BibliotecaMVC.Models.Libro", "Libro")
+                        .WithMany()
+                        .HasForeignKey("LibroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BibliotecaMVC.Models.ApplicationUser", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Libro");
 
@@ -659,6 +1104,8 @@ namespace BibliotecaMVC.Migrations
 
             modelBuilder.Entity("BibliotecaMVC.Models.Libro", b =>
                 {
+                    b.Navigation("Archivos");
+
                     b.Navigation("Resenas");
                 });
 
