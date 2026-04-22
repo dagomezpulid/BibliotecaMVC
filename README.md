@@ -9,20 +9,61 @@
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+## 🏗️ Arquitectura Técnica Detallada
+
+El sistema sigue un patrón de **Arquitectura en Capas** con desacoplamiento mediante inyección de dependencias, lo que permite una escalabilidad y mantenimiento superior.
 
 ```mermaid
-graph TD
-    A[Usuario / Admin] --> B(ASP.NET Core 10 MVC)
-    B --> C{Capa de Servicios}
-    C --> D[LibroService]
-    C --> E[PrestamoService]
-    C --> F[NotificationHub - SignalR]
-    D --> G[(SQL Server - EF Core)]
-    E --> G
-    D --> H[Digital Vault - Almacenamiento Protegido]
-    F --> I[Alertas Real-Time]
-    C --> J[Twilio / Email Sender]
+graph TB
+    subgraph Client ["🖥️ Interfaz de Usuario (Frontend)"]
+        UI["Vistas Razor + Bootstrap 5 (Glassmorphism)"]
+        JS["JavaScript ES2022 / SignalR Client"]
+        QR["Lector de Metadatos ISBN"]
+    end
+
+    subgraph App ["⚙️ ASP.NET Core 10 (Backend)"]
+        subgraph Controllers ["Controladores & Endpoints"]
+            LC["LibrosController (Gestión Catálogo)"]
+            PC["PrestamosController (Lógica Circular)"]
+            NH["NotificationHub (SignalR Push)"]
+            DC["DashboardController (Analítica)"]
+        end
+
+        subgraph Services ["Capa de Negocio (Service Layer)"]
+            LS["ILibroService (Persistencia y Vault)"]
+            PS["IPrestamoService (Reglas de Negocio)"]
+            ES["IEmailSender (Notificaciones SMTP)"]
+            TS["ITwilioSmsSender (Alertas SMS)"]
+        end
+
+        subgraph Security ["Seguridad & Auditoría"]
+            IC["Identity Core (RBAC - Admin/Usuario)"]
+            AL["Audit Logger (Seguimiento de Activos)"]
+        end
+    end
+
+    subgraph Storage ["💾 Persistencia & Recursos"]
+        DB[("SQL Server / EF Core 10")]
+        Vault["Digital Vault (File System Protegido)"]
+    end
+
+    subgraph External ["🌐 Integraciones Externas"]
+        GBA["Google Books API (Metadata Primary)"]
+        OLA["OpenLibrary API (Metadata Fallback)"]
+        TWI["Twilio API Gateway (SMS)"]
+    end
+
+    %% Conexiones Técnicas
+    Client -- "HTTP / HTTPS Requests" --> Controllers
+    JS <--> NH
+    Controllers -- "Inyección de Dependencias" --> Services
+    Services --> Security
+    Services -- "Consulta Metadata" --> GBA & OLA
+    Services -- "Notificaciones Globales" --> NH & ES & TS
+    TS --> TWI
+    Security -- "Persistencia de Logs" --> DB
+    Services -- "ORM Mapping" --> DB
+    LS & PC -- "I/O Stream (Read/Write)" --> Vault
 ```
 
 ---
@@ -70,22 +111,15 @@ Seguridad absoluta para tus activos digitales:
    ```
 
 2. **Configuración de Secretos**:
-   Para evitar exponer información sensible en `appsettings.json`, utiliza la herramienta de **User Secrets**. Desde la carpeta del proyecto principal (`BibliotecaMVC`), ejecuta los siguientes comandos:
+   Para evitar exponer información sensible en `appsettings.json`, utiliza la herramienta de **User Secrets**:
 
    ```bash
-   # Inicializar secretos si es necesario
    dotnet user-secrets init
-
-   # Configurar credenciales de Administrador
    dotnet user-secrets set "AdminEmail" "admin@biblioteca.com"
    dotnet user-secrets set "AdminPassword" "TuPasswordSeguro123!"
-
-   # Configurar Twilio (SMS)
    dotnet user-secrets set "Twilio:AccountSid" "tu_sid"
    dotnet user-secrets set "Twilio:AuthToken" "tu_token"
    dotnet user-secrets set "Twilio:FromNumber" "tu_numero"
-
-   # Configurar Email (SMTP)
    dotnet user-secrets set "EmailSettings:SmtpServer" "smtp.gmail.com"
    dotnet user-secrets set "EmailSettings:Port" "587"
    dotnet user-secrets set "EmailSettings:Username" "tu-email@gmail.com"
@@ -117,3 +151,4 @@ Seguridad absoluta para tus activos digitales:
 ## 👨‍💻 Contribuciones
 Este proyecto es una muestra de ingeniería de software moderna. Siéntete libre de clonarlo y proponer mejoras en la capa de IA o integración de lectores PDF.js avanzados.
 
+**Desarrollado con ❤️ para la comunidad de ASP.NET**
