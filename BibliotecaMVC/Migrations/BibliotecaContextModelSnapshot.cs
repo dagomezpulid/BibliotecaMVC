@@ -17,7 +17,7 @@ namespace BibliotecaMVC.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -310,6 +310,81 @@ namespace BibliotecaMVC.Migrations
                         {
                             Id = 35,
                             Nombre = "Crónica"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Nombre = "Filosofía"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Nombre = "Política"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Nombre = "Sociología"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Nombre = "Psicología"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Nombre = "Matemáticas"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Nombre = "Física"
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Nombre = "Química"
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Nombre = "Biología"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Nombre = "Medicina"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Nombre = "Ingeniería"
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Nombre = "Arquitectura"
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Nombre = "Música"
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Nombre = "Cine"
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Nombre = "Fotografía"
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Nombre = "Deportes"
                         });
                 });
 
