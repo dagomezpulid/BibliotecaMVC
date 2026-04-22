@@ -114,12 +114,16 @@ Seguridad absoluta para tus activos digitales:
    Para evitar exponer información sensible en `appsettings.json`, utiliza la herramienta de **User Secrets**:
 
    ```bash
+   // Inicializar secretos si es necesario
    dotnet user-secrets init
-   dotnet user-secrets set "AdminEmail" "admin@biblioteca.com"
+   // Configurar credenciales de Administrador
+   dotnet user-secrets set "AdminEmail" "[EMAIL_ADDRESS]"
    dotnet user-secrets set "AdminPassword" "TuPasswordSeguro123!"
+   // Configurar Twilio (SMS)
    dotnet user-secrets set "Twilio:AccountSid" "tu_sid"
    dotnet user-secrets set "Twilio:AuthToken" "tu_token"
    dotnet user-secrets set "Twilio:FromNumber" "tu_numero"
+   // Configurar Email (SMTP)
    dotnet user-secrets set "EmailSettings:SmtpServer" "smtp.gmail.com"
    dotnet user-secrets set "EmailSettings:Port" "587"
    dotnet user-secrets set "EmailSettings:Username" "tu-email@gmail.com"
