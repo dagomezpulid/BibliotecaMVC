@@ -138,8 +138,11 @@
                     fillIfEmpty('tituloInput', bookData.titulo);
                     
                     if (bookData.descripcion) {
-                        const cleanDesc = bookData.descripcion.replace(/<\/?[^>]+(>|$)/g, "");
-                        fillIfEmpty('descripcionInput', cleanDesc);
+                        let descText = typeof bookData.descripcion === 'string' ? bookData.descripcion : (bookData.descripcion.value || "");
+                        if (descText) {
+                            const cleanDesc = descText.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+                            fillIfEmpty('descripcionInput', cleanDesc);
+                        }
                     }
 
                     if (bookData.imagenUrl) {
