@@ -93,12 +93,12 @@ namespace BibliotecaMVC.Services
         }
 
         /// <inheritdoc />
-        public async Task<bool> CreateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection archivos)
+        public async Task<(bool Success, string ErrorMessage)> CreateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection archivos)
         {
             try
             {
                 if (await _context.Libros.AnyAsync(l => l.Titulo.ToLower() == libro.Titulo.ToLower()))
-                    return false;
+                    return (false, "El título ya está registrado en el catálogo.");
 
                 if (categoriaIds != null)
                 {
@@ -128,17 +128,17 @@ namespace BibliotecaMVC.Services
 
                 _context.Libros.Add(libro);
                 await _context.SaveChangesAsync();
-                return true;
+                return (true, string.Empty);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear libro: {Titulo}", libro.Titulo);
-                return false;
+                return (false, $"Ocurrió un error en el sistema: {ex.Message}");
             }
         }
 
         /// <inheritdoc />
-        public async Task<bool> UpdateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection nuevosArchivos)
+        public async Task<(bool Success, string ErrorMessage)> UpdateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection nuevosArchivos)
         {
             try
             {
@@ -147,7 +147,7 @@ namespace BibliotecaMVC.Services
                     .Include(l => l.Archivos)
                     .FirstOrDefaultAsync(l => l.Id == libro.Id);
 
-                if (libroToUpdate == null) return false;
+                if (libroToUpdate == null) return (false, "El libro no fue encontrado en la base de datos.");
 
                 libroToUpdate.Titulo = libro.Titulo;
                 libroToUpdate.AutorId = libro.AutorId;
@@ -181,12 +181,12 @@ namespace BibliotecaMVC.Services
 
                 _context.Update(libroToUpdate);
                 await _context.SaveChangesAsync();
-                return true;
+                return (true, string.Empty);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar libro ID {LibroId}", libro.Id);
-                return false;
+                return (false, $"Ocurrió un error en el sistema: {ex.Message}");
             }
         }
 

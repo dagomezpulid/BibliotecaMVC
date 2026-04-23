@@ -38,12 +38,12 @@ namespace BibliotecaMVC.Services
         /// <param name="libro">Entidad con los metadatos del libro.</param>
         /// <param name="categoriaIds">IDs de las categorías asociadas.</param>
         /// <param name="archivos">Colección de archivos digitales subidos.</param>
-        Task<bool> CreateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection archivos);
+        Task<(bool Success, string ErrorMessage)> CreateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection archivos);
 
         /// <summary>
         /// Actualiza los metadatos de un libro y permite añadir nuevos archivos.
         /// </summary>
-        Task<bool> UpdateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection nuevosArchivos);
+        Task<(bool Success, string ErrorMessage)> UpdateLibroAsync(Libro libro, int[] categoriaIds, IFormFileCollection nuevosArchivos);
 
         /// <summary>
         /// Elimina un libro del catálogo y sus archivos físicos asociados en el Vault.

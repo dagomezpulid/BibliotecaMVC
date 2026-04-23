@@ -130,10 +130,10 @@ namespace BibliotecaMVC.Controllers
                 return View(libro);
             }
 
-            var success = await _libroService.CreateLibroAsync(libro, CategoriasSeleccionadas, archivosLibro);
-            if (!success)
+            var result = await _libroService.CreateLibroAsync(libro, CategoriasSeleccionadas, archivosLibro);
+            if (!result.Success)
             {
-                ModelState.AddModelError("Titulo", "Error al crear el libro o el título ya existe.");
+                ModelState.AddModelError("Titulo", result.ErrorMessage);
                 ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
                 ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
                 return View(libro);
@@ -169,8 +169,10 @@ namespace BibliotecaMVC.Controllers
 
             if (ModelState.IsValid)
             {
-                var success = await _libroService.UpdateLibroAsync(libro, CategoriasSeleccionadas, nuevosArchivos);
-                if (success) return RedirectToAction(nameof(Index));
+                var result = await _libroService.UpdateLibroAsync(libro, CategoriasSeleccionadas, nuevosArchivos);
+                if (result.Success) return RedirectToAction(nameof(Index));
+                
+                ModelState.AddModelError("", result.ErrorMessage);
             }
             
             ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
