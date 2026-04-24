@@ -184,39 +184,60 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const ctx = document.getElementById('userCategoryChart').getContext('2d');
-            
-            const data = {
-                labels: @Html.Raw(Json.Serialize(Model.LabelsCategorias)),
-                datasets: [{
-                    data: @Html.Raw(Json.Serialize(Model.ValoresCategorias)),
-                    backgroundColor: [
-                        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
-                    ],
-                    hoverBackgroundColor: [
-                        '#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617', '#60616f'
-                    ],
-                    hoverBorderColor: "rgba(234, 236, 244, 1)",
-                }]
+            let myPieChart;
+
+            const renderChart = () => {
+                // Destruir instancia previa si existe para evitar superposiciones
+                if (myPieChart) myPieChart.destroy();
+
+                const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                const labelColor = isDark ? 'rgba(255, 255, 255, 0.8)' : '#444';
+
+                const data = {
+                    labels: @Html.Raw(Json.Serialize(Model.LabelsCategorias)),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(Model.ValoresCategorias)),
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+                        ],
+                        hoverBackgroundColor: [
+                            '#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617', '#60616f'
+                        ],
+                        borderWidth: isDark ? 2 : 1,
+                        borderColor: isDark ? '#1e293b' : '#fff'
+                    }]
+                };
+
+                myPieChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: labelColor,
+                                    boxWidth: 12,
+                                    padding: 20,
+                                    font: { 
+                                        size: 11,
+                                        weight: '500'
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
             };
 
-            const myPieChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: data,
-                options: {
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                font: { size: 10 }
-                            }
-                        }
-                    },
-                    cutout: '70%'
-                }
-            });
+            // Renderizado inicial
+            renderChart();
+
+            // Escuchar el evento personalizado de cambio de tema definido en _Layout.cshtml
+            window.addEventListener('themeChanged', renderChart);
         });
     </script>
 }
