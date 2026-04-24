@@ -96,8 +96,14 @@ namespace BibliotecaMVC.Controllers
             
             if (result.Success)
             {
-                TempData["Success"] = result.Message;
-                if (result.Message.Contains("SUSPENDIDA")) TempData["Error"] = result.Message; // Resaltar si hay bloqueo
+                if (result.Message.Contains("SUSPENDIDA"))
+                {
+                    TempData["Error"] = result.Message; // Solo mostrar alerta roja de alerta/suspensión
+                }
+                else
+                {
+                    TempData["Success"] = result.Message;
+                }
             }
             else
             {
