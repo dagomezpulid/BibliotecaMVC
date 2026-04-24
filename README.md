@@ -160,6 +160,3 @@ Si al intentar agregar un libro recibes este error a pesar de que el título es 
 - `BibliotecaLibros_Vault`: Almacenamiento seguro de archivos digitales (Generado automáticamente).
 
 ---
-
-## 👨‍💻 Contribuciones
-Este proyecto es una muestra de ingeniería de software moderna con enfoque en seguridad y experiencia de usuario. ¡Pull requests son bienvenidos!
