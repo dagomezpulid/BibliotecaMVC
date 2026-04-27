@@ -13,6 +13,8 @@ namespace BibliotecaMVC.Services
     public class LibroService : ILibroService
     {
         private readonly BibliotecaContext _context;
+        private readonly IWebHostEnvironment _env;
+        private readonly ILogger<LibroService> _logger;
         private readonly string[] _allowedExtensions = { ".pdf", ".epub", ".docx", ".txt" };
 
         /// <summary>
