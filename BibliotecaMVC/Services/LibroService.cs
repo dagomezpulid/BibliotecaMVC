@@ -16,6 +16,8 @@ namespace BibliotecaMVC.Services
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<LibroService> _logger;
 
+        private readonly string[] _allowedExtensions = { ".pdf", ".epub", ".docx", ".txt" };
+
         /// <summary>
         /// Inicializa el servicio con el contexto de datos y el entorno de host.
         /// </summary>
@@ -115,6 +117,10 @@ namespace BibliotecaMVC.Services
                     foreach (var file in archivos)
                     {
                         var extension = Path.GetExtension(file.FileName).ToLower();
+
+                        if (!_allowedExtensions.Contains(extension))
+                            return (false, $"El formato {extension} no está permitido. Use: PDF, EPUB o DOCX.");
+
                         var uniqueName = Guid.NewGuid().ToString() + extension;
                         var filePath = Path.Combine(vaultFolder, uniqueName);
 
@@ -133,7 +139,7 @@ namespace BibliotecaMVC.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear libro: {Titulo}", libro.Titulo);
-                return (false, $"Ocurrió un error en el sistema: {ex.Message}");
+                return (false, "Ocurrió un error interno en el servidor al intentar crear el libro.");
             }
         }
 
@@ -168,9 +174,23 @@ namespace BibliotecaMVC.Services
                 if (nuevosArchivos != null && nuevosArchivos.Count > 0)
                 {
                     var vaultFolder = GetVaultPath();
+
+                    // Limpieza: Si se suben nuevos archivos, eliminamos los anteriores (Política de Reemplazo)
+                    foreach (var viejo in libroToUpdate.Archivos.ToList())
+                    {
+                        var oldPath = Path.Combine(vaultFolder, viejo.Ruta);
+                        if (File.Exists(oldPath)) File.Delete(oldPath);
+                        _context.Set<LibroArchivo>().Remove(viejo);
+                    }
+                    libroToUpdate.Archivos.Clear();
+
                     foreach (var file in nuevosArchivos)
                     {
                         var extension = Path.GetExtension(file.FileName).ToLower();
+
+                        if (!_allowedExtensions.Contains(extension))
+                            return (false, $"El formato {extension} no está permitido.");
+
                         var uniqueName = Guid.NewGuid().ToString() + extension;
                         var filePath = Path.Combine(vaultFolder, uniqueName);
 
@@ -186,7 +206,7 @@ namespace BibliotecaMVC.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar libro ID {LibroId}", libro.Id);
-                return (false, $"Ocurrió un error en el sistema: {ex.Message}");
+                return (false, "Ocurrió un error interno al intentar actualizar los datos del libro.");
             }
         }
 

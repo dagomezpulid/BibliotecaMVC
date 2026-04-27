@@ -354,7 +354,7 @@
     <script>
         // LUIS: Enriquecimiento dinámico Multi-Servicio (MEJORADO)
         document.addEventListener("DOMContentLoaded", async function() {
-            let isbnRaw = "@Model.ISBN";
+            let isbnRaw = @Html.Raw(Json.Serialize(Model.ISBN));
             const isbn = isbnRaw.replace(/[^0-9Xx]/g, '').toUpperCase();
             
             const descElement = document.getElementById("bookDescription");

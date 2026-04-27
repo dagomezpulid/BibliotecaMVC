@@ -41,6 +41,9 @@ namespace BibliotecaMVC.Controllers
                 return BadRequest();
             }
 
+            // Mitigación de Enumeración: Jitter (Retraso aleatorio entre 100 y 500ms)
+            await Task.Delay(new System.Random().Next(100, 500));
+
             var error = await _validationService.CheckDuplicateEmailAsync(email);
             return error != null ? Json(error) : Json(true);
         }
@@ -59,6 +62,9 @@ namespace BibliotecaMVC.Controllers
             {
                 return BadRequest();
             }
+
+            // Mitigación de Enumeración: Jitter (Retraso aleatorio)
+            System.Threading.Thread.Sleep(new System.Random().Next(100, 500));
 
             var error = _validationService.CheckDuplicatePhone(phoneNumber);
             return error != null ? Json(error) : Json(true);
