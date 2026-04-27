@@ -142,15 +142,6 @@ dotnet run
 
 ---
 
-## ⚠️ Solución de Problemas (Troubleshooting)
-
-### Error: "Error al crear el libro o el título ya existe" en nuevos PCs
-Si al intentar agregar un libro recibes este error a pesar de que el título es nuevo, verifica los **permisos de carpeta**:
-- El servidor necesita permisos de **Escritura** en la carpeta raíz del proyecto para crear la carpeta `BibliotecaLibros_Vault`.
-- Si ejecutas desde IIS Express o Kestrel, asegúrate de que el proceso tenga acceso a la ruta física.
-
----
-
 ## 📁 Estructura del Proyecto
 
 - `Controllers`: Endpoints desacoplados de la lógica de negocio.

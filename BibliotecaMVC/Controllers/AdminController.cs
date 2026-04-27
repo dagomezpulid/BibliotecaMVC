@@ -30,8 +30,10 @@ public class AdminController : Controller
     /// <returns>Modelo de vista con contadores globales y lista de usuarios.</returns>
     public async Task<IActionResult> Index()
     {
-        // 1. Cargar usuarios
-        var users = await _userManager.Users.ToListAsync();
+        // 1. Cargar solo usuarios activos (no anonimizados) para la tabla de gestión
+        var users = await _userManager.Users
+            .Where(u => u.Email != null && !u.Email.StartsWith("deleted_"))
+            .ToListAsync();
         var usuariosIds = users.Select(u => u.Id).ToList();
 
         // N+1 SOLVED: Cargar todos los préstamos activos globalmente

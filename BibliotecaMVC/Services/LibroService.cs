@@ -13,14 +13,15 @@ namespace BibliotecaMVC.Services
     public class LibroService : ILibroService
     {
         private readonly BibliotecaContext _context;
-        private readonly IWebHostEnvironment _env;
-        private readonly ILogger<LibroService> _logger;
-
         private readonly string[] _allowedExtensions = { ".pdf", ".epub", ".docx", ".txt" };
 
         /// <summary>
-        /// Inicializa el servicio con el contexto de datos y el entorno de host.
+        /// Inicializa el servicio inyectando el contexto de base de datos, el entorno de hosting para manejo de archivos
+        /// y el sistema de logging para auditoría de errores.
         /// </summary>
+        /// <param name="context">Contexto de Entity Framework Core.</param>
+        /// <param name="env">Entorno de ejecución (usado para rutas físicas de archivos).</param>
+        /// <param name="logger">Instancia de Logger para registro de eventos técnicos.</param>
         public LibroService(BibliotecaContext context, IWebHostEnvironment env, ILogger<LibroService> logger)
         {
             _context = context;
@@ -118,9 +119,13 @@ namespace BibliotecaMVC.Services
                     {
                         var extension = Path.GetExtension(file.FileName).ToLower();
 
+                        // SEGURIDAD: Validación de lista blanca (Whitelist)
+                        // Evita la subida de archivos maliciosos (ej. .exe, .asp, .php) que podrían comprometer el servidor.
                         if (!_allowedExtensions.Contains(extension))
                             return (false, $"El formato {extension} no está permitido. Use: PDF, EPUB o DOCX.");
 
+                        // SEGURIDAD: Nombre de archivo aleatorio
+                        // Se usa un GUID para evitar ataques de colisión de nombres y ataques de "Directory Traversal".
                         var uniqueName = Guid.NewGuid().ToString() + extension;
                         var filePath = Path.Combine(vaultFolder, uniqueName);
 
@@ -134,10 +139,12 @@ namespace BibliotecaMVC.Services
 
                 _context.Libros.Add(libro);
                 await _context.SaveChangesAsync();
-                return (true, string.Empty);
+                return (true, "Libro creado exitosamente.");
             }
             catch (Exception ex)
             {
+                // SEGURIDAD: Error Genérico
+                // No devolvemos ex.Message para evitar "Information Disclosure" (revelar rutas o nombres de tablas).
                 _logger.LogError(ex, "Error al crear libro: {Titulo}", libro.Titulo);
                 return (false, "Ocurrió un error interno en el servidor al intentar crear el libro.");
             }
@@ -175,7 +182,6 @@ namespace BibliotecaMVC.Services
                 {
                     var vaultFolder = GetVaultPath();
 
-                    // Limpieza: Si se suben nuevos archivos, eliminamos los anteriores (Política de Reemplazo)
                     foreach (var viejo in libroToUpdate.Archivos.ToList())
                     {
                         var oldPath = Path.Combine(vaultFolder, viejo.Ruta);
@@ -201,7 +207,7 @@ namespace BibliotecaMVC.Services
 
                 _context.Update(libroToUpdate);
                 await _context.SaveChangesAsync();
-                return (true, string.Empty);
+                return (true, "Libro actualizado correctamente.");
             }
             catch (Exception ex)
             {

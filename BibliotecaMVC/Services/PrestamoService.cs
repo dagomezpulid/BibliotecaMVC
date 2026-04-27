@@ -61,7 +61,13 @@ namespace BibliotecaMVC.Services
                 .ToListAsync();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Procesa la solicitud de un nuevo préstamo validando reglas de negocio estrictas.
+        /// </summary>
+        /// <param name="userId">ID del usuario solicitante.</param>
+        /// <param name="libroId">ID del libro a prestar.</param>
+        /// <param name="diasPrestamo">Duración solicitada (entre 2 y 20 días).</param>
+        /// <returns>Tupla indicando éxito y un mensaje descriptivo.</returns>
         public async Task<(bool Success, string Message)> ProcessLoanAsync(string userId, int libroId, int diasPrestamo)
         {
             try
@@ -69,28 +75,33 @@ namespace BibliotecaMVC.Services
                 var usuario = await _userManager.FindByIdAsync(userId);
                 if (usuario == null) return (false, "Usuario no encontrado.");
 
+                // REGLA 1: No se permite prestar a usuarios con la cuenta suspendida/bloqueada
                 if (usuario.BloqueadoParaPrestamos)
                     return (false, "Tu cuenta está suspendida por morosidad.");
 
                 var libro = await _context.Libros.Include(l => l.Archivos).FirstOrDefaultAsync(l => l.Id == libroId);
                 if (libro == null) return (false, "El libro no existe.");
 
+                // REGLA 2: Solo se pueden prestar libros que tengan archivos digitales disponibles
                 if (!libro.Archivos.Any())
                     return (false, "El libro no tiene archivos digitales disponibles.");
 
                 if (diasPrestamo < 2 || diasPrestamo > 20)
                     return (false, "Días de préstamo inválidos (debe ser entre 2 y 20).");
 
+                // REGLA 3: No se permite prestar si el usuario tiene deudas económicas (Multas sin pagar)
                 var tieneMultaPendiente = await _context.Multas
                     .AnyAsync(m => m.Prestamo != null && m.Prestamo.UsuarioId == userId && !m.Pagada);
 
                 if (tieneMultaPendiente)
                     return (false, "Tienes multas pendientes de pago.");
 
+                // REGLA 4: Límite de capacidad de préstamo (Máximo 3 simultáneos)
                 var prestamosActivos = await _context.Prestamos.CountAsync(p => p.UsuarioId == userId && p.FechaDevolucionReal == null);
                 if (prestamosActivos >= 3)
                     return (false, "Has alcanzado el límite de 3 préstamos activos.");
 
+                // REGLA 5: Evitar duplicidad de un mismo libro activo
                 var yaLoTiene = await _context.Prestamos.AnyAsync(p => p.UsuarioId == userId && p.LibroId == libroId && p.FechaDevolucionReal == null);
                 if (yaLoTiene)
                     return (false, "Ya tienes este libro en préstamo activo.");
@@ -109,7 +120,7 @@ namespace BibliotecaMVC.Services
 
                 _logger.LogInformation("Préstamo exitoso: Usuario {UserId}, Libro {LibroId}", userId, libroId);
 
-                // Notificaciones
+                // Notificaciones Multi-canal (SMS + In-App)
                 await _notificationService.SendSmsAsync(usuario, libro.Titulo, $"Préstamo exitoso. Límite: {prestamo.FechaDevolucionProgramada.ToShortDateString()}.");
                 await _notificationService.CreateNotificationAsync(userId, "📖 Préstamo Confirmado", $"Has alquilado '{libro.Titulo}'.", "success");
 
@@ -122,7 +133,12 @@ namespace BibliotecaMVC.Services
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Registra la devolución de un libro y calcula penalizaciones en caso de mora.
+        /// </summary>
+        /// <param name="userId">ID del usuario que devuelve.</param>
+        /// <param name="prestamoId">ID del préstamo a cerrar.</param>
+        /// <returns>Resultado de la operación con mensajes de advertencia si hubo multa.</returns>
         public async Task<(bool Success, string Message)> ProcessReturnAsync(string userId, int prestamoId)
         {
             try
@@ -140,13 +156,16 @@ namespace BibliotecaMVC.Services
 
                 string message = "Libro devuelto correctamente.";
 
+                // LÓGICA DE PENALIZACIÓN (MORA)
                 if (prestamo.DiasMora > 0)
                 {
+                    // Tarifa estándar: $1000 por día de retraso
                     decimal totalMulta = prestamo.DiasMora * 1000;
                     var usuario = await _userManager.FindByIdAsync(userId);
                     
                     if (usuario != null)
                     {
+                        // BLOQUEO DE SEGURIDAD: El usuario no puede volver a prestar hasta que pague
                         usuario.BloqueadoParaPrestamos = true;
                         await _userManager.UpdateAsync(usuario);
 
