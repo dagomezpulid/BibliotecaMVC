@@ -76,15 +76,17 @@ Motor de autocompletado inteligente con estrategia de fallback:
 - **OpenLibrary Fallback**: Garantiza la disponibilidad de metadatos incluso si las cuotas de Google se agotan.
 - **Normalización Inteligente**: Sanitización de ISBNs y manejo de descripciones estructuradas para evitar errores de renderizado.
 
-### 2. 🛡️ Bóveda Digital Segura (Vault System)
+### 2. 🛡️ Bóveda Digital Segura (Vault System V2)
 - **Segregación Física**: Los archivos (`BibliotecaLibros_Vault`) se almacenan fuera del `wwwroot`, impidiendo el acceso directo por URL.
-- **DRM Proactivo**: El acceso a los archivos digitales requiere un préstamo activo validado en tiempo real.
-- **Auditoría de Activos**: Cada lectura o descarga genera un log de auditoría con IP, fecha y usuario.
+- **Validación Estricta**: Whitelist de extensiones (.pdf, .epub, .docx, .txt) para prevenir la subida de scripts maliciosos.
+- **Limpieza Automática**: Motor de gestión de almacenamiento que elimina archivos huérfanos al actualizar libros, optimizando el espacio en disco.
+- **DRM Proactivo**: El acceso requiere un préstamo activo validado en tiempo real. Auditoría completa de cada descarga/lectura.
 
-### 3. 📊 Ecosistema en Tiempo Real
+### 3. 📊 Ecosistema en Tiempo Real y Analítica
 - **SignalR Push Engine**: Alertas instantáneas al dashboard administrativo y notificaciones de usuario.
 - **Omnicanalidad**: Notificaciones vía **Twilio SMS** (con soporte para WhatsApp) y **SMTP Transaccional**.
-- **Analítica Visual**: Dashboards dinámicos con Chart.js para monitoreo de morosidad y popularidad.
+- **BI Integrado**: Dashboards dinámicos con Chart.js para monitoreo de morosidad (Top Morosos), popularidad de títulos y tendencias de préstamos en los últimos 6 meses.
+- **Mitigación de Ataques**: Implementación de **Jitter** (retraso aleatorio) en endpoints de validación para prevenir la enumeración de cuentas por bots y anonimización de datos sensibles en logs.
 
 ---
 
@@ -139,6 +141,15 @@ dotnet user-secrets set "EmailSettings:Password" "tu-app-password"
 dotnet ef database update
 dotnet run
 ```
+
+---
+
+## 🔒 Privacidad y "Derecho al Olvido" (GDPR Ready)
+
+El sistema implementa un flujo de **Anonimización Segura** para usuarios que solicitan la eliminación de su cuenta:
+- **Preservación de Métricas**: Se eliminan nombres, apellidos, correos y claves, pero se mantienen los registros de préstamos y multas anonimizados para no romper la analítica histórica del sistema.
+- **Bloqueo Permanente**: Las cuentas eliminadas quedan inaccesibles mediante la invalidación de sus credenciales y bloqueo administrativo total.
+- **Limpieza de PII**: El `PhoneNumber` y otros datos de identificación personal son purgados del servidor de forma definitiva.
 
 ---
 
