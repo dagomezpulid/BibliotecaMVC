@@ -18,52 +18,53 @@ graph TB
     subgraph Client ["🖥️ Interfaz de Usuario (Frontend)"]
         UI["Vistas Razor + Bootstrap 5 (Glassmorphism)"]
         JS["JavaScript ES2022 / SignalR Client"]
-        QR["Lector de Metadatos ISBN"]
+        VC["ViewComponents (Widgets Modulares)"]
+        CH["Chart.js (Analítica Dinámica)"]
     end
 
     subgraph App ["⚙️ ASP.NET Core 10 (Backend)"]
         subgraph Controllers ["Controladores & Endpoints"]
-            LC["LibrosController (Gestión Catálogo)"]
-            PC["PrestamosController (Lógica Circular)"]
-            NH["NotificationHub (SignalR Push)"]
-            DC["DashboardController (Analítica)"]
+            LC["LibrosController (Catálogo)"]
+            PC["PrestamosController (Circular)"]
+            NH["NotificationHub (SignalR)"]
+            AC["AdminController (Dashboard BI)"]
         end
 
         subgraph Services ["Capa de Negocio (Service Layer)"]
-            LS["ILibroService (Persistencia y Vault)"]
-            PS["IPrestamoService (Reglas de Negocio)"]
-            ES["IEmailSender (Notificaciones SMTP)"]
-            TS["ITwilioSmsSender (Alertas SMS)"]
+            LS["ILibroService (Vault V2)"]
+            PS["IPrestamoService (Rules Engine)"]
+            NS["INotificationService (SignalR/SMS)"]
+        end
+
+        subgraph Workers ["🤖 Procesamiento Background"]
+            SW["SmsBackgroundWorker (Vigilante Nocturno)"]
         end
 
         subgraph Security ["Seguridad & Auditoría"]
-            IC["Identity Core (RBAC - Admin/Usuario)"]
-            AL["Audit Logger (Seguimiento de Activos)"]
+            IC["Identity Core (RBAC)"]
+            JT["Jitter Engine (Anti-Enumeration)"]
+            XV["XSS Validator (JSON Serialize)"]
         end
     end
 
     subgraph Storage ["💾 Persistencia & Recursos"]
         DB[("SQL Server / EF Core 10")]
-        Vault["Digital Vault (File System Protegido)"]
+        Vault["Digital Vault (Secure Storage)"]
     end
 
     subgraph External ["🌐 Integraciones Externas"]
-        GBA["Google Books API (Metadata Primary)"]
-        OLA["OpenLibrary API (Metadata Fallback)"]
-        TWI["Twilio API Gateway (SMS)"]
+        GBA["Google Books API"]
+        TWI["Twilio SMS/WhatsApp"]
     end
 
-    %% Conexiones Técnicas
-    Client -- "HTTP / HTTPS Requests" --> Controllers
-    JS <--> NH
-    Controllers -- "Inyección de Dependencias" --> Services
-    Services --> Security
-    Services -- "Consulta Metadata" --> GBA & OLA
-    Services -- "Notificaciones Globales" --> NH & ES & TS
-    TS --> TWI
-    Security -- "Persistencia de Logs" --> DB
-    Services -- "ORM Mapping" --> DB
-    LS & PC -- "I/O Stream (Read/Write)" --> Vault
+    %% Conexiones
+    Client -- "AJAX / SignalR" --> Controllers
+    Controllers -- "DI" --> Services
+    Services -- "Job Dispatch" --> Workers
+    Workers -- "Auto-Alert" --> External
+    Services -- "ORM" --> DB
+    Services -- "Metadata" --> GBA
+    Services -- "File I/O" --> Vault
 ```
 
 ---
@@ -82,11 +83,23 @@ Motor de autocompletado inteligente con estrategia de fallback:
 - **Limpieza Automática**: Motor de gestión de almacenamiento que elimina archivos huérfanos al actualizar libros, optimizando el espacio en disco.
 - **DRM Proactivo**: El acceso requiere un préstamo activo validado en tiempo real. Auditoría completa de cada descarga/lectura.
 
-### 3. 📊 Ecosistema en Tiempo Real y Analítica
+### 3. 📊 Analítica Predictiva y Real-Time
 - **SignalR Push Engine**: Alertas instantáneas al dashboard administrativo y notificaciones de usuario.
 - **Omnicanalidad**: Notificaciones vía **Twilio SMS** (con soporte para WhatsApp) y **SMTP Transaccional**.
 - **BI Integrado**: Dashboards dinámicos con Chart.js para monitoreo de morosidad (Top Morosos), popularidad de títulos y tendencias de préstamos en los últimos 6 meses.
 - **Mitigación de Ataques**: Implementación de **Jitter** (retraso aleatorio) en endpoints de validación para prevenir la enumeración de cuentas por bots y anonimización de datos sensibles en logs.
+
+### 4. 🤖 Procesamiento Asíncrono (Vigilante Nocturno)
+El sistema incluye un **Worker en Segundo Plano** (`SmsBackgroundWorker`) que:
+- **Patrullaje Diario**: Escanea la base de datos cada 24 horas buscando préstamos vencidos.
+- **Alertas Proactivas**: Envía mensajes de texto (SMS) automáticos a usuarios con libros en mora, incentivando la devolución sin intervención manual del administrador.
+- **Optimización de Recursos**: Utiliza inyección de dependencias mediante scopes transitorios para garantizar la estabilidad de la conexión a base de datos en tareas largas.
+
+### 5. 💎 Estética y Experiencia de Usuario (Glassmorphism)
+- **Interfaz Premium**: Diseño basado en transparencia, desenfoque de fondo (backdrop-filter) y bordes sutiles.
+- **Micro-animaciones**: Transiciones fluidas usando Animate.css y CSS3 dinámico para una sensación de aplicación moderna y "viva".
+- **Dashboards Modulares**: Uso de **ViewComponents** para encapsular widgets complejos (como el resumen de multas del perfil) mejorando la reutilización de código.
+- **Rendimiento Optimizado**: Resolución de problemas de **N+1** mediante carga impaciente (Eager Loading) en el dashboard BI, permitiendo tiempos de respuesta instantáneos incluso con miles de registros.
 
 ---
 
