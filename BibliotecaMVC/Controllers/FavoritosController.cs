@@ -78,9 +78,9 @@ namespace BibliotecaMVC.Controllers
                     .ThenInclude(l => l.Autor)
                 .Include(f => f.Libro)
                     .ThenInclude(l => l.Categorias)
-                .Where(f => f.UsuarioId == userId)
+                .Where(f => f.UsuarioId == userId && f.Libro != null)
                 .OrderByDescending(f => f.FechaAgregado)
-                .Select(f => f.Libro)
+                .Select(f => f.Libro!)
                 .ToListAsync();
 
             return View(favoritos);

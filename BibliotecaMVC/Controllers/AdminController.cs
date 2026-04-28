@@ -61,13 +61,11 @@ public class AdminController : Controller
 
         // A. Usuarios con más mora histórica (Top 5)
         var morososData = await _context.Multas
-            .Include(m => m.Prestamo)
-                .ThenInclude(p => p!.Usuario)
+            .Where(m => m.Prestamo != null && m.Prestamo.Usuario != null)
             .GroupBy(m => new { m.Prestamo!.UsuarioId, m.Prestamo.Usuario!.Nombre, m.Prestamo.Usuario!.Apellido })
             .Select(g => new {
-                Nombre = g.Key.Nombre + " " + g.Key.Apellido,
+                Nombre = (g.Key.Nombre ?? "Usuario") + " " + (g.Key.Apellido ?? "Anónimo"),
                 TotalMora = g.Sum(m => m.Monto),
-                // Calculamos los días de mora totales sumando la diferencia de días entre lo programado y lo real (o ahora)
                 TotalDias = g.Sum(m => EF.Functions.DateDiffDay(m.Prestamo!.FechaDevolucionProgramada, m.Prestamo.FechaDevolucionReal ?? DateTime.Now))
             })
             .OrderByDescending(x => x.TotalMora)
@@ -76,7 +74,7 @@ public class AdminController : Controller
 
         // B. Libros más prestados (Top 5)
         var librosPopularesData = await _context.Prestamos
-            .Include(p => p.Libro)
+            .Where(p => p.Libro != null)
             .GroupBy(p => p.Libro!.Titulo)
             .Select(g => new {
                 Titulo = g.Key,

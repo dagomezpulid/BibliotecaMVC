@@ -164,10 +164,10 @@ public class MultasController : Controller
     public async Task<IActionResult> Index()
     {
         var multas = await _context.Multas
-            .Include(m => m.Prestamo)
-            .ThenInclude(p => p.Libro)
-            .Include(m => m.Prestamo)
-            .ThenInclude(p => p.Usuario)
+            .Include(m => m.Prestamo!)
+                .ThenInclude(p => p.Libro)
+            .Include(m => m.Prestamo!)
+                .ThenInclude(p => p.Usuario)
             .OrderByDescending(m => m.FechaGenerada)
             .ToListAsync();
 

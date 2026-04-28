@@ -35,8 +35,8 @@ namespace BibliotecaMVC.ViewComponents
             var userId = _userManager.GetUserId(HttpContext.User);
 
             bool tieneMulta = await _context.Multas
-                .Include(m => m.Prestamo)
                 .AnyAsync(m =>
+                    m.Prestamo != null &&
                     m.Prestamo.UsuarioId == userId &&
                     !m.Pagada);
 

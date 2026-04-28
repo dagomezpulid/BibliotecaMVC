@@ -15,7 +15,7 @@
                 <h5 class="text-muted mb-4">¿Confirmas la recepción física del siguiente libro?</h5>
                 
                 <div class="bg-light p-3 rounded-3 mb-4 text-start shadow-sm border">
-                    <p class="mb-1"><span class="fw-bold">📚 Libro prestado:</span> @Model.Libro.Titulo</p>
+                    <p class="mb-1"><span class="fw-bold">📚 Libro prestado:</span> @(Model.Libro?.Titulo ?? "Sin Título")</p>
                     <p class="mb-0"><span class="fw-bold">👤 Lector solicitante:</span> @Model.Usuario?.NombreCompleto</p>
                 </div>
                 

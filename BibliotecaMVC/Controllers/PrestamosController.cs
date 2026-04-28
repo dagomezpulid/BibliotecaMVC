@@ -215,6 +215,7 @@ namespace BibliotecaMVC.Controllers
         /// Guarda el progreso actual de lectura del usuario.
         /// </summary>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Usuario")]
         public async Task<IActionResult> GuardarProgreso(int libroId, int pagina)
         {
