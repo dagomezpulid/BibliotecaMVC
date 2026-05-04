@@ -39,7 +39,7 @@
                         <td>
                             <div class="d-flex align-items-center">
                                 <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                    <span class="fw-bold">@item.Nombre.Substring(0, 1).ToUpper()</span>
+                                    <span class="fw-bold">@(!string.IsNullOrWhiteSpace(item.Nombre) ? item.Nombre.Substring(0, 1).ToUpper() : "?")</span>
                                 </div>
                                 <div class="fw-semibold fs-5">@item.Nombre</div>
                             </div>

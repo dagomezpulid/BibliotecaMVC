@@ -77,7 +77,7 @@ using (var scope = app.Services.CreateScope())
 
     // 🔹 Crear Admin inicial desde configuración para seguridad
     string adminEmail = configuration["AdminSettings:Email"] ?? "dgomezpulid@outlook.com";
-    string adminPassword = configuration["AdminSettings:Password"];
+    string? adminPassword = configuration["AdminSettings:Password"];
 
     if (!string.IsNullOrEmpty(adminPassword))
     {

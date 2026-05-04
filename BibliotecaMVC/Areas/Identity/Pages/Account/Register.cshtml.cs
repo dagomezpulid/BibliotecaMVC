@@ -124,12 +124,13 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
                 await _userManager.AddToRoleAsync(user, "Usuario");
 
                 await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Index", "Home");
             }
 
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
-            return RedirectToAction("Index", "Home");
+            return Page();
         }
     }
 }

@@ -20,23 +20,23 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account.Manage
         }
 
         [TempData]
-        public string StatusMessage { get; set; }
+        public string StatusMessage { get; set; } = null!;
 
         [BindProperty]
-        public InputModel Input { get; set; }
+        public InputModel Input { get; set; } = null!;
 
         public class InputModel
         {
             [Required(ErrorMessage = "El campo de teléfono es de carácter obligatorio.")]
             [Phone]
             [Display(Name = "Nuevo Teléfono")]
-            public string PhoneNumber { get; set; }
+            public string PhoneNumber { get; set; } = string.Empty;
         }
 
         private async Task LoadAsync(ApplicationUser user)
         {
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            Input = new InputModel { PhoneNumber = phoneNumber };
+            Input = new InputModel { PhoneNumber = phoneNumber ?? string.Empty };
         }
 
         public async Task<IActionResult> OnGetAsync()

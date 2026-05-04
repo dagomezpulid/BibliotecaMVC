@@ -74,9 +74,9 @@ namespace BibliotecaMVC.Controllers
         {
             var userId = _userManager.GetUserId(User);
             var favoritos = await _context.Favoritos
-                .Include(f => f.Libro)
+                .Include(f => f.Libro!)
                     .ThenInclude(l => l.Autor)
-                .Include(f => f.Libro)
+                .Include(f => f.Libro!)
                     .ThenInclude(l => l.Categorias)
                 .Where(f => f.UsuarioId == userId && f.Libro != null)
                 .OrderByDescending(f => f.FechaAgregado)

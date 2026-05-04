@@ -24,11 +24,11 @@ namespace BibliotecaMVC.Controllers
         /// para que los visitantes puedan explorar los títulos disponibles.
         /// </summary>
         /// <returns>Vista con la lista de libros e información de sus autores.</returns>
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var libros = _context.Libros
+            var libros = await _context.Libros
                 .Include(l => l.Autor)
-                .ToList();
+                .ToListAsync();
 
             return View(libros);
         }

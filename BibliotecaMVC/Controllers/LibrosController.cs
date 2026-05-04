@@ -98,6 +98,14 @@ namespace BibliotecaMVC.Controllers
                 return RedirectToAction(nameof(Details), new { id = LibroId });
             }
 
+            // REFUERZO DE SEGURIDAD: Solo permitir reseñas de usuarios que han leído el libro (Préstamo previo)
+            var haPrestado = await _context.Prestamos.AnyAsync(p => p.LibroId == LibroId && p.UsuarioId == usuarioId);
+            if (!haPrestado)
+            {
+                TempData["Error"] = "Para calificar este libro, primero debes solicitarlo en préstamo y disfrutar de su lectura.";
+                return RedirectToAction(nameof(Details), new { id = LibroId });
+            }
+
             await _libroService.PostResenaAsync(LibroId, usuarioId, Puntuacion, Comentario);
             TempData["Success"] = "¡Reseña publicada!";
             

@@ -208,9 +208,9 @@ public class MultasController : Controller
     public async Task<IActionResult> ExportarCSV()
     {
         var multas = await _context.Multas
-            .Include(m => m.Prestamo)
+            .Include(m => m.Prestamo!)
                 .ThenInclude(p => p.Libro)
-            .Include(m => m.Prestamo)
+            .Include(m => m.Prestamo!)
                 .ThenInclude(p => p.Usuario)
             .OrderByDescending(m => m.FechaGenerada)
             .ToListAsync();

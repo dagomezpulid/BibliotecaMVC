@@ -209,6 +209,10 @@ namespace BibliotecaMVC.Services
         {
             try
             {
+                // VALIDACIÓN DE SEGURIDAD: Solo guardar progreso si el usuario tiene un historial de préstamo con este libro
+                var tienePermiso = await _context.Prestamos.AnyAsync(p => p.UsuarioId == userId && p.LibroId == libroId);
+                if (!tienePermiso) return;
+
                 var progreso = await _context.ProgresosLectura
                     .FirstOrDefaultAsync(p => p.UsuarioId == userId && p.LibroId == libroId);
 
