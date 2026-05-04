@@ -75,11 +75,11 @@ namespace BibliotecaMVC.Services
                 {
                     string smsBody = $"BibliotecaMVC: {mensaje} (Libro: '{tituloLibro}').";
                     await _smsSender.SendSmsAsync(usuario.PhoneNumber, smsBody);
-                    _logger.LogInformation("SMS enviado a {PhoneNumber} para el libro {TituloLibro}", usuario.PhoneNumber, tituloLibro);
+                    _logger.LogInformation("SMS enviado a {PhoneNumber} para el libro {TituloLibro}", SecurityUtils.MaskPhoneNumber(usuario.PhoneNumber), tituloLibro);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error al enviar SMS a {PhoneNumber}", usuario.PhoneNumber);
+                    _logger.LogError(ex, "Error al enviar SMS a {PhoneNumber}", SecurityUtils.MaskPhoneNumber(usuario.PhoneNumber));
                 }
             }
             else

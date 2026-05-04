@@ -252,7 +252,7 @@ namespace BibliotecaMVC.Services
                 LibroId = libroId,
                 UsuarioId = userId,
                 Puntuacion = puntuacion,
-                Comentario = comentario,
+                Comentario = SecurityUtils.SanitizeHtml(comentario),
                 FechaPublicacion = DateTime.Now
             };
             _context.Resenas.Add(resena);

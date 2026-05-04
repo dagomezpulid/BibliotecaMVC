@@ -254,7 +254,12 @@ namespace BibliotecaMVC.Controllers
 
             await RegistrarAuditoriaAsync("Descarga Física", archivo.LibroId.ToString(), $"Archivo: {archivo.Ruta}");
 
-            return PhysicalFile(filePath, "application/octet-stream", archivo.Ruta);
+            // Generar nombre amigable: Titulo_ISBN.ext
+            string safeTitle = SecurityUtils.SanitizeFileName(prestamo.Libro.Titulo);
+            string safeIsbn = SecurityUtils.SanitizeFileName(prestamo.Libro.ISBN ?? "S_ISBN");
+            string downloadName = $"{safeTitle}_{safeIsbn}{Path.GetExtension(archivo.Ruta)}";
+
+            return PhysicalFile(filePath, "application/octet-stream", downloadName);
         }
 
         /// <summary>

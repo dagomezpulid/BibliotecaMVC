@@ -55,7 +55,7 @@ namespace BibliotecaMVC.Controllers
         /// <returns>JSON con el mensaje de error o true si es válido.</returns>
         [AcceptVerbs("GET", "POST")]
         [Route("VerifyPhone")]
-        public IActionResult VerifyPhone([FromQuery(Name = "Input.PhoneNumber")] string phoneNumber)
+        public async Task<IActionResult> VerifyPhone([FromQuery(Name = "Input.PhoneNumber")] string phoneNumber)
         {
             // Mitigación básica: Solo responder a peticiones AJAX/Fetch
             if (Request.Headers["X-Requested-With"] != "XMLHttpRequest" && !Request.Headers["Accept"].ToString().Contains("application/json"))
@@ -64,9 +64,9 @@ namespace BibliotecaMVC.Controllers
             }
 
             // Mitigación de Enumeración: Jitter (Retraso aleatorio)
-            System.Threading.Thread.Sleep(new System.Random().Next(100, 500));
+            await Task.Delay(new System.Random().Next(100, 500));
 
-            var error = _validationService.CheckDuplicatePhone(phoneNumber);
+            var error = await _validationService.CheckDuplicatePhoneAsync(phoneNumber);
             return error != null ? Json(error) : Json(true);
         }
     }

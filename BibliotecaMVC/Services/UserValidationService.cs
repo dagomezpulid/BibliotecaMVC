@@ -18,7 +18,7 @@ namespace BibliotecaMVC.Services
         /// <summary>Verifica si el teléfono ya está en uso por otra cuenta.</summary>
         /// <param name="phoneNumber">Número de teléfono a comprobar.</param>
         /// <returns>Mensaje de error si existe, null si es válido.</returns>
-        string? CheckDuplicatePhone(string phoneNumber);
+        Task<string?> CheckDuplicatePhoneAsync(string phoneNumber);
     }
 
     /// <summary>
@@ -56,11 +56,11 @@ namespace BibliotecaMVC.Services
         /// </summary>
         /// <param name="phoneNumber">Número de teléfono a verificar.</param>
         /// <returns>Mensaje de error localizado si existe un duplicado, null si el teléfono está disponible.</returns>
-        public string? CheckDuplicatePhone(string phoneNumber)
+        public async Task<string?> CheckDuplicatePhoneAsync(string phoneNumber)
         {
             if (string.IsNullOrWhiteSpace(phoneNumber)) return null;
 
-            var existingPhone = _userManager.Users.FirstOrDefault(u => u.PhoneNumber == phoneNumber);
+            var existingPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (existingPhone != null)
             {
                 return "Ya existe una cuenta registrada con este número telefónico.";

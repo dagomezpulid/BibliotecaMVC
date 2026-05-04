@@ -158,7 +158,23 @@ public class AdminController : Controller
 
         if (await _userManager.IsInRoleAsync(user, "Admin"))
         {
+            // Protección: Evita revocar el rol al administrador principal configurado.
+            string masterAdminEmail = _configuration["AdminSettings:Email"] ?? "dgomezpulid@outlook.com";
+            if (user.Email != null && user.Email.Equals(masterAdminEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = "No se puede retirar el rol administrativo al administrador principal del sistema.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Protección: Evita que un administrador se retire el rol a sí mismo (Auto-lockout).
+            if (user.Id == _userManager.GetUserId(User))
+            {
+                TempData["Error"] = "No puedes retirarte el rol administrativo a ti mismo por seguridad.";
+                return RedirectToAction(nameof(Index));
+            }
+
             await _userManager.RemoveFromRoleAsync(user, "Admin");
+            TempData["Success"] = $"Rol administrativo revocado a {user.NombreCompleto}.";
         }
 
         return RedirectToAction(nameof(Index));

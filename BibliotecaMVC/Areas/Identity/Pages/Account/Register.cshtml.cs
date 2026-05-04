@@ -96,7 +96,7 @@ namespace BibliotecaMVC.Areas.Identity.Pages.Account
                 ModelState.AddModelError("Input.Email", emailError);
 
             // Verificación de número telefónico duplicado
-            var phoneError = _validationService.CheckDuplicatePhone(Input.PhoneNumber);
+            var phoneError = await _validationService.CheckDuplicatePhoneAsync(Input.PhoneNumber);
             if (phoneError != null)
                 ModelState.AddModelError("Input.PhoneNumber", phoneError);
 

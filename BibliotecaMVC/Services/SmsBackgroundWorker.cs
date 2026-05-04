@@ -49,7 +49,11 @@ namespace BibliotecaMVC.Services
                         target = target.AddDays(1);
                     }
                     var delay = target - now;
-                    _logger.LogInformation($"[CRON JOB] Vigilante en reposo. Próximo escaneo a las {target:g} (en {delay.TotalHours:N1} horas).");
+
+                    // Salvaguarda: Si el delay es muy pequeño o negativo por deriva del reloj, esperar al menos 1 minuto.
+                    if (delay.TotalSeconds <= 0) delay = TimeSpan.FromMinutes(1);
+
+                    _logger.LogInformation("[CRON JOB] Vigilante en reposo. Próximo escaneo a las {Target:g} (en {Delay:N1} horas).", target, delay.TotalHours);
 
                     await Task.Delay(delay, stoppingToken);
                 }
@@ -93,25 +97,32 @@ namespace BibliotecaMVC.Services
                     {
                         if (p.Usuario != null && !string.IsNullOrEmpty(p.Usuario.PhoneNumber))
                         {
-                            string titulo = p.Libro?.Titulo ?? "desconocido";
-                            string date = p.FechaDevolucionProgramada.ToShortDateString();
-                            
-                            string smsBody = $"🔴 BibliotecaMVC (URGENTE): Tu préstamo del libro '{titulo}' expiró el {date}. " +
-                                             $"Entrégalo HOY a la central para detener la acumulación de MULTAS diarias.";
+                            try 
+                            {
+                                string titulo = p.Libro?.Titulo ?? "desconocido";
+                                string date = p.FechaDevolucionProgramada.ToShortDateString();
+                                
+                                string smsBody = $"🔴 BibliotecaMVC (URGENTE): Tu préstamo del libro '{titulo}' expiró el {date}. " +
+                                                 $"Entrégalo HOY a la central para detener la acumulación de MULTAS diarias.";
 
-                            await notificationService.SendSmsAsync(p.Usuario, titulo, $"Tu préstamo expiró el {date}. Entrégalo pronto.");
-                            await notificationService.CreateNotificationAsync(p.UsuarioId!, "⚠️ Mora Detectada", $"Tu préstamo de '{titulo}' ha vencido.", "warning");
-                            
-                            // Activar la bandera de Memoria para no volver a escribirle mañana
-                            p.AlertaMoraEnviada = true; 
-                            enviadosContador++;
+                                await notificationService.SendSmsAsync(p.Usuario, titulo, $"Tu préstamo expiró el {date}. Entrégalo pronto.");
+                                await notificationService.CreateNotificationAsync(p.UsuarioId!, "⚠️ Mora Detectada", $"Tu préstamo de '{titulo}' ha vencido.", "warning");
+                                
+                                // Activar la bandera y persistir inmediatamente para evitar doble envío en caso de colapso posterior
+                                p.AlertaMoraEnviada = true;
+                                await context.SaveChangesAsync(stoppingToken); 
+                                enviadosContador++;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "[VIGILANTE] Error al procesar notificación para Préstamo ID {PrestamoId}", p.Id);
+                            }
                         }
                     }
 
                     if (enviadosContador > 0)
                     {
-                        await context.SaveChangesAsync(stoppingToken);
-                        _logger.LogInformation($"[VIGILANTE NOCTURNO] Termino patrulla: Castigo/Notifico a {enviadosContador} morosos nuevos.");
+                        _logger.LogInformation("[VIGILANTE NOCTURNO] Termino patrulla: Se notificó exitosamente a {Contador} morosos.", enviadosContador);
                     }
                 }
             }

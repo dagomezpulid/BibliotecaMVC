@@ -40,7 +40,7 @@ namespace BibliotecaMVC.Services
             // Modo Mock/Desarrollo Activo para probar hasta que el usuario reemplace sus variables.
             if (string.IsNullOrEmpty(accountSid) || accountSid.Contains("TU_SID_TWILIO"))
             {
-                _logger.LogWarning($"\n========== TICKET SMS PREVENTIVO A {number} ==========\n{message}\n=========================================\n");
+                _logger.LogWarning("Modo MOCK: SMS preventivo a {Number}: {Message}", SecurityUtils.MaskPhoneNumber(number), message);
                 return;
             }
 
@@ -70,7 +70,7 @@ namespace BibliotecaMVC.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Fallo crítico en el despachador de Twilio hacia: {number}");
+                _logger.LogError(ex, "Fallo crítico en el despachador de Twilio hacia: {Number}", SecurityUtils.MaskPhoneNumber(number));
             }
         }
     }
