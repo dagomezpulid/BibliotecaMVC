@@ -140,7 +140,7 @@
                     if (bookData.descripcion) {
                         let descText = typeof bookData.descripcion === 'string' ? bookData.descripcion : (bookData.descripcion.value || "");
                         if (descText) {
-                            const cleanDesc = descText.replace(/<\/?[^>]+(>|$)/g, "").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+                            const cleanDesc = new DOMParser().parseFromString(descText, 'text/html').body.textContent || "";
                             fillIfEmpty('descripcionInput', cleanDesc);
                         }
                     }
@@ -210,8 +210,11 @@
                 const sizes = ['extraLarge', 'large', 'medium', 'small', 'thumbnail', 'smallThumbnail'];
                 for (const size of sizes) {
                     if (info.imageLinks[size]) {
-                        bestUrl = info.imageLinks[size].replace("http://", "https://");
-                        break;
+                        let url = info.imageLinks[size].replace("http://", "https://");
+                        if (!url.includes("nocover")) {
+                            bestUrl = url;
+                            break;
+                        }
                     }
                 }
             }
@@ -236,8 +239,12 @@
 
         function fillIfEmpty(elementId, value) {
             const el = document.getElementById(elementId);
-            if (el && value && (!el.value || el.value.trim() === "")) {
-                el.value = value;
+            if (el && value) {
+                const currentVal = el.value ? el.value.trim().toLowerCase() : "";
+                const isSentinel = currentVal === "" || currentVal === "n/a" || currentVal === "no" || currentVal.includes("sin imagen") || currentVal.includes("sin descrip");
+                if (isSentinel) {
+                    el.value = value;
+                }
             }
         }
 

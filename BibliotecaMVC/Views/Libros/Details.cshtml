@@ -104,14 +104,14 @@
 
     <div class="card shadow-lg border-0 rounded-4 overflow-hidden mb-5">
         <div class="row g-0">
-            <div class="col-md-4 bg-light d-flex align-items-center justify-content-center p-4 border-end">
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-4 p-md-5 border-end border-secondary border-opacity-25 position-relative" style="background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 100%);">
                 @if (!string.IsNullOrEmpty(Model.ImagenUrl))
                 {
-                    <img src="@Model.ImagenUrl" class="img-fluid rounded-3 shadow" alt="@Model.Titulo" style="max-height: 500px; width: auto;">
+                    <img src="@Model.ImagenUrl" id="bookCoverImage" class="img-fluid rounded-4 shadow-lg border border-white border-4" alt="@Model.Titulo" style="max-height: 600px; width: 100%; object-fit: contain; transition: transform 0.3s ease;">
                 }
                 else
                 {
-                    <div class="text-center py-5">
+                    <div class="text-center py-5" id="noCoverContainer">
                         <span class="display-1 text-muted">📖</span>
                         <p class="text-muted mt-2">Sin imagen de portada</p>
                     </div>
@@ -121,13 +121,6 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            @if (Model.Categorias != null && Model.Categorias.Any())
-                            {
-                                foreach (var cat in Model.Categorias)
-                                {
-                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2 me-1">@cat.Nombre</span>
-                                }
-                            }
                             <h1 class="display-5 fw-bold text-dark mt-2 mb-1">@Model.Titulo</h1>
                             <div class="d-flex align-items-center mb-2">
                                 <div class="me-2">
@@ -139,7 +132,17 @@
                                 <span class="fw-bold fs-5">@Model.RatingPromedio</span>
                                 <span class="text-muted ms-2">(@(Model.Resenas?.Count ?? 0) reseñas)</span>
                             </div>
-                            <p class="fs-4 text-muted">por <span class="text-dark fw-semibold">@(Model.Autor?.Nombre ?? "Autor Desconocido")</span></p>
+                            <p class="fs-4 text-muted mb-3">por <span class="text-dark fw-semibold">@(Model.Autor?.Nombre ?? "Autor Desconocido")</span></p>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                @if (Model.Categorias != null && Model.Categorias.Any())
+                                {
+                                    foreach (var cat in Model.Categorias)
+                                    {
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3 py-2">@cat.Nombre</span>
+                                    }
+                                }
+                            </div>
                         </div>
                         <div class="text-end">
                             @if (Model.Archivos != null && Model.Archivos.Any())
@@ -165,13 +168,13 @@
 
                     <div class="row g-4 mb-5">
                         <div class="col-6 col-sm-4">
-                            <div class="p-3 bg-light rounded-3 text-center">
+                            <div class="p-3 bg-secondary bg-opacity-10 rounded-3 text-center border border-secondary border-opacity-25">
                                 <small class="text-muted d-block mb-1">ISBN</small>
                                 <span class="fw-bold text-dark">@(string.IsNullOrEmpty(Model.ISBN) ? "N/A" : Model.ISBN)</span>
                             </div>
                         </div>
                         <div class="col-6 col-sm-4">
-                            <div class="p-3 bg-light rounded-3 text-center">
+                            <div class="p-3 bg-secondary bg-opacity-10 rounded-3 text-center border border-secondary border-opacity-25">
                                 <small class="text-muted d-block mb-1">ID Sistema</small>
                                 <span class="fw-bold text-dark">#@Model.Id</span>
                             </div>
@@ -209,11 +212,11 @@
                         }
                         else
                         {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-dark btn-lg rounded-pill px-5 shadow">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary btn-lg rounded-pill px-5 shadow">
                                 Editar Datos
                             </a>
                         }
-                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg rounded-pill px-4">Volver al Catálogo</a>
+                        <a asp-action="Index" class="btn btn-outline-primary btn-lg rounded-pill px-4 shadow-sm">Volver al Catálogo</a>
                     </div>
                 </div>
             </div>
@@ -257,7 +260,7 @@
             }
             else
             {
-                <div class="text-center py-5 bg-white rounded-4 border border-dashed shadow-sm">
+                <div class="text-center py-5 bg-secondary bg-opacity-10 rounded-4 border border-secondary border-opacity-25 border-dashed shadow-sm">
                     <span class="display-4 text-muted">💬</span>
                     <p class="text-muted mt-3 mb-0">Nadie ha calificado este libro todavía. ¡Sé el primero en compartir tu experiencia!</p>
                 </div>
@@ -306,7 +309,7 @@
 @* --- SECCIÓN DE RECOMENDACIONES (INTELIGENCIA FASE 4) --- *@
 @if (ViewBag.Recomendados != null && ((List<BibliotecaMVC.Models.Libro>)ViewBag.Recomendados).Any())
 {
-    <div class="bg-light py-5 mt-5">
+    <div class="bg-secondary bg-opacity-10 py-5 mt-5">
         <div class="container">
             <h3 class="fw-bold mb-4">Quizás te interese...</h3>
             <div class="recommendations-wrapper">
@@ -355,23 +358,52 @@
         // LUIS: Enriquecimiento dinámico Multi-Servicio (MEJORADO)
         document.addEventListener("DOMContentLoaded", async function() {
             let isbnRaw = @Html.Raw(Json.Serialize(Model.ISBN));
-            const isbn = isbnRaw.replace(/[^0-9Xx]/g, '').toUpperCase();
+            const isbn = isbnRaw ? isbnRaw.replace(/[^0-9Xx]/g, '').toUpperCase() : "";
             
             const descElement = document.getElementById("bookDescription");
             const badge = document.getElementById("externalBadge");
+            const hasCover = document.getElementById("bookCoverImage") !== null;
 
             if (isbn && isbn.length >= 10) {
                 try {
                     const info = await buscarInfoLibro(isbn);
-                    if (info && info.description && descElement.innerText.length < 150) {
-                        descElement.style.opacity = "0";
-                        setTimeout(() => {
-                            descElement.innerText = info.description;
-                            descElement.style.transition = "opacity 0.5s ease";
-                            descElement.style.opacity = "1";
+                    if (info) {
+                        let enriched = false;
+                        
+                        // Enriquecer descripción
+                        if (info.description) {
+                            const cleanDesc = new DOMParser().parseFromString(info.description, 'text/html').body.textContent || "";
+                            if (cleanDesc && (!descElement.innerText || descElement.innerText.includes("No hay una descripción") || descElement.innerText.length < 150)) {
+                                descElement.style.opacity = "0";
+                                setTimeout(() => {
+                                    descElement.innerText = cleanDesc;
+                                    descElement.style.transition = "opacity 0.5s ease";
+                                    descElement.style.opacity = "1";
+                                }, 300);
+                                enriched = true;
+                            }
+                        }
+
+                        // Enriquecer portada
+                        if (info.imagenUrl && !hasCover) {
+                            const noCoverContainer = document.getElementById("noCoverContainer");
+                            if (noCoverContainer) {
+                                const newImg = document.createElement("img");
+                                newImg.src = info.imagenUrl;
+                                newImg.className = "img-fluid rounded-4 shadow-lg border border-white border-4";
+                                newImg.alt = "Portada recuperada";
+                                newImg.style.maxHeight = "600px";
+                                newImg.style.width = "100%";
+                                newImg.style.objectFit = "contain";
+                                noCoverContainer.replaceWith(newImg);
+                                enriched = true;
+                            }
+                        }
+
+                        if (enriched) {
                             badge.classList.remove("d-none");
                             badge.innerText = `Enriquecido con ${info.source}`;
-                        }, 300);
+                        }
                     }
                 } catch (err) { console.error("Error al enriquecer:", err); }
             }
@@ -384,7 +416,25 @@
                 if (res.ok) {
                     let data = await res.json();
                     if (data.items && data.items.length > 0) {
-                        return { description: data.items[0].volumeInfo.description, source: "Google Books" };
+                        let info = data.items[0].volumeInfo;
+                        let bestUrl = null;
+                        if (info.imageLinks) {
+                            const sizes = ['extraLarge', 'large', 'medium', 'small', 'thumbnail', 'smallThumbnail'];
+                            for (const size of sizes) {
+                                if (info.imageLinks[size]) {
+                                    let url = info.imageLinks[size].replace("http://", "https://");
+                                    if (!url.includes("nocover")) {
+                                        bestUrl = url;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        return { 
+                            description: info.description || (data.items[0].searchInfo ? data.items[0].searchInfo.textSnippet : ""), 
+                            imagenUrl: bestUrl,
+                            source: "Google Books" 
+                        };
                     }
                 }
             } catch (e) {}
@@ -396,7 +446,10 @@
                     let data = await res.json();
                     const key = `ISBN:${isbn}`;
                     if (data[key]) {
-                        return { description: data[key].notes || (data[key].excerpts ? data[key].excerpts[0].text : ""), source: "OpenLibrary" };
+                        let book = data[key];
+                        let desc = book.notes || (book.excerpts ? book.excerpts[0].text : "");
+                        let img = book.cover ? (book.cover.large || book.cover.medium || book.cover.small) : null;
+                        return { description: desc, imagenUrl: img, source: "OpenLibrary" };
                     }
                 }
             } catch (e) {}
