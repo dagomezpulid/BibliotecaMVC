@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    @* Bloque crítico para evitar parpadeo de tema (FOUC) *@
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
 </head>
 <body class ="d-flex flex-column min-vh-100">
     @Html.AntiForgeryToken()
@@ -129,13 +137,13 @@
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
 
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        setTheme(savedTheme);
+        // Sincronizar el icono al cargar (el atributo ya fue seteado en el head)
+        const currentTheme = html.getAttribute('data-bs-theme') || 'light';
+        themeIcon.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
 
         themeToggle.addEventListener('click', () => {
-            const currentTheme = html.getAttribute('data-bs-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            setTheme(newTheme);
+            const theme = html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            setTheme(theme);
         });
 
         function setTheme(theme) {
