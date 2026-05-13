@@ -141,7 +141,7 @@ namespace BibliotecaMVC.Controllers
             var result = await _libroService.CreateLibroAsync(libro, CategoriasSeleccionadas, archivosLibro);
             if (!result.Success)
             {
-                ModelState.AddModelError("Titulo", result.ErrorMessage);
+                TempData["Error"] = result.ErrorMessage;
                 ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
                 ViewBag.Categorias = new MultiSelectList(_context.Categorias, "Id", "Nombre", CategoriasSeleccionadas);
                 return View(libro);
@@ -180,7 +180,7 @@ namespace BibliotecaMVC.Controllers
                 var result = await _libroService.UpdateLibroAsync(libro, CategoriasSeleccionadas, nuevosArchivos);
                 if (result.Success) return RedirectToAction(nameof(Index));
                 
-                ModelState.AddModelError("", result.ErrorMessage);
+                TempData["Error"] = result.ErrorMessage;
             }
             
             ViewBag.Autores = new SelectList(_context.Autores, "Id", "Nombre", libro.AutorId);
@@ -229,6 +229,71 @@ namespace BibliotecaMVC.Controllers
             }
             ViewBag.LibroTitulo = libro.Titulo;
             return View(new Prestamo { LibroId = id });
+        }
+        /// <summary>
+        /// Proxy del servidor para enriquecer metadatos de libros (Google Books / OpenLibrary).
+        /// Protege la privacidad del usuario al no realizar peticiones directas desde su navegador.
+        /// </summary>
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Enriquecer(string isbn)
+        {
+            if (string.IsNullOrEmpty(isbn)) return BadRequest();
+            
+            // Limpiar ISBN
+            isbn = new string(isbn.Where(char.IsLetterOrDigit).ToArray()).ToUpper();
+            
+            using var client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(5);
+
+            // 1. Intentar Google Books
+            try
+            {
+                var googleRes = await client.GetAsync($"https://www.googleapis.com/books/v1/volumes?q=isbn:{isbn}");
+                if (googleRes.IsSuccessStatusCode)
+                {
+                    var data = await googleRes.Content.ReadFromJsonAsync<dynamic>();
+                    if (data != null && data.items != null && data.items.Count > 0)
+                    {
+                        var info = data.items[0].volumeInfo;
+                        string? desc = info?.description;
+                        string? img = info?.imageLinks?.thumbnail;
+                        
+                        return Json(new { 
+                            description = desc, 
+                            imagenUrl = img?.Replace("http://", "https://"),
+                            source = "Google Books"
+                        });
+                    }
+                }
+            }
+            catch { /* Continuar al siguiente proveedor */ }
+
+            // 2. Intentar OpenLibrary
+            try
+            {
+                var olRes = await client.GetAsync($"https://openlibrary.org/api/books?bibkeys=ISBN:{isbn}&format=json&jscmd=data");
+                if (olRes.IsSuccessStatusCode)
+                {
+                    var data = await olRes.Content.ReadFromJsonAsync<Dictionary<string, dynamic>>();
+                    var key = $"ISBN:{isbn}";
+                    if (data != null && data.ContainsKey(key))
+                    {
+                        var book = data[key];
+                        string? desc = book?.notes;
+                        string? img = book?.cover?.large;
+                        
+                        return Json(new { 
+                            description = desc, 
+                            imagenUrl = img,
+                            source = "OpenLibrary"
+                        });
+                    }
+                }
+            }
+            catch { }
+
+            return NotFound();
         }
     }
 }

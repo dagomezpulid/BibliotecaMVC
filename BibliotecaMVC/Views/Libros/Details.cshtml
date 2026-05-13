@@ -355,10 +355,9 @@
 
 @section Scripts {
     <script>
-        // LUIS: Enriquecimiento dinámico Multi-Servicio (MEJORADO)
+        // LUIS: Enriquecimiento dinámico mediante Proxy de Servidor (Privacidad Protegida)
         document.addEventListener("DOMContentLoaded", async function() {
-            let isbnRaw = @Html.Raw(Json.Serialize(Model.ISBN));
-            const isbn = isbnRaw ? isbnRaw.replace(/[^0-9Xx]/g, '').toUpperCase() : "";
+            let isbn = "@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(Model.ISBN ?? ""))";
             
             const descElement = document.getElementById("bookDescription");
             const badge = document.getElementById("externalBadge");
@@ -366,8 +365,10 @@
 
             if (isbn && isbn.length >= 10) {
                 try {
-                    const info = await buscarInfoLibro(isbn);
-                    if (info) {
+                    // Llamada al Proxy local en lugar de APIs externas directas
+                    const res = await fetch(`/Libros/Enriquecer?isbn=${isbn}`);
+                    if (res.ok) {
+                        const info = await res.json();
                         let enriched = false;
                         
                         // Enriquecer descripción
@@ -408,53 +409,6 @@
                 } catch (err) { console.error("Error al enriquecer:", err); }
             }
         });
-
-        async function buscarInfoLibro(isbn) {
-            // 1. Google Books
-            try {
-                let res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`);
-                if (res.ok) {
-                    let data = await res.json();
-                    if (data.items && data.items.length > 0) {
-                        let info = data.items[0].volumeInfo;
-                        let bestUrl = null;
-                        if (info.imageLinks) {
-                            const sizes = ['extraLarge', 'large', 'medium', 'small', 'thumbnail', 'smallThumbnail'];
-                            for (const size of sizes) {
-                                if (info.imageLinks[size]) {
-                                    let url = info.imageLinks[size].replace("http://", "https://");
-                                    if (!url.includes("nocover")) {
-                                        bestUrl = url;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        return { 
-                            description: info.description || (data.items[0].searchInfo ? data.items[0].searchInfo.textSnippet : ""), 
-                            imagenUrl: bestUrl,
-                            source: "Google Books" 
-                        };
-                    }
-                }
-            } catch (e) {}
-
-            // 2. Open Library
-            try {
-                let res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-                if (res.ok) {
-                    let data = await res.json();
-                    const key = `ISBN:${isbn}`;
-                    if (data[key]) {
-                        let book = data[key];
-                        let desc = book.notes || (book.excerpts ? book.excerpts[0].text : "");
-                        let img = book.cover ? (book.cover.large || book.cover.medium || book.cover.small) : null;
-                        return { description: desc, imagenUrl: img, source: "OpenLibrary" };
-                    }
-                }
-            } catch (e) {}
-            return null;
-        }
 
         function scrollCarousel(direction) {
             const carousel = document.getElementById("recoCarousel");
