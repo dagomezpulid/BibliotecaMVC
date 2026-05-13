@@ -126,10 +126,12 @@ public class AdminController : Controller
 
     /// <summary>
     /// Eleva a un usuario al rol de Administrador.
+    /// Solo permitido para el Administrador Principal (Master Admin).
     /// </summary>
     /// <param name="id">ID de Identity del usuario.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "MasterAdminOnly")]
     public async Task<IActionResult> HacerAdmin(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
@@ -146,10 +148,12 @@ public class AdminController : Controller
 
     /// <summary>
     /// Revoca el rol de Administrador a un usuario existente.
+    /// Solo permitido para el Administrador Principal (Master Admin).
     /// </summary>
     /// <param name="id">ID de Identity del usuario al que se le retira el privilegio.</param>
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Policy = "MasterAdminOnly")]
     public async Task<IActionResult> QuitarAdmin(string id)
     {
         var user = await _userManager.FindByIdAsync(id);
@@ -158,14 +162,6 @@ public class AdminController : Controller
 
         if (await _userManager.IsInRoleAsync(user, "Admin"))
         {
-            // Protección: Evita revocar el rol al administrador principal configurado.
-            string masterAdminEmail = _configuration["AdminSettings:Email"] ?? "dgomezpulid@outlook.com";
-            if (user.Email != null && user.Email.Equals(masterAdminEmail, StringComparison.OrdinalIgnoreCase))
-            {
-                TempData["Error"] = "No se puede retirar el rol administrativo al administrador principal del sistema.";
-                return RedirectToAction(nameof(Index));
-            }
-
             // Protección: Evita que un administrador se retire el rol a sí mismo (Auto-lockout).
             if (user.Id == _userManager.GetUserId(User))
             {

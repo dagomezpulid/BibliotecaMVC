@@ -37,6 +37,8 @@ namespace BibliotecaMVC.Models
         /// Enlace externo a la imagen de portada (Google Books, Amazon, etc).
         /// </summary>
         [Display(Name = "URL de la Portada")]
+        [Url(ErrorMessage = "La URL de la portada no es válida.")]
+        [StringLength(500, ErrorMessage = "La URL es demasiado larga.")]
         public string? ImagenUrl { get; set; }
 
         /// <summary>

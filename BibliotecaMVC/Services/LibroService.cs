@@ -133,6 +133,10 @@ namespace BibliotecaMVC.Services
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
+                            // VALIDACIÓN DE FIRMA BINARIA (Magic Numbers)
+                            if (!SecurityUtils.VerifyFileSignature(file.OpenReadStream(), extension))
+                                return (false, $"El archivo {file.FileName} no es un {extension} válido.");
+
                             await file.CopyToAsync(stream);
                         }
                         libro.Archivos.Add(new LibroArchivo { Ruta = uniqueName, Formato = extension });
@@ -202,7 +206,14 @@ namespace BibliotecaMVC.Services
                         var uniqueName = Guid.NewGuid().ToString() + extension;
                         var filePath = Path.Combine(vaultFolder, uniqueName);
 
-                        using (var stream = new FileStream(filePath, FileMode.Create)) { await file.CopyToAsync(stream); }
+                        using (var stream = new FileStream(filePath, FileMode.Create)) 
+                        { 
+                            // VALIDACIÓN DE FIRMA BINARIA
+                            if (!SecurityUtils.VerifyFileSignature(file.OpenReadStream(), extension))
+                                return (false, $"El archivo {file.FileName} no es un {extension} válido.");
+
+                            await file.CopyToAsync(stream); 
+                        }
                         libroToUpdate.Archivos.Add(new LibroArchivo { Ruta = uniqueName, Formato = extension });
                     }
                 }

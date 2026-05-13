@@ -48,8 +48,21 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IPrestamoService, PrestamoService>();
 builder.Services.AddScoped<ILibroService, LibroService>();
 
+// --- CONFIGURACIÓN DE AUTORIZACIÓN AVANZADA ---
+builder.Services.AddTransient<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, BibliotecaMVC.Authorization.MasterAdminHandler>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("MasterAdminOnly", policy => 
+        policy.Requirements.Add(new BibliotecaMVC.Authorization.MasterAdminRequirement()));
+});
+
 // Registro de Controladores con Vistas (MVC) e infraestructura de Razor Pages
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Inyección global del filtro de excepciones para seguridad y robustez
+    options.Filters.Add<BibliotecaMVC.Filters.CustomExceptionFilter>();
+});
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
 

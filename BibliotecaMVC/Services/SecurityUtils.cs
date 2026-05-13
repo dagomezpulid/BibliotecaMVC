@@ -60,5 +60,41 @@ namespace BibliotecaMVC.Services
             // Para este proyecto, realizamos un escape básico para prevenir ejecución de scripts.
             return System.Net.WebUtility.HtmlEncode(input);
         }
+
+        /// <summary>
+        /// Verifica la firma binaria del archivo (Magic Numbers) para asegurar que el contenido
+        /// coincide con la extensión declarada.
+        /// </summary>
+        public static bool VerifyFileSignature(Stream fileStream, string extension)
+        {
+            fileStream.Position = 0;
+            using (var reader = new BinaryReader(fileStream, Encoding.UTF8, true))
+            {
+                byte[] header;
+                switch (extension.ToLower())
+                {
+                    case ".pdf":
+                        header = reader.ReadBytes(4);
+                        // PDF starts with %PDF (25 50 44 46)
+                        return header.Length >= 4 && 
+                               header[0] == 0x25 && header[1] == 0x50 && 
+                               header[2] == 0x44 && header[3] == 0x46;
+                    
+                    case ".docx":
+                    case ".epub":
+                        header = reader.ReadBytes(4);
+                        // ZIP based formats start with PK (50 4B 03 04)
+                        return header.Length >= 4 && 
+                               header[0] == 0x50 && header[1] == 0x4B && 
+                               header[2] == 0x03 && header[3] == 0x04;
+                    
+                    case ".txt":
+                        return true; // Texto plano no tiene firma estándar mágica fácil de validar así
+
+                    default:
+                        return false;
+                }
+            }
+        }
     }
 }
