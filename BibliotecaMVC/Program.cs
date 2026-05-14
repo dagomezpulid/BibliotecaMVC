@@ -138,6 +138,25 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// --- HARDENING DE SEGURIDAD (Security Headers) ---
+app.Use(async (context, next) =>
+{
+    // Previene que el sitio sea embebido en Iframes (Mitigación de Clickjacking)
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    
+    // Evita que el navegador intente adivinar el tipo de contenido (Mitigación de MIME Sniffing)
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    
+    // Controla cuánta información de referencia se envía al navegar
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    
+    // Política de seguridad de contenido (CSP) básica para restringir fuentes
+    // Nota: En producción real, esto se ajustaría según los dominios permitidos (Google, Twilio, etc)
+    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googleapis.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://www.googleapis.com https://openlibrary.org;");
+
+    await next();
+});
+
 app.MapStaticAssets();
 
 app.UseAuthentication();
