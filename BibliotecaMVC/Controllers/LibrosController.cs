@@ -253,9 +253,9 @@ namespace BibliotecaMVC.Controllers
                 if (googleRes.IsSuccessStatusCode)
                 {
                     var data = await googleRes.Content.ReadFromJsonAsync<dynamic>();
-                    if (data != null && data.items != null && data.items.Count > 0)
+                    if (data?.items != null && data?.items?.Count > 0)
                     {
-                        var info = data.items[0].volumeInfo;
+                        var info = data?.items?[0]?.volumeInfo;
                         string? desc = info?.description;
                         string? img = info?.imageLinks?.thumbnail;
                         
