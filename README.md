@@ -42,8 +42,10 @@ graph TB
 
         subgraph Security ["Seguridad & Auditoría"]
             IC["Identity Core (RBAC)"]
-            JT["Jitter Engine (Anti-Enumeration)"]
-            XV["XSS Validator (JSON Serialize)"]
+            GEF["Global Exception Filter (Clean Error Handling)"]
+            FVA["File Signature Validator (Magic Numbers)"]
+            MAP["Master Admin Policy (Root Protection)"]
+            XV["XSS Validator (Safe Serialization)"]
         end
     end
 
@@ -63,7 +65,7 @@ graph TB
     Services -- "Job Dispatch" --> Workers
     Workers -- "Auto-Alert" --> External
     Services -- "ORM" --> DB
-    Services -- "Metadata" --> GBA
+    Controllers -- "Server-Side Proxy (Privacy)" --> External
     Services -- "File I/O" --> Vault
 ```
 
@@ -83,11 +85,14 @@ Motor de autocompletado inteligente con estrategia de fallback:
 - **Limpieza Automática**: Motor de gestión de almacenamiento que elimina archivos huérfanos al actualizar libros, optimizando el espacio en disco.
 - **DRM Proactivo**: El acceso requiere un préstamo activo validado en tiempo real. Auditoría completa de cada descarga/lectura.
 
-### 3. 📊 Analítica Predictiva y Real-Time
+### 3. 🛡️ Seguridad y Resiliencia de Grado Industrial
+- **Global Exception Filter**: Captura de errores no controlados a nivel de pipeline, registrando detalles técnicos en logs privados y sirviendo vistas amigables al usuario para evitar la exposición de la infraestructura.
+- **Validación de Firmas Binarias (Magic Numbers)**: Inspección de los primeros bytes de cada archivo subido al Vault para confirmar su integridad (PDF real, EPUB real), bloqueando ataques de enmascaramiento de malware.
+- **Política Master Admin**: Capa de autorización ultra-restrictiva que protege las acciones críticas de gestión de roles, asegurando que solo el administrador raíz configurado en el sistema pueda elevar privilegios.
+- **Proxy de Enriquecimiento (Privacidad)**: Todas las consultas a APIs externas (Google/OpenLibrary) se realizan desde el servidor. Los navegadores de los usuarios nunca contactan a terceros, protegiendo su historial de intereses bibliográficos.
 - **SignalR Push Engine**: Alertas instantáneas al dashboard administrativo y notificaciones de usuario.
-- **Omnicanalidad**: Notificaciones vía **Twilio SMS** (con soporte para WhatsApp) y **SMTP Transaccional**.
 - **BI Integrado**: Dashboards dinámicos con Chart.js para monitoreo de morosidad (Top Morosos), popularidad de títulos y tendencias de préstamos en los últimos 6 meses.
-- **Mitigación de Ataques**: Implementación de **Jitter** (retraso aleatorio) en endpoints de validación para prevenir la enumeración de cuentas por bots y anonimización de datos sensibles en logs.
+- **Mitigación de Ataques**: Implementación de **Jitter** y anonimización de datos sensibles en logs.
 
 ### 4. 🤖 Procesamiento Asíncrono (Vigilante Nocturno)
 El sistema incluye un **Worker en Segundo Plano** (`SmsBackgroundWorker`) que:
