@@ -52,8 +52,11 @@
                     <div class="form-floating mb-3 position-relative">
                         <input asp-for="Input.Password" class="form-control pe-5" autocomplete="new-password" placeholder="Contraseña" id="Input_Password" />
                         <label asp-for="Input.Password">Contraseña</label>
-                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-1 toggle-password" data-target="Input_Password" style="z-index: 5; background: none; border: none;" title="Mostrar Contraseña">
-                            👁️
+                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y toggle-password" data-target="Input_Password" title="Mostrar Contraseña">
+                            <!-- Ojo Abierto -->
+                            <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <!-- Ojo Cerrado (Pestañas) -->
+                            <svg class="eye-closed d-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3 7 10 7 10-7 10-7"></path><line x1="12" y1="19" x2="12" y2="22"></line><line x1="7" y1="18" x2="6" y2="21"></line><line x1="17" y1="18" x2="18" y2="21"></line><line x1="4" y1="15" x2="3" y2="17"></line><line x1="20" y1="15" x2="21" y2="17"></line></svg>
                         </button>
                         <span asp-validation-for="Input.Password" class="text-danger small"></span>
                     </div>
@@ -68,8 +71,11 @@
                     <div class="form-floating mb-4 position-relative">
                         <input asp-for="Input.ConfirmPassword" class="form-control pe-5" autocomplete="new-password" placeholder="Confirmar contraseña" id="Input_ConfirmPassword" />
                         <label asp-for="Input.ConfirmPassword">Confirmar Contraseña</label>
-                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y me-1 toggle-password" data-target="Input_ConfirmPassword" style="z-index: 5; background: none; border: none;" title="Mostrar Contraseña">
-                            👁️
+                        <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y toggle-password" data-target="Input_ConfirmPassword" title="Mostrar Contraseña">
+                            <!-- Ojo Abierto -->
+                            <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <!-- Ojo Cerrado (Pestañas) -->
+                            <svg class="eye-closed d-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3 7 10 7 10-7 10-7"></path><line x1="12" y1="19" x2="12" y2="22"></line><line x1="7" y1="18" x2="6" y2="21"></line><line x1="17" y1="18" x2="18" y2="21"></line><line x1="4" y1="15" x2="3" y2="17"></line><line x1="20" y1="15" x2="21" y2="17"></line></svg>
                         </button>
                         <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
                     </div>
@@ -100,12 +106,19 @@
             btn.addEventListener('click', function() {
                 const targetId = this.getAttribute('data-target');
                 const input = document.getElementById(targetId);
+                const eyeOpen = this.querySelector('.eye-open');
+                const eyeClosed = this.querySelector('.eye-closed');
+                
                 if (input.type === 'password') {
                     input.type = 'text';
-                    this.textContent = '👀';
+                    eyeOpen.classList.add('d-none');
+                    eyeClosed.classList.remove('d-none');
+                    this.title = "Ocultar Contraseña";
                 } else {
                     input.type = 'password';
-                    this.textContent = '👁️';
+                    eyeOpen.classList.remove('d-none');
+                    eyeClosed.classList.add('d-none');
+                    this.title = "Mostrar Contraseña";
                 }
             });
         });
